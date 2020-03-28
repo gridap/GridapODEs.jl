@@ -1,0 +1,13 @@
+name = "GridapTimeStepper"
+uuid = "55e38337-5b6e-4c7c-9cfc-e00dd49102e6"
+authors = ["Santiago Badia"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
