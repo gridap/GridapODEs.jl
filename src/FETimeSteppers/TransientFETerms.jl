@@ -1,3 +1,5 @@
+# @santiagobadia : Create an AbstractTransientFETerm (?)
+
 struct TransientFETerm <: FETerm # assuming first order for now
   res::Function
   jac_unk::Function
