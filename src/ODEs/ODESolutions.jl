@@ -14,6 +14,7 @@ function Base.iterate(u::ODESolution,state) # -> (t_n,u_n) or nothing
   @abstractmethod
 end
 
+# Do we want it to be type stable?
 struct GenericODESolution <: ODESolution
   solver::ODESolution
   op::ODEOperator
