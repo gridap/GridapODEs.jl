@@ -29,11 +29,11 @@ function Base.iterate(sol::GenericODESolution)
   u0 = copy(sol.u0)
 
   # Solve step
-  uF, tF = solve_step!(uF,sol.op,u0,sol.t0)
+  uF, tF, cache = solve_step!(uF,sol.op,u0,sol.t0)
 
   # Update
   u0 .= uF
-  state = (uF,u0,tF)
+  state = (uF,u0,tF,cache)
 
   return (uf, tF), state
 end
