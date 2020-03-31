@@ -70,3 +70,17 @@ On the other hand, we should provide `TimeStepper` constructor with a
 
 
 end # module
+
+# Like we have done in the spatial FE discretization, I would distinguish between the
+# algebraic and FE counterparts and between the problem to be solved and the method to solve the problem.
+#
+# Disclaimer: The names of functions and types I use here are just an initial guess. They can be improved a lot.
+#
+# For the moment, we can focus in the algebraic part.
+# From this, designing the FE counterpart will be easy.
+#
+# First ingredient: object describing the algebraic problem to solve.
+# We can follow the notation A(t,u,u_t)=0 you have proposed to represent the ODE.
+# For simplicity, I use here `A(t,u,v)=0`.
+# The first we need is an abstract type representing the operator A:
+#
