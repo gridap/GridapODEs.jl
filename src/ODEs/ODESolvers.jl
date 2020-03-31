@@ -4,7 +4,7 @@ abstract type ODESolver <: GridapType end
 
 # The solver is defined by how a single step is solved
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> (uF,tF)
+  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,cache) # -> (uF,tF)
   @abstractmethod
 end
 
