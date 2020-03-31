@@ -31,7 +31,7 @@ end
 # @santiagobadia : Agreed
 
 # This one represents `[∂A/∂u](t,u,v)`
-function jacobian_unk!(j_u::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
+function jacobian_unknown!(j_u::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
   @abstractmethod
 end
 # @santiagobadia : Agreed
@@ -39,7 +39,7 @@ end
 # Not exposed to user anyway
 
 # This one represents `[∂A/∂v](t,u,v)`
-function jacobian_unk_t!(j_u_t::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
+function jacobian_unknown_t!(j_u_t::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
   @abstractmethod
 end
 # @santiagobadia : Agreed
