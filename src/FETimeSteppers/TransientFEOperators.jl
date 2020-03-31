@@ -1,5 +1,22 @@
 # Do we need a TransientFEOperatorFromTerms or the only thing we need to do is
 # to extend its interface. I would consider the second option
+"""
+"""
+abstract type TransientFEOperator <: GridapType end
+
+struct TransientFEOperatorFromTerms <: TransientFEOperator
+  test::FESpace
+  trial::Function
+  trial_t::Function
+  terms::Tuple
+end
+
+TransientFEOperatorFromTerms(U::FESpace,V::FESpace,terms::TransientFETerm...)
+
+function TransientFEOperatorFromTerms(U::FESpace,U_t::FESpace,V::FESpace,terms::TransientFETerm...)
+  TransientFEOperatorFromTerms(V,t->U,t->U_t,terms)
+end
+
 function jacobian_unk_t!(A::AbstractMatrix,op::FEOperator,uh)
   @notimplemented
   A
