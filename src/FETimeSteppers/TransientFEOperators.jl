@@ -1,5 +1,9 @@
 # Do we need a TransientFEOperatorFromTerms or the only thing we need to do is
 # to extend its interface. I would consider the second option
+function jacobian_unk_t!(A::AbstractMatrix,op::FEOperator,uh)
+  @notimplemented
+  A
+end
 
 function jacobian_unk_t!(A::AbstractMatrix,op::FEOperatorFromTerms,uh)
   @assert is_a_fe_function(uh)
