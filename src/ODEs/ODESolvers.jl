@@ -7,6 +7,12 @@ function solve_step!(
   uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> (uF,tF)
   @abstractmethod
 end
+
+function solve_step!(
+  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> (uF,tF),cache
+  @abstractmethod
+end
+
 # @santiagobadia : Agreed
 
 # Assuming that solve_step! is defined, we can define the following solve function for all ODESolver objects:
