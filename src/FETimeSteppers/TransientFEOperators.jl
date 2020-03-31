@@ -4,6 +4,10 @@
 """
 abstract type TransientFEOperator <: GridapType end
 
+function get_trial(op::TransientFEOperator,t)
+  @abstractmethod
+end
+
 struct TransientFEOperatorFromTerms <: TransientFEOperator
   test::FESpace
   trial::Function
@@ -15,6 +19,10 @@ TransientFEOperatorFromTerms(U::FESpace,V::FESpace,terms::TransientFETerm...)
 
 function TransientFEOperatorFromTerms(U::FESpace,U_t::FESpace,V::FESpace,terms::TransientFETerm...)
   TransientFEOperatorFromTerms(V,t->U,t->U_t,terms)
+end
+
+function get_trial(op::TransientFEOperatorFromTerms,t)
+  op.trial(t)
 end
 
 function jacobian_unk_t!(A::AbstractMatrix,op::FEOperator,uh)
