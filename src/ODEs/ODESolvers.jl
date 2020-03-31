@@ -9,7 +9,7 @@ function solve_step!(
 end
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> (uF,tF),cache
+  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> uF,tF,cache
   @abstractmethod
 end
 
