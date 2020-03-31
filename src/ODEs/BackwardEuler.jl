@@ -36,12 +36,9 @@ end
 function jacobian!(A::AbstractMatrix,op::BackwardEulerNonLinearOperator,x::AbstractVector)
   uF = x
   vF = (x-u0)/op.dt
-  A_u = copy(A) # TODO avoid this
-  A_v = copy(A) # TODO avoid this
-  jacobian_u!(A_u,op.odeop,op.tF,uF,vF)
-  jacobian_v!(A_v,op.odeop,op.tF,uF,vF)
-  A .= A_u + (1/op.dt)*A_v
-  # @santiagobadia : Does it work so simple? Implemented for CSX matrices?
+  fill_entries!(A,zero(eltype(A))
+  jacobian_unknown!(A,op.odeop,op.tF,uF,vF)
+  jacobian_unknown_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt))
 end
 
 function allocate_residual(op::BackwardEulerNonLinearOperator,x::AbstractVector)
