@@ -13,3 +13,12 @@ function jacobian_unk_t!(A::AbstractMatrix,op::FEOperatorFromTerms,uh)
   assemble_matrix!(A,op.assem, cellmats, cellidsrows, cellidscols)
   A
 end
+
+function get_ode_operator(feop::ODEOperator)
+  ODEOpFromFEOp(feop)
+end
+
+struct ODEOpFromFEOp <: ODEOperator
+  feop::FEOperator
+end
+
