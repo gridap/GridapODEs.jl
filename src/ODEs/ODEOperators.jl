@@ -33,14 +33,16 @@ end
 # This one represents `[∂A/∂u](t,u,v)`
 function jacobian_unknown!(j_u::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
   @abstractmethod
+  # Add values to j_u_t
 end
 # @santiagobadia : Agreed
 # @santiagobadia : I think unk and unk_t or u u_t is more revealing than u v
 # Not exposed to user anyway
 
 # This one represents `[∂A/∂v](t,u,v)`
-function jacobian_unknown_t!(j_u_t::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
+function jacobian_unknown_t!(j_u_t::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real)
   @abstractmethod
+  # Add values to j_u_t
 end
 # @santiagobadia : Agreed
 
