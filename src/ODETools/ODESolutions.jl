@@ -11,7 +11,7 @@ function Base.iterate(u::ODESolution,state) # -> (t_n,u_n) or nothing
 end
 
 struct GenericODESolution <: ODESolution
-  solver::ODESolution
+  solver::ODESolver
   op::ODEOperator
   u0::AbstractVector
   t0::Real
@@ -25,7 +25,7 @@ function Base.iterate(sol::GenericODESolution)
   u0 = copy(sol.u0)
 
   # Solve step
-  uF, tF, cache = solve_step!(uF,sol.op,u0,sol.t0)
+  uF, tF, cache = solve_step!(uF,sol.solver,sol.op,u0,sol.t0)
 
   # Update
   u0 .= uF
@@ -38,16 +38,16 @@ function Base.iterate(sol::GenericODESolution, state)
 
   uF,u0,t0,cache = state
 
-  if t0 > op.tF
+  if t0 > sol.tF
     return nothing
   end
 
   # Solve step
-  uF, tF = solve_step!(uF,sol.op,u0,t0,cache)
+  uF, tF = solve_step!(uF,sol.solver,sol.op,u0,t0,cache)
 
   # Update
   u0 .= uF
   state = (uF,u0,tF,cache)
 
-  return (uf, tF), state
+  return (uF, tF), state
 end

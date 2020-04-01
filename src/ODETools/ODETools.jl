@@ -5,6 +5,9 @@ using Gridap.Helpers
 using Gridap.Algebra: NonLinearSolver
 using Gridap.Algebra: NonLinearOperator
 
+import Gridap: solve
+import Gridap: solve!
+
 export ODEOperator
 export residual!
 export allocate_residual
@@ -15,12 +18,15 @@ export test_ode_operator
 
 export ODESolver
 export BackwardEuler
+export test_ode_solver
+
 
 include("ODEOperators.jl")
 
+include("ODESolvers.jl")
+
 include("ODESolutions.jl")
 
-include("ODESolvers.jl")
 
 
 end #module

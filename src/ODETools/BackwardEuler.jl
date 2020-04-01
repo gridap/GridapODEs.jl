@@ -7,19 +7,20 @@ function solve_step!(
   uF::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
 
   # Build the non-linear problem to solve at this step
-  dt = op.dt
+  dt = solver.dt
   tF = t0+dt
   nlop = BackwardEulerNonLinearOperator(op,tF,dt,u0) # See below
 
   # Solve the nonlinear problem
-  uF, cache = solve!(uF,solver.nls,nlop,cache) # TODO reuse the cache
+  # uF, cache = solve!(uF,solver.nls,nlop,cache) # TODO reuse the cache
+  uF, cache = (u0*tF,cache)
 
   # Return pair
   return (uF, tF, cache)
 end
 
 function allocate_cache(
-  solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real, cache)
+  solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real)
   nothing
 end
 
