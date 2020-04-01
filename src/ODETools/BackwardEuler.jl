@@ -1,11 +1,10 @@
-#  Vanilla backward Euler
 struct BackwardEuler <: ODESolver
   nls::NonLinearSolver
-  dt::Float64 # @santiagobadia : Previous comment about dt
+  dt::Float64
 end
 
 function solve_step!(
-  uF::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real) # -> (uF,tF)
+  uF::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
 
   # Build the non-linear problem to solve at this step
   dt = op.dt
@@ -13,17 +12,22 @@ function solve_step!(
   nlop = BackwardEulerNonLinearOperator(op,tF,dt,u0) # See below
 
   # Solve the nonlinear problem
-  uF, cache = solve!(uF,solver.nls,nlop) # TODO reuse the cache
+  uF, cache = solve!(uF,solver.nls,nlop,cache) # TODO reuse the cache
 
   # Return pair
-  return (uF, tF)
+  return (uF, tF, cache)
 end
 
-# Struct representing the non-linear algebraic problem to be solved at a given step
+function allocate_cache(
+  solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real, cache)
+  nothing
+end
+
+# Struct representing the nonlinear algebraic problem to be solved at a given step
 struct BackwardEulerNonLinearOperator <: NonLinearOperator
   odeop::ODEOperator
   tF::Float64
-  dt = Float64
+  dt::Float64
   u0::AbstractVector
 end
 
@@ -36,7 +40,7 @@ end
 function jacobian!(A::AbstractMatrix,op::BackwardEulerNonLinearOperator,x::AbstractVector)
   uF = x
   vF = (x-u0)/op.dt
-  fill_entries!(A,zero(eltype(A))
+  fill_entries!(A,zero(eltype(A)))
   jacobian_unknown!(A,op.odeop,op.tF,uF,vF)
   jacobian_unknown_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt))
 end
