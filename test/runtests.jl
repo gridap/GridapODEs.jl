@@ -1,6 +1,9 @@
-using GridapTimeStepper
+module GridapTimeStepperRunTests
+
 using Test
 
-@testset "GridapTimeStepper.jl" begin
-    # Write your own tests here.
-end
+@time @testset "ODETools" begin include("ODEsTests/runtests.jl") end
+
+# include("../bench/runbenchs.jl")
+
+end #module

@@ -1,12 +1,12 @@
 abstract type ODESolution <: GridapType end
 
 # First time step
-function Base.iterate(u::ODESolution) # -> (t_n,u_n) or nothing
+function Base.iterate(u::ODESolution) # (u0,t0)-> (uf,tf) or nothing
   @abstractmethod
 end
 
 # Following time steps
-function Base.iterate(u::ODESolution,state) # -> (t_n,u_n) or nothing
+function Base.iterate(u::ODESolution,state) # (u0,t0)-> (uf,tf) or nothing
   @abstractmethod
 end
 
@@ -21,18 +21,18 @@ end
 
 function Base.iterate(sol::GenericODESolution)
 
-  uF = copy(sol.u0)
+  uf = copy(sol.u0)
   u0 = copy(sol.u0)
   cache = nothing
 
   # Solve step
-  uF, tF, cache = solve_step!(uF,sol.solver,sol.op,u0,sol.t0,cache)
+  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,sol.t0,cache)
 
   # Update
-  u0 .= uF
-  state = (uF,u0,tF,cache)
+  u0 .= uf
+  state = (uf,u0,tf,cache)
 
-  return (uF, tF), state
+  return (uf, tf), state
 end
 
 function Base.iterate(sol::GenericODESolution, state)
@@ -44,11 +44,11 @@ function Base.iterate(sol::GenericODESolution, state)
   end
 
   # Solve step
-  uF, tF = solve_step!(uF,sol.solver,sol.op,u0,t0,cache)
+  uf, tf = solve_step!(uf,sol.solver,sol.op,u0,t0,cache)
 
   # Update
-  u0 .= uF
-  state = (uF,u0,tF,cache)
+  u0 .= uf
+  state = (uf,u0,tf,cache)
 
-  return (uF, tF), state
+  return (uf, tf), state
 end
