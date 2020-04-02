@@ -42,7 +42,6 @@ current, state = Base.iterate(steps,state)
 uf, tf = current
 @test tf≈t0+2*dt
 uf, u0, tf, cache = state
-cache
 
 _t_n = t0
 for (u_n, t_n) in steps
@@ -50,6 +49,10 @@ for (u_n, t_n) in steps
   _t_n += dt
   @test t_n≈_t_n
 end
+
+steps
+
+test_ode_solution(steps)
 # println("The solution at time $(t_n) is $(u_n)")
 
 end

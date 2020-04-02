@@ -1,5 +1,7 @@
 module ODETools
 
+using Test
+
 using Gridap: GridapType
 using Gridap.Helpers
 using Gridap.Algebra: NonLinearSolver
@@ -22,6 +24,7 @@ import Gridap.Algebra: zero_initial_guess
 
 export ODESolution
 import Gridap: solve
+export test_ode_solution
 
 include("ODEOperators.jl")
 

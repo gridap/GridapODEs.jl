@@ -8,14 +8,14 @@ function solve_step!(
 end
 
 function solve(
-  solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,tF::Real)
-  GenericODESolution(solver,op,u0,t0,tF)
+  solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,tf::Real)
+  GenericODESolution(solver,op,u0,t0,tf)
 end
 
-function test_ode_solver(solver::ODESolver,op::ODEOperator,u0,t0,uF,tF)
-  cache = solve_step!(uF,solver,op,u0,t0)
-  solve_step!(uF,solver,op,u0,t0,cache)
-  solve(solver,op,u0,t0,tF)
+function test_ode_solver(solver::ODESolver,op::ODEOperator,u0,t0,uf,tf)
+  uf, tf, cache = solve_step!(uf,solver,op,u0,t0,nothing)
+  uf, tf, cache = solve_step!(uf,solver,op,u0,t0,cache)
+  solve(solver,op,u0,t0,tf)
   true
 end
 

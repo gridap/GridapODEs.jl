@@ -54,3 +54,29 @@ function Base.iterate(sol::GenericODESolution, state)
 
   return (uf, tf), state
 end
+
+# @santiagobadia: Getters for writing it general?
+# not sure we will need more types like this one
+
+function test_ode_solution(sol::ODESolution)
+  uf = copy(sol.u0) # getter
+  dt = sol.solver.dt # getter
+  t0 = sol.t0
+  
+  current, state = Base.iterate(sol)
+  uf, tf = current
+  uf, u0, tf, cache = state
+  @test tf==t0+dt
+
+  current, state = Base.iterate(sol,state)
+  uf, tf = current
+  @test tf≈t0+2*dt
+  uf, u0, tf, cache = state
+
+  _t_n = t0
+  for (u_n, t_n) in sol
+    _t_n += dt
+    @test t_n≈_t_n
+  end
+
+end
