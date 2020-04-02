@@ -34,8 +34,8 @@ function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
   uf = x
   uf_t = (x-op.u0)/op.dt
   fill_entries!(A,zero(eltype(A)))
-  jacobian_unknown!(A,op.odeop,op.tf,uf,uf_t)
-  jacobian_unknown_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt))
+  jacobian!(A,op.odeop,op.tf,uf,uf_t)
+  jacobian_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt))
 end
 
 function allocate_residual(op::OperatorMock,x::AbstractVector)

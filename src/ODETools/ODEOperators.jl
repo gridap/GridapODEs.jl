@@ -25,7 +25,7 @@ end
 """
 It adds [∂A/∂u](t,u,u_t) for a given (t,u,u_t) to a given matrix J
 """
-function jacobian_unknown!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
+function jacobian!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
   @abstractmethod
   # Add values to J
 end
@@ -33,7 +33,7 @@ end
 """
 It adds [∂A/∂u_t](t,u,u_t) for a given (t,u,u_t) to a given matrix J
 """
-function jacobian_unknown_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real)
+function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real)
   @abstractmethod
   # Add values to J
 end
@@ -50,7 +50,7 @@ function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::Abstra
   r = allocate_residual(op,u,u_t)
   residual!(r,op,t,u,u_t)
   J = allocate_jacobian(op,u,u_t)
-  jacobian_unknown!(J,op,t,u,u_t)
-  jacobian_unknown_t!(J,op,t,u,u_t,1.0)
+  jacobian!(J,op,t,u,u_t)
+  jacobian_t!(J,op,t,u,u_t,1.0)
   true
 end

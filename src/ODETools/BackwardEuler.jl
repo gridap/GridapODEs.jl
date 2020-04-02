@@ -55,8 +55,8 @@ function jacobian!(A::AbstractMatrix,op::BackwardEulerNonLinearOperator,x::Abstr
   uF = x
   vF = (x-op.u0)/op.dt
   fill_entries!(A,zero(eltype(A)))
-  jacobian_unknown!(A,op.odeop,op.tF,uF,vF)
-  jacobian_unknown_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt))
+  jacobian!(A,op.odeop,op.tF,uF,vF)
+  jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt))
 end
 
 function allocate_residual(op::BackwardEulerNonLinearOperator,x::AbstractVector)
