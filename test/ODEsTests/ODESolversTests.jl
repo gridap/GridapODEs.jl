@@ -86,7 +86,6 @@ _J = jacobian(sop,x)
 @test all(_r .== [ -11.0 -11.0])
 @test all(_J .== [ 9.0 0.0; 0.0 9.0])
 
-
 # BackwardEuler tests
 
 # @santiagobadia : I have a question, how to use an existing NL Solver

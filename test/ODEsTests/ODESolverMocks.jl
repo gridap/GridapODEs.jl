@@ -2,7 +2,6 @@ import Gridap.Algebra: NonLinearSolver
 import Gridap.Algebra: NonLinearOperator
 import Gridap.Algebra: solve!
 import GridapTimeStepper.ODETools: solve_step!
-import GridapTimeStepper.ODETools: allocate_cache
 import GridapTimeStepper.ODETools: ODESolver
 using Gridap.Algebra: residual
 using Gridap.Algebra: jacobian
@@ -10,11 +9,9 @@ import GridapTimeStepper.ODETools: zero_initial_guess
 import GridapTimeStepper.ODETools: residual!
 import GridapTimeStepper.ODETools: jacobian!
 import GridapTimeStepper.ODETools: solve!
-# using GridapTimeStepper.ODETools: solve!
-# import Gridap.Algebra: solve!
 
 function fill_entries!(J,v)
-  J .= zero(eltype(J))
+  J .= convert(eltype(J),v)
 end
 
 struct OperatorMock <: NonLinearOperator
@@ -33,7 +30,7 @@ end
 function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
   uf = x
   uf_t = (x-op.u0)/op.dt
-  fill_entries!(A,zero(eltype(A)))
+  fill_entries!(A,0.0)
   jacobian!(A,op.odeop,op.tf,uf,uf_t)
   jacobian_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt))
 end
@@ -90,13 +87,4 @@ function solve_step!(
   end
 
   return (uf, tf, cache)
-end
-
-function allocate_cache(
-  solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real)
-  r = allocate_residual(solver.nls,x)
-  J = allocate_jacobian(solver.nls,x)
-  dx = copy(u0)
-  (r, J, dx)
-
 end

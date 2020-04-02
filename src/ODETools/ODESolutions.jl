@@ -55,8 +55,6 @@ function Base.iterate(sol::GenericODESolution, state)
   return (uf, tf), state
 end
 
-# @santiagobadia: Getters for writing it general?
-
 function test_ode_solution(sol::GenericODESolution)
   for (u_n,t_n) in sol
     @test isa(t_n,Real)

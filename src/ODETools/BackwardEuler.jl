@@ -22,14 +22,6 @@ function solve_step!(
   return (uf, tf, cache)
 end
 
-function allocate_cache(
-  solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real)
-  r = allocate_residual(solver.nls,x)
-  J = allocate_jacobian(solver.nls,x)
-  dx = copy(u0)
-  (r, J, dx)
-end
-
 # Struct representing the nonlinear algebraic problem to be solved at a given step
 struct BackwardEulerNonLinearOperator <: NonLinearOperator
   odeop::ODEOperator
@@ -46,13 +38,13 @@ end
 
 # @santiagobadia : TO BE CHANGED, just a hack!!!
 function fill_entries!(J,v)
-  J .= zero(eltype(J))
+  J .= convert(eltype(J),v)
 end
 
 function jacobian!(A::AbstractMatrix,op::BackwardEulerNonLinearOperator,x::AbstractVector)
   uF = x
   vF = (x-op.u0)/op.dt
-  fill_entries!(A,zero(eltype(A)))
+  fill_entries!(A,0.0)
   jacobian!(A,op.odeop,op.tF,uF,vF)
   jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt))
 end
