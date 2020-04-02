@@ -60,7 +60,7 @@ end
 function test_ode_solution(sol::GenericODESolution)
   uf = copy(sol.u0) # getter
   solver = sol.solver
-  dt = get_step_size(solver) # getter
+  # dt = get_step_size(solver) # getter
   t0 = sol.t0
 
   current, state = Base.iterate(sol)

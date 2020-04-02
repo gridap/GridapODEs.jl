@@ -2,8 +2,6 @@
 # for the ODE
 abstract type ODESolver <: GridapType end
 
-get_step_size(::ODESolver) = @notimplemented
-
 function solve_step!(
   uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,cache) # -> (uF,tF)
   @abstractmethod
@@ -15,10 +13,8 @@ function solve(
 end
 
 function test_ode_solver(solver::ODESolver,op::ODEOperator,u0,t0,uf,tf)
-  uf, tf, cache = solve_step!(uf,solver,op,u0,t0,nothing)
-  uf, tf, cache = solve_step!(uf,solver,op,u0,t0,cache)
-  solve(solver,op,u0,t0,tf)
-  true
+  solution = solve(solver,op,u0,t0,tf)
+  test_ode_solution(solution)
 end
 
 
