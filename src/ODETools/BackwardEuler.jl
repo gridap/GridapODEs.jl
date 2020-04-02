@@ -6,7 +6,7 @@ end
 function solve_step!(
   uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
 
-  # Build the non-linear problem to solve at this step
+  # Build the nonlinear problem to solve at this step
   dt = solver.dt
   tf = t0+dt
   nlop = BackwardEulerNonLinearOperator(op,tf,dt,u0) # See below
