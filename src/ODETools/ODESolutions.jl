@@ -58,26 +58,9 @@ end
 # @santiagobadia: Getters for writing it general?
 
 function test_ode_solution(sol::GenericODESolution)
-  uf = copy(sol.u0) # getter
-  solver = sol.solver
-  # dt = get_step_size(solver) # getter
-  t0 = sol.t0
-
-  current, state = Base.iterate(sol)
-  uf, tf = current
-  uf, u0, tf, cache = state
-  @test tf==t0+dt
-
-  current, state = Base.iterate(sol,state)
-  uf, tf = current
-  @test tf≈t0+2*dt
-  uf, u0, tf, cache = state
-
-  _t_n = t0
-  for (u_n, t_n) in sol
-    _t_n += dt
-    @test t_n≈_t_n
+  for (u_n,t_n) in sol
+    @test isa(t_n,Real)
+    @test isa(u_n,AbstractVector)
   end
-
   true
 end
