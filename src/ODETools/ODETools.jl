@@ -18,6 +18,7 @@ export test_ode_operator
 
 export ODESolver
 export BackwardEuler
+export get_step_size
 export test_ode_solver
 import Gridap.Algebra: solve!
 import Gridap.Algebra: zero_initial_guess

@@ -52,7 +52,7 @@ end
 
 steps
 
-test_ode_solution(steps)
+@test test_ode_solution(steps)
 # println("The solution at time $(t_n) is $(u_n)")
 
 end

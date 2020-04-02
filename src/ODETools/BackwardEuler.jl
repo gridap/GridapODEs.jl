@@ -3,6 +3,8 @@ struct BackwardEuler <: ODESolver
   dt::Float64
 end
 
+get_step_size(self::BackwardEuler) = self.dt
+
 function solve_step!(
   uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
 

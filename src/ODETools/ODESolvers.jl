@@ -2,6 +2,8 @@
 # for the ODE
 abstract type ODESolver <: GridapType end
 
+get_step_size(::ODESolver) = @notimplemented
+
 function solve_step!(
   uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,cache) # -> (uF,tF)
   @abstractmethod
