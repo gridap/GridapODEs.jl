@@ -8,16 +8,16 @@ function solve_step!(
   @abstractmethod
 end
 
-function allocate_cache(
-  solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> uF,tF,cache
-  @abstractmethod
-end
+# function allocate_cache(
+#   solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> uF,tF,cache
+#   @abstractmethod
+# end
 
-function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> uF,tF,cache
-  cache = allocate_cache(solver,op,u0,t0)
-  solve_step!(uF,solver,op,u0,t0,cache)
-end
+# function solve_step!(
+#   uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> uF,tF,cache
+#   # cache = allocate_cache(solver,op,u0,t0)
+#   solve_step!(uF,solver,op,u0,t0,cache)
+# end
 
 # @santiagobadia : Agreed
 

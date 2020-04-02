@@ -27,15 +27,15 @@ function allocate_residual(op::ODEOperatorMock,u::AbstractVector,u_t::AbstractVe
 end
 
 function jacobian_unknown!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector)
-  J[1,1] += op.a
-  J[2,1] += op.b
-  J[2,2] += op.c
+  J[1,1] += -op.a
+  J[2,1] += -op.b
+  J[2,2] += -op.c
   J
 end
 
-function jacobian_unknown_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector)
-  J[1,1] += 1.0
-  J[2,2] += 1.0
+function jacobian_unknown_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,du_t_u::Real)
+  J[1,1] += 1.0*du_t_u
+  J[2,2] += 1.0*du_t_u
   J
 end
 

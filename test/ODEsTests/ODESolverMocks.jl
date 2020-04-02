@@ -4,17 +4,71 @@ import Gridap.Algebra: solve!
 import GridapTimeStepper.ODETools: solve_step!
 import GridapTimeStepper.ODETools: allocate_cache
 import GridapTimeStepper.ODETools: ODESolver
+using Gridap.Algebra: residual
+using Gridap.Algebra: jacobian
+import GridapTimeStepper.ODETools: zero_initial_guess
+import GridapTimeStepper.ODETools: residual!
+import GridapTimeStepper.ODETools: jacobian!
+import GridapTimeStepper.ODETools: solve!
+# using GridapTimeStepper.ODETools: solve!
+# import Gridap.Algebra: solve!
 
-struct NLSolverMock <: NonLinearSolver end
-
-  # uF, cache = solve!(uF,solver.nls,nlop,cache) # TODO reuse the cache
-solve!(uF::AbstractVector,nls::NLSolverMock,nlop::NonLinearOperator,cache) = (nlop.u0+nlop.dt*nlop.u0,cache)
+function fill_entries!(J,v)
+  J .= zero(eltype(J))
+end
 
 struct OperatorMock <: NonLinearOperator
-  op
-  tF::Float64
+  odeop
+  tf::Float64
   dt::Float64
   u0::AbstractVector
+end
+
+function residual!(b::AbstractVector,op::OperatorMock,x::AbstractVector)
+  uf = x
+  uf_t = (x-op.u0)/op.dt
+  residual!(b,op.odeop,op.tf,uf,uf_t)
+end
+
+function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
+  uf = x
+  uf_t = (x-op.u0)/op.dt
+  fill_entries!(A,zero(eltype(A)))
+  jacobian_unknown!(A,op.odeop,op.tf,uf,uf_t)
+  jacobian_unknown_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt))
+end
+
+function allocate_residual(op::OperatorMock,x::AbstractVector)
+  allocate_residual(op.odeop,x,x)
+end
+
+function allocate_jacobian(op::OperatorMock,x::AbstractVector)
+  allocate_jacobian(op.odeop,x,x)
+end
+
+function zero_initial_guess(::Type{T},op::OperatorMock) where T
+  x0 = similar(op.u0)
+  fill!(x0,zero(eltype(x0)))
+  x0
+end
+
+struct NLSolverMock <: NonLinearSolver
+end
+
+function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonLinearOperator)
+  r = residual(nlop,x)
+  J = jacobian(nlop,x)
+  dx = inv(J)*(-r)
+  x.= x.+dx
+  cache = (r,J,dx)
+end
+
+function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonLinearOperator,cache)
+  r, J, dx = cache
+  residual!(r, op, x)
+  jacobian!(J, op, x)
+  dx = inv(J)*(-r)
+  x += dx
 end
 
 struct ODESolverMock <: ODESolver
@@ -23,18 +77,26 @@ struct ODESolverMock <: ODESolver
 end
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
+  uf::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
 
   dt = solver.dt
-  tF = t0+dt
-  nlop = OperatorMock(op,tF,dt,u0)
+  tf = t0+dt
+  nlop = OperatorMock(op,tf,dt,u0)
 
-  uF, cache = solve!(uF,solver.nls,nlop,cache) # TODO reuse the cache
+  if (cache==nothing)
+    cache = solve!(uf,solver.nls,nlop)
+  else
+    cache = solve!(uf,solver.nls,nlop,cache)
+  end
 
-  return (uF, tF, cache)
+  return (uf, tf, cache)
 end
 
 function allocate_cache(
   solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real)
-  nothing
+  r = allocate_residual(solver.nls,x)
+  J = allocate_jacobian(solver.nls,x)
+  dx = copy(u0)
+  (r, J, dx)
+
 end
