@@ -37,7 +37,7 @@ function residual!(b::AbstractVector,op::BackwardEulerNonLinearOperator,x::Abstr
 end
 
 # @santiagobadia : TO BE CHANGED, just a hack!!!
-function fill_entries!(J,v)
+function fill_entries!(J::AbstractArray,v)
   J .= convert(eltype(J),v)
 end
 

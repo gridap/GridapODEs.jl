@@ -10,7 +10,7 @@ import GridapTimeStepper.ODETools: residual!
 import GridapTimeStepper.ODETools: jacobian!
 import GridapTimeStepper.ODETools: solve!
 
-function fill_entries!(J,v)
+function fill_entries!(J::AbstractArray,v)
   J .= convert(eltype(J),v)
 end
 
