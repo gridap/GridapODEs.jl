@@ -1,3 +1,4 @@
+# Represents a lazy iterator over all solution in a time interval
 abstract type ODESolution <: GridapType end
 
 # First time step
