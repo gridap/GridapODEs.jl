@@ -65,10 +65,10 @@ end
 
 function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonLinearOperator,cache)
   r, J, dx = cache
-  residual!(r, op, x)
-  jacobian!(J, op, x)
+  residual!(r, nlop, x)
+  jacobian!(J, nlop, x)
   dx = inv(J)*(-r)
-  x += dx
+  x.= x.+dx
 end
 
 struct ODESolverMock <: ODESolver

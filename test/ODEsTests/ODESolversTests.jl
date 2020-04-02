@@ -1,3 +1,5 @@
+module ODESolversTests
+
 using GridapTimeStepper
 using GridapTimeStepper.ODETools: GenericODESolution
 using GridapTimeStepper.ODETools: BackwardEuler
@@ -95,3 +97,5 @@ uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,nothing)
 uf
 @test tf==t0+dt
 @test all(uf.≈1+11/9)
+
+end #module

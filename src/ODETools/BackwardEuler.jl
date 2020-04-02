@@ -15,7 +15,7 @@ function solve_step!(
   if (cache==nothing)
     cache = solve!(uf,solver.nls,nlop)
   else
-    cache = solve!(uf,solver.nls,nlop,cache)
+    solve!(uf,solver.nls,nlop,cache)
   end
 
   # Return pair
