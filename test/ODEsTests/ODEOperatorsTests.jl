@@ -15,10 +15,10 @@ u_t = ones(2)*2.0
 @assert(length(u) == 2)
 @assert(length(u_t) == 2)
 
-r = allocate_residual(op,u,u_t)
+r = allocate_residual(op,u)
 @test r == zeros(2)
 
-J = allocate_jacobian(op,u,u_t)
+J = allocate_jacobian(op,u)
 @test J == zeros(2,2)
 
 t = 0.0

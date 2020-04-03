@@ -50,11 +50,11 @@ function jacobian!(A::AbstractMatrix,op::BackwardEulerNonLinearOperator,x::Abstr
 end
 
 function allocate_residual(op::BackwardEulerNonLinearOperator,x::AbstractVector)
-  allocate_residual(op.odeop,x,x)
+  allocate_residual(op.odeop,x)
 end
 
 function allocate_jacobian(op::BackwardEulerNonLinearOperator,x::AbstractVector)
-  allocate_jacobian(op.odeop,x,x)
+  allocate_jacobian(op.odeop,x)
 end
 
 function zero_initial_guess(::Type{T},op::BackwardEulerNonLinearOperator) where T

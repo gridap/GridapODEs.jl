@@ -22,7 +22,7 @@ function residual!(r::AbstractVector,op::ODEOperatorMock,t::Real,u::AbstractVect
   r
 end
 
-function allocate_residual(op::ODEOperatorMock,u::AbstractVector,u_t::AbstractVector)
+function allocate_residual(op::ODEOperatorMock,u::AbstractVector)
   zeros(2)
 end
 
@@ -39,6 +39,6 @@ function jacobian_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVe
   J
 end
 
-function allocate_jacobian(op::ODEOperatorMock,u::AbstractVector,u_t::AbstractVector)
+function allocate_jacobian(op::ODEOperatorMock,u::AbstractVector)
   zeros(2,2)
 end

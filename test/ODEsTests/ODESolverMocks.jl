@@ -36,11 +36,11 @@ function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
 end
 
 function allocate_residual(op::OperatorMock,x::AbstractVector)
-  allocate_residual(op.odeop,x,x)
+  allocate_residual(op.odeop,x)
 end
 
 function allocate_jacobian(op::OperatorMock,x::AbstractVector)
-  allocate_jacobian(op.odeop,x,x)
+  allocate_jacobian(op.odeop,x)
 end
 
 function zero_initial_guess(::Type{T},op::OperatorMock) where T
