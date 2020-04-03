@@ -1,18 +1,21 @@
 const ∂t = time_derivative
 
-# Do we need a TransientFEOperatorFromTerms or the only thing we need to do is
-# to extend its interface. I would consider the second option
 """
 """
-abstract type TransientFEOperator #<: FEOperator end
-# @santiagobadia : ,: GridapType or FEOperator, it needs time to be a FEOperator
-# thus probably not right subtyping...
+abstract type TransientFEOperator <: GridapType
 
-function get_trial(op::TransientFEOperator,t)
+(tfes::TransientFEOperator)(t::Real) = @notimplemented #::FEOperator
+# I don't think it has any sense, because at t we still have time derivative...
+
+function get_test(op::TransientFEOperator)
   @abstractmethod
 end
 
-function residual!(b::AbstractVector,op::TransientFEOperator,uh,uht)
+function get_trial(op::TransientFEOperator)
+  @abstractmethod # time dependent
+end
+
+function residual!(b::AbstractVector,op::TransientFEOperator,t,uh,uht)
   @notimplemented
 end
 
@@ -24,32 +27,28 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht)
   @notimplemented
 end
 
+# @santiagobadia: missing allocates ...
+
 struct TransientFEOperatorFromTerms <: TransientFEOperator
-  trial::FEspace
+  trial::Union{FESpace,TransientTrialFESpace}
   test::FESpace
   assem::Assembler
   terms
-  function TransientFEOperatorFromTerms(trial::FESpace,test::FESpace,assem::Assembler,terms::FETerm...)
+  function TransientFEOperatorFromTerms(trial,test::FESpace,assem::Assembler,terms::FETerm...)
     new(trial,test,assem,terms)
   end
 end
 
-function get_fe_operator(tfeop::TransientFEOperatorFromTerms,t::Real)
+function (tfes::TransientFEOperatorFromTerms)(t::Real)
   # return a fe_operator
 end
+# see comment above, I don't think it has much sense
 
-# TransientFEOperatorFromTerms(U::FESpace,V::FESpace,terms::TransientFETerm...)
+get_test(op::TransientFEOperatorFromTerms,t) = op.test
 
-# function TransientFEOperatorFromTerms(U::FESpace,U_t::FESpace,V::FESpace,terms::TransientFETerm...)
-  # TransientFEOperatorFromTerms(V,t->U,t->U_t,terms)
-# end
+get_trial(op::TransientFEOperatorFromTerms,t) = op.trial(t)
 
-function get_trial(op::TransientFEOperatorFromTerms,t)
-  get_trial(op.trial,t)
-end
-
-
-function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,uh,uht)
+function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,t,uh,uht)
   # @santiagobadia : The uh and uht here are FEFunctions, created in the op
   # below. However, it is unclear to me whether we can keep the residual!
   # signature of FEOperator, since we need t to evaluate a transient operator
@@ -70,7 +69,8 @@ function jacobian_t!(A::AbstractMatrix,op::FEOperatorFromTerms,t,uh,uht)
   # This is not going to work, even though not needed Dir data here
   # @santiagobadia: get_trial can be expensive, how can we reuse its call?
   v = get_cell_basis(op.test)
-  cellmats, cellidsrows, cellidscols = collect_cell_jacobian_unk_t(uh,uh_t,du_t,v,op.terms)
+  # to be implemented... collect_cell_jacobian_t
+  cellmats, cellidsrows, cellidscols = collect_cell_jacobian_t(uh,uh_t,du_t,v,op.terms)
   assemble_matrix!(A,op.assem, cellmats, cellidsrows, cellidscols)
   A
 end
@@ -80,14 +80,16 @@ function get_ode_operator(feop::TransientFEOperator)
 end
 
 struct ODEOpFromFEOp <: ODEOperator
-  feop::FEOperator
+  feop::TransientFEOperator
 end
 
-function residual!(b::AbstractVector,op::ODEOpFromFEOp,t,uh,uht)
+function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector)
   # @santiagobadia : uh are just free dof array, idem uht
   # Here we should think about strong bcs
   residual!(b,op.feop,t,uh,uht)
 end
+
+# EvaluationFunction not FEFunction
 
 function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
   jacobian!(A,op.feop,t,uh,uht)

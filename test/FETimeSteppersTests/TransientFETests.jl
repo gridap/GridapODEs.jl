@@ -5,15 +5,36 @@ using GridapTimeStepper.TransientFETools
 
 
 # First, we define the transient problem
-_u(x,t) = (x[1] + x[2])*t
-u(t) = x -> _u(x,t)
-_∇u(t) = VectorValue(1,1)*t
-∇u(t) = x -> _∇u(x,t)
+u(x,t) = (x[1] + x[2])*t
+u(t::Real) = x -> u(x,t)
+∇u(x,t) = VectorValue(1,1)*t
+∇u(t::Real) = x -> ∇u(x,t)
 # @santiagobadia : Better way to do this?
 # u(t,x) don't think it will be possible
 import Gridap: ∇
-∇(::typeof(_u)) = _∇u
-∇(_u) === _∇u
+∇(::typeof(u)) = ∇u
+∇(u) === ∇u
+
+u(x::Point) = u(x,0.0)
+p = Point(1.0,1.0)
+u(p)
+for tn in 0:10
+  global u, ∇u
+  u(x::Point) = u(x,convert(Float64,tn))
+  ∇u(x::Point) = ∇u(x,tn)
+  @show u(p)
+  @show ∇u(p)
+end
+
+f(t) = x -> x*t
+t = 1.0
+const gf = f(t)
+∇gf = t
+∇(::typeof(gf)) = ∇gf
+∇(gf) === ∇gf
+
+typeof(gf)
+
 
 # ∇(u(1)) does not work
 # @santiagobadia: It is not going to work internally...
@@ -36,30 +57,30 @@ V0 = TestFESpace(
   reffe=:Lagrangian, order=order, valuetype=Float64,
   conformity=:H1, model=model, dirichlet_tags="boundary")
 
-U = TransientTrialFESpace(V0,u)
+U = TransientTrialFESpace(V0,u) # U(t) get_trial(U,t), get_trial(U,t)
+# U(t) = TrialFESpace(V0,u(t))
+# U(t) = TrialFESpace(V0,u)
+get_trial(U,t)
+U(t)
+
 
 trian = Triangulation(model)
 degree = 2
 quad = CellQuadrature(trian,degree)
 
 a(u,v) = ∇(v)*∇(u)
-b(v) = v*f(t)
-# @santiagobadia: I cannot see how it is going to work!
+b(v,t) = v*f(t)
 
 # Next, we create the transient and steady terms
 
-res(u,ut,v) = a(u,v) + ut*v - b(v)
-jac(u,ut,du,v) = a(du,v)
-jac_t(u,ut,dut,v) = dut*v
+res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
+jac(t,u,ut,du,v) = a(du,v)
+jac_t(t,u,ut,dut,v) = dut*v
 
 t_Ω = TransientFETerm(res,jac,jac_t,trian,quad)
 
 # We create the transient operator
-op = TransientFEOperator(V,t -> U,t_Ω)
-# I don't think we need here a space for the time derivative, using ∂t
-# @santiagobadia : We will need to define a ∂t method a la ∇ to compute
-# internally the time derivative of a Dirichlet boundary
-# condition
+op = TransientFEOperator(V,U,t_Ω)
 
 t0 = 0.0
 tF = 1.0
@@ -81,6 +102,9 @@ h1(w) = a(w,w) + l2(w)
 
 # We test it ...
 for (uh_tn, tn) in sol_t
+  u(x::Point) = u(x,tn)
+  ∇u(x::Point) = ∇u(x,tn)
+
   e = u(tn) - uh_tn
   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
   eh1 = sqrt(sum( integrate(h1(e),trian,quad) ))
