@@ -29,7 +29,17 @@ V0 = TestFESpace(
   reffe=:Lagrangian, order=order, valuetype=Float64,
   conformity=:H1, model=model, dirichlet_tags="boundary")
 
-U = TransientTrialFESpace(V0,t->u(t))
+U = TransientTrialFESpace(V0,u)
+
+struct TransientTrialFESpace # not sure subtyping...
+  space::SingleFieldFESpace
+  dirichlet_t::Function
+end
+
+function get_trial(tfes::TransientTrialFESpace,t::Real)
+  TrialFESpace(tfes.space,dirichlet_t(t))
+end
+
 
 trian = Triangulation(model)
 degree = 2
