@@ -34,6 +34,10 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
   end
 end
 
+function get_fe_operator(tfeop::TransientFEOperatorFromTerms,t::Real)
+  # return a fe_operator
+end
+
 # TransientFEOperatorFromTerms(U::FESpace,V::FESpace,terms::TransientFETerm...)
 
 # function TransientFEOperatorFromTerms(U::FESpace,U_t::FESpace,V::FESpace,terms::TransientFETerm...)
@@ -63,6 +67,8 @@ end
 function jacobian_t!(A::AbstractMatrix,op::FEOperatorFromTerms,t,uh,uht)
   @assert is_a_fe_function(uh)
   du = get_cell_basis(op.trial)
+  # This is not going to work, even though not needed Dir data here
+  # @santiagobadia: get_trial can be expensive, how can we reuse its call?
   v = get_cell_basis(op.test)
   cellmats, cellidsrows, cellidscols = collect_cell_jacobian_unk_t(uh,uh_t,du_t,v,op.terms)
   assemble_matrix!(A,op.assem, cellmats, cellidsrows, cellidscols)
