@@ -3,7 +3,7 @@ struct TransientTrialFESpace
   dirichlet_t::Function
 end
 
-(tfes::TransientTrialFESpace)(t::Real) = TrialFESpace(tfes.space,dirichlet_t(t))
+(fes::TransientTrialFESpace)(t::Real) = TrialFESpace(fes.space,fes.dirichlet_t(t))
 
 (tfes::FESpace)(t::Real) = tfes
 

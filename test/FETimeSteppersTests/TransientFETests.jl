@@ -9,8 +9,6 @@ u(x,t) = (x[1] + x[2])*t
 u(t::Real) = x -> u(x,t)
 ∇u(x,t) = VectorValue(1,1)*t
 ∇u(t::Real) = x -> ∇u(x,t)
-# @santiagobadia : Better way to do this?
-# u(t,x) don't think it will be possible
 import Gridap: ∇
 ∇(::typeof(u)) = ∇u
 ∇(u) === ∇u
@@ -26,23 +24,8 @@ for tn in 0:10
   @show ∇u(p)
 end
 
-f(t) = x -> x*t
-t = 1.0
-const gf = f(t)
-∇gf = t
-∇(::typeof(gf)) = ∇gf
-∇(gf) === ∇gf
-
-typeof(gf)
-
-
-# ∇(u(1)) does not work
-# @santiagobadia: It is not going to work internally...
-# It is not the gradient of u but its result for a given t what we need
-# to link to its gradient... using return_type...
-
 ∂tu(t) = x -> x[1]+x[2]
-import GridapTimeStepper: ∂t
+import GridapTimeStepper.TransientFETools: ∂t
 ∂t(::typeof(u)) = ∂tu
 @test ∂t(u) === ∂tu
 
@@ -57,12 +40,13 @@ V0 = TestFESpace(
   reffe=:Lagrangian, order=order, valuetype=Float64,
   conformity=:H1, model=model, dirichlet_tags="boundary")
 
-U = TransientTrialFESpace(V0,u) # U(t) get_trial(U,t), get_trial(U,t)
-# U(t) = TrialFESpace(V0,u(t))
-# U(t) = TrialFESpace(V0,u)
-get_trial(U,t)
-U(t)
-
+##
+U = TransientTrialFESpace(V0,u)
+U0 = U(0.0)
+get_dirichlet_values(U0)
+Ut = ∂t(U)
+Ut0 = Ut(0.0)
+get_dirichlet_values(Ut0)
 
 trian = Triangulation(model)
 degree = 2

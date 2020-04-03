@@ -21,10 +21,10 @@ export TransientFEOperator
 export TransientFEOperatorFromTerms
 export TransientFEOperatorFromTerms
 import Gridap.FESpaces: get_trial
-import Gridap.ODETools: ODEOperator
-import Gridap.ODETools: residual!
-import Gridap.ODETools: jacobian!
-import Gridap.ODETools: jacobian_t!
+import GridapTimeStepper.ODETools: ODEOperator
+import GridapTimeStepper.ODETools: residual!
+import GridapTimeStepper.ODETools: jacobian!
+import GridapTimeStepper.ODETools: jacobian_t!
 
 include("TransientFESpaces.jl")
 
