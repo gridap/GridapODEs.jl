@@ -1,22 +1,29 @@
 using Gridap
 using Test
+using GridapTimeStepper.ODETools
+using GridapTimeStepper.TransientFETools
+
 
 # First, we define the transient problem
-u(t) = x -> (x[1] + x[2])*t
-∇u(t) = x -> VectorValue(1,1)*t
+_u(x,t) = (x[1] + x[2])*t
+u(t) = x -> _u(x,t)
+_∇u(t) = VectorValue(1,1)*t
+∇u(t) = x -> _∇u(x,t)
 # @santiagobadia : Better way to do this?
 # u(t,x) don't think it will be possible
 import Gridap: ∇
-∇(::typeof(u)) = ∇u
-∇(u) === ∇u
+∇(::typeof(_u)) = _∇u
+∇(_u) === _∇u
+
+# ∇(u(1)) does not work
 # @santiagobadia: It is not going to work internally...
 # It is not the gradient of u but its result for a given t what we need
 # to link to its gradient... using return_type...
 
-∂tu = x[1]+x[2]
+∂tu(t) = x -> x[1]+x[2]
 import GridapTimeStepper: ∂t
 ∂t(::typeof(u)) = ∂tu
-∂t(u) === ∂tu
+@test ∂t(u) === ∂tu
 
 f(t) = x -> x[1]+x[2]
 
@@ -31,27 +38,13 @@ V0 = TestFESpace(
 
 U = TransientTrialFESpace(V0,u)
 
-struct TransientTrialFESpace # not sure subtyping...
-  space::SingleFieldFESpace
-  dirichlet_t::Function
-end
-
-function get_trial(tfes::TransientTrialFESpace,t::Real)
-  TrialFESpace(tfes.space,dirichlet_t(t))
-end
-
-
 trian = Triangulation(model)
 degree = 2
 quad = CellQuadrature(trian,degree)
 
 a(u,v) = ∇(v)*∇(u)
-b(v) = v*f
-
-t_Ω = AffineFETerm(a,b,trian,quad)
-op = AffineFEOperator(U,V0,t_Ω)
-
-uh = solve(op)
+b(v) = v*f(t)
+# @santiagobadia: I cannot see how it is going to work!
 
 # Next, we create the transient and steady terms
 
@@ -59,7 +52,8 @@ res(u,ut,v) = a(u,v) + ut*v - b(v)
 jac(u,ut,du,v) = a(du,v)
 jac_t(u,ut,dut,v) = dut*v
 
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
+t_Ω = TransientFETerm(res,jac,jac_t,trian,quad)
+
 # We create the transient operator
 op = TransientFEOperator(V,t -> U,t_Ω)
 # I don't think we need here a space for the time derivative, using ∂t
