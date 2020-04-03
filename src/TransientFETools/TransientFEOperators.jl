@@ -1,3 +1,5 @@
+const ∂t = time_derivative
+
 # Do we need a TransientFEOperatorFromTerms or the only thing we need to do is
 # to extend its interface. I would consider the second option
 """
@@ -46,4 +48,3 @@ end
 struct ODEOpFromFEOp <: ODEOperator
   feop::FEOperator
 end
-

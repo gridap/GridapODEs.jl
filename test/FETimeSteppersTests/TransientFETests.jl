@@ -2,18 +2,23 @@ using Gridap
 using Test
 
 # First, we define the transient problem
-u(x,t) = (x[1] + x[2])*t
-∇u(x,t) = VectorValue(1,1)*t
+u(t) = x -> (x[1] + x[2])*t
+∇u(t) = x -> VectorValue(1,1)*t
+# @santiagobadia : Better way to do this?
+# u(t,x) don't think it will be possible
 import Gridap: ∇
 ∇(::typeof(u)) = ∇u
 ∇(u) === ∇u
+# @santiagobadia: It is not going to work internally...
+# It is not the gradient of u but its result for a given t what we need
+# to link to its gradient... using return_type...
 
 ∂tu = x[1]+x[2]
 import GridapTimeStepper: ∂t
 ∂t(::typeof(u)) = ∂tu
 ∂t(u) === ∂tu
 
-f(x,t) = x+y
+f(t) = x -> x[1]+x[2]
 
 domain = (0,1,0,1)
 partition = (4,4)
@@ -37,7 +42,6 @@ t_Ω = AffineFETerm(a,b,trian,quad)
 op = AffineFEOperator(U,V0,t_Ω)
 
 uh = solve(op)
-
 
 # Next, we create the transient and steady terms
 
