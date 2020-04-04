@@ -5,7 +5,6 @@ const ∂t = time_derivative
 abstract type TransientFEOperator <: GridapType
 
 (tfes::TransientFEOperator)(t::Real) = @notimplemented #::FEOperator
-# I don't think it has any sense, because at t we still have time derivative...
 
 function get_test(op::TransientFEOperator)
   @abstractmethod

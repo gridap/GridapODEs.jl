@@ -12,4 +12,10 @@ struct TransientFETermFromIntegration <: TransientFETerm
   quad::CellQuadrature
 end
 
+function FETerm(
+  res::Function, jac::Function, jac_t::Function, trian::Triangulation, quad::CellQuadrature)
+  TransientFETermFromIntegration(res,jac,jac_t,trian,quad)
+end
+
+
 get_cell_jacobian_t(::TransientFETermFromIntegration,uh,uh_t,du_t,v) = @notimplemented

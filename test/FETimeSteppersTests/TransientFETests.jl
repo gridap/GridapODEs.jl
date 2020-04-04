@@ -13,16 +13,16 @@ import Gridap: ∇
 ∇(::typeof(u)) = ∇u
 ∇(u) === ∇u
 
-u(x::Point) = u(x,0.0)
-p = Point(1.0,1.0)
-u(p)
-for tn in 0:10
-  global u, ∇u
-  u(x::Point) = u(x,convert(Float64,tn))
-  ∇u(x::Point) = ∇u(x,tn)
-  @show u(p)
-  @show ∇u(p)
-end
+# u(x::Point) = u(x,0.0)
+# p = Point(1.0,1.0)
+# u(p)
+# for tn in 0:10
+#   global u, ∇u
+#   u(x::Point) = u(x,convert(Float64,tn))
+#   ∇u(x::Point) = ∇u(x,tn)
+#   @show u(p)
+#   @show ∇u(p)
+# end
 
 ∂tu(t) = x -> x[1]+x[2]
 import GridapTimeStepper.TransientFETools: ∂t
@@ -40,14 +40,20 @@ V0 = TestFESpace(
   reffe=:Lagrangian, order=order, valuetype=Float64,
   conformity=:H1, model=model, dirichlet_tags="boundary")
 
-##
 U = TransientTrialFESpace(V0,u)
-U0 = U(0.0)
-get_dirichlet_values(U0)
+U0 = U(1.0)
+ud0 = get_dirichlet_values(U0)
+U1 = U(2.0)
+ud1 = get_dirichlet_values(U1)
+@test all(ud0 .≈ 0.5ud1)
+
 Ut = ∂t(U)
 Ut0 = Ut(0.0)
-get_dirichlet_values(Ut0)
-i##
+Ut1 = Ut(1.0)
+utd0 = get_dirichlet_values(Ut0)
+utd1 = get_dirichlet_values(Ut1)
+@test all(utd0 .== utd1)
+@test all(utd1 .== ud0)
 trian = Triangulation(model)
 degree = 2
 quad = CellQuadrature(trian,degree)
@@ -61,6 +67,7 @@ res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
 
+##
 t_Ω = TransientFETerm(res,jac,jac_t,trian,quad)
 
 # We create the transient operator
