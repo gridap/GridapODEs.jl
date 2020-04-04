@@ -18,9 +18,9 @@ import Gridap.Geometry: Triangulation
 import Gridap.Geometry: CellQuadrature
 
 export TransientFEOperator
-export TransientFEOperatorFromTerms
-export TransientFEOperatorFromTerms
-import Gridap.FESpaces: get_trial
+# export TransientFEOperatorFromTerms
+# import Gridap.FESpaces: get_trial
+using Gridap.FESpaces: Assembler
 import GridapTimeStepper.ODETools: ODEOperator
 import GridapTimeStepper.ODETools: residual!
 import GridapTimeStepper.ODETools: jacobian!
@@ -29,5 +29,7 @@ import GridapTimeStepper.ODETools: jacobian_t!
 include("TransientFESpaces.jl")
 
 include("TransientFETerms.jl")
+
+include("TransientFEOperators.jl")
 
 end #module

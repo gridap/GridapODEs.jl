@@ -68,7 +68,8 @@ jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
 
 ##
-t_Ω = TransientFETerm(res,jac,jac_t,trian,quad)
+# TransientFETerm or FETerm, what do we prefer?
+t_Ω = FETerm(res,jac,jac_t,trian,quad)
 
 # We create the transient operator
 op = TransientFEOperator(V,U,t_Ω)

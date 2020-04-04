@@ -1,8 +1,8 @@
-const ∂t = time_derivative
+# const ∂t = time_derivative
 
 """
 """
-abstract type TransientFEOperator <: GridapType
+abstract type TransientFEOperator <: GridapType end
 
 (tfes::TransientFEOperator)(t::Real) = @notimplemented #::FEOperator
 
@@ -38,7 +38,13 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
   end
 end
 
+function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
+  test::FESpace,assem::Assembler,terms)
+  TransientFEOperatorFromTerms(trial,test,assem,terms)
+end
+
 function (tfes::TransientFEOperatorFromTerms)(t::Real)
+  # trial(t),test,assem,terms
   # return a fe_operator
 end
 # see comment above, I don't think it has much sense
@@ -62,7 +68,7 @@ function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,t,uh,uht)
   A
 end
 
-function jacobian_t!(A::AbstractMatrix,op::FEOperatorFromTerms,t,uh,uht)
+function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,t,uh,uht)
   @assert is_a_fe_function(uh)
   du = get_cell_basis(op.trial)
   # This is not going to work, even though not needed Dir data here
@@ -94,6 +100,6 @@ function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
   jacobian!(A,op.feop,t,uh,uht)
 end
 
-function jacobian_t!(A::AbstractMatrix,op::FEOperatorFromTerms,t,uh,uht)
+function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,t,uh,uht)
   jacobian_t!(A,op.feop,t,uh,uht)
 end
