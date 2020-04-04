@@ -4,8 +4,8 @@ using Test
 
 using Gridap: GridapType
 using Gridap.Helpers
-using Gridap.Algebra: NonLinearSolver
-using Gridap.Algebra: NonLinearOperator
+using Gridap.Algebra: NonlinearSolver
+using Gridap.Algebra: NonlinearOperator
 
 export ODEOperator
 import Gridap.Algebra: residual!

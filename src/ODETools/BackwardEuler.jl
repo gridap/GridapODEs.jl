@@ -1,5 +1,5 @@
 struct BackwardEuler <: ODESolver
-  nls::NonLinearSolver
+  nls::NonlinearSolver
   dt::Float64
 end
 
@@ -9,7 +9,7 @@ function solve_step!(
   # Build the nonlinear problem to solve at this step
   dt = solver.dt
   tf = t0+dt
-  nlop = BackwardEulerNonLinearOperator(op,tf,dt,u0) # See below
+  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0) # See below
 
   # Solve the nonlinear problem
   if (cache==nothing)
@@ -23,14 +23,14 @@ function solve_step!(
 end
 
 # Struct representing the nonlinear algebraic problem to be solved at a given step
-struct BackwardEulerNonLinearOperator <: NonLinearOperator
+struct BackwardEulerNonlinearOperator <: NonlinearOperator
   odeop::ODEOperator
   tF::Float64
   dt::Float64
   u0::AbstractVector
 end
 
-function residual!(b::AbstractVector,op::BackwardEulerNonLinearOperator,x::AbstractVector)
+function residual!(b::AbstractVector,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
   vF = (x-op.u0)/op.dt
   residual!(b,op.odeop,op.tF,uF,vF)
@@ -41,7 +41,7 @@ function fill_entries!(J::AbstractArray,v)
   J .= convert(eltype(J),v)
 end
 
-function jacobian!(A::AbstractMatrix,op::BackwardEulerNonLinearOperator,x::AbstractVector)
+function jacobian!(A::AbstractMatrix,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
   vF = (x-op.u0)/op.dt
   fill_entries!(A,0.0)
@@ -49,15 +49,15 @@ function jacobian!(A::AbstractMatrix,op::BackwardEulerNonLinearOperator,x::Abstr
   jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt))
 end
 
-function allocate_residual(op::BackwardEulerNonLinearOperator,x::AbstractVector)
+function allocate_residual(op::BackwardEulerNonlinearOperator,x::AbstractVector)
   allocate_residual(op.odeop,x)
 end
 
-function allocate_jacobian(op::BackwardEulerNonLinearOperator,x::AbstractVector)
+function allocate_jacobian(op::BackwardEulerNonlinearOperator,x::AbstractVector)
   allocate_jacobian(op.odeop,x)
 end
 
-function zero_initial_guess(::Type{T},op::BackwardEulerNonLinearOperator) where T
+function zero_initial_guess(::Type{T},op::BackwardEulerNonlinearOperator) where T
   x0 = similar(op.u0)
   fill!(x0,zero(eltype(x0)))
   x0

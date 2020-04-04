@@ -3,7 +3,7 @@
 using GridapTimeStepper
 using GridapTimeStepper.ODETools: GenericODESolution
 using GridapTimeStepper.ODETools: BackwardEuler
-using GridapTimeStepper.ODETools: BackwardEulerNonLinearOperator
+using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
 using GridapTimeStepper.ODETools: solve!
 using GridapTimeStepper
 using GridapTimeStepper.ODETools
@@ -69,10 +69,10 @@ uf, tf = current
 @test tf==t0+dt
 @test all(uf.≈x)
 
-# BackwardEulerNonLinearOperator tests
+# BackwardEulerNonlinearOperator tests
 
 tf = t0+dt
-sop = BackwardEulerNonLinearOperator(op,tf,dt,u0) # See below
+sop = BackwardEulerNonlinearOperator(op,tf,dt,u0) # See below
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0
 r = allocate_residual(sop,x)

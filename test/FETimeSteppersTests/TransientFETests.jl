@@ -47,7 +47,7 @@ get_dirichlet_values(U0)
 Ut = ∂t(U)
 Ut0 = Ut(0.0)
 get_dirichlet_values(Ut0)
-
+i##
 trian = Triangulation(model)
 degree = 2
 quad = CellQuadrature(trian,degree)

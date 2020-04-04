@@ -2,7 +2,7 @@ module ODESolversTests
 
 using GridapTimeStepper.ODETools: GenericODESolution
 using GridapTimeStepper.ODETools: BackwardEuler
-using GridapTimeStepper.ODETools: BackwardEulerNonLinearOperator
+using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
 using GridapTimeStepper.ODETools: solve!
 
 using Test

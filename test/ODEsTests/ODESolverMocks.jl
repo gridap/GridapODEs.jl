@@ -1,5 +1,5 @@
-import Gridap.Algebra: NonLinearSolver
-import Gridap.Algebra: NonLinearOperator
+import Gridap.Algebra: NonlinearSolver
+import Gridap.Algebra: NonlinearOperator
 import Gridap.Algebra: solve!
 import GridapTimeStepper.ODETools: solve_step!
 import GridapTimeStepper.ODETools: ODESolver
@@ -14,7 +14,7 @@ function fill_entries!(J::AbstractArray,v)
   J .= convert(eltype(J),v)
 end
 
-struct OperatorMock <: NonLinearOperator
+struct OperatorMock <: NonlinearOperator
   odeop
   tf::Float64
   dt::Float64
@@ -49,10 +49,10 @@ function zero_initial_guess(::Type{T},op::OperatorMock) where T
   x0
 end
 
-struct NLSolverMock <: NonLinearSolver
+struct NLSolverMock <: NonlinearSolver
 end
 
-function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonLinearOperator)
+function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonlinearOperator)
   r = residual(nlop,x)
   J = jacobian(nlop,x)
   dx = inv(J)*(-r)
@@ -60,7 +60,7 @@ function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonLinearOperator)
   cache = (r,J,dx)
 end
 
-function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonLinearOperator,cache)
+function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonlinearOperator,cache)
   r, J, dx = cache
   residual!(r, nlop, x)
   jacobian!(J, nlop, x)
