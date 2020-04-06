@@ -133,9 +133,22 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   A
 end
 
-# """
-# """
-# function FEOperator(trial::FESpace,test::FESpace,terms::FETerm...)
-#   assem = SparseMatrixAssembler(test,trial)
-#   FEOperator(trial,test,assem,terms...)
-# end
+struct ODEOpFromFEOp <: ODEOperator
+  feop::TransientFEOperator
+end
+
+function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector)
+  # @santiagobadia : uh are just free dof array, idem uht
+  # Here we should think about strong bcs
+  residual!(b,op.feop,t,uh,uht)
+end
+
+# EvaluationFunction not FEFunction
+
+function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
+  jacobian!(A,op.feop,t,uh,uht)
+end
+
+function jacobian_t!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
+  jacobian_t!(A,op.feop,t,uh,uht)
+end
