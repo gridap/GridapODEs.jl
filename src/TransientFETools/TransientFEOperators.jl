@@ -14,6 +14,14 @@ function get_trial(op::TransientFEOperator)
   @abstractmethod # time dependent
 end
 
+function allocate_residual(b::AbstractVector,op::TransientFEOperator,uh)
+  @notimplemented
+end
+
+function allocate_jacobian(b::AbstractVector,op::TransientFEOperator,uh)
+  @notimplemented
+end
+
 function residual!(b::AbstractVector,op::TransientFEOperator,t,uh,uht)
   @notimplemented
 end
@@ -30,7 +38,9 @@ end
 
 struct TransientFEOperatorFromTerms <: TransientFEOperator
   trial::Union{FESpace,TransientTrialFESpace}
+  trial_0::FESpace
   test::FESpace
+  # @santiagobadia : not sure it should be here
   assem::Assembler
   terms
   function TransientFEOperatorFromTerms(trial,test::FESpace,assem::Assembler,terms::FETerm...)
@@ -43,8 +53,9 @@ function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
   # @santiagobadia : The time step value does not provide much info here...
   # so I can just use the one at 0.0, but not sure... we want to keep the
   # same assembler all the time...
-  assem = SparseMatrixAssembler(test,trial(0.0))
-  TransientFEOperatorFromTerms(trial,test,assem,terms)
+  tr0 = trial(0.0)
+  assem = SparseMatrixAssembler(test,tr0)
+  TransientFEOperatorFromTerms(trial,tr0,test,assem,terms)
 end
 
 function (tfes::TransientFEOperatorFromTerms)(t::Real)

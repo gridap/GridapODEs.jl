@@ -59,3 +59,17 @@ end
 function get_cell_id(t::TransientFETermFromIntegration)
   get_cell_id(t.trian)
 end
+
+function collect_cell_residual(t::Real,uh,uh_t,v,terms::TransientFETerm)
+  @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
+  @assert is_a_fe_cell_basis(v)
+  w = []
+  r = []
+  for term in terms
+    cellvals = get_cell_residual(t,term,uh,uh_t,v)
+    cellids = get_cell_id(term)
+    _push_vector_contribution!(w,r,cellvals,cellids)
+  end
+  (w,r)
+end
