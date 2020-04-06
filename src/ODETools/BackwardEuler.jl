@@ -4,12 +4,13 @@ struct BackwardEuler <: ODESolver
 end
 
 function solve_step!(
-  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
+  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_state, cache) # -> (uF,tF)
 
   # Build the nonlinear problem to solve at this step
   dt = solver.dt
   tf = t0+dt
-  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0) # See below
+  update_state!(op_state,op,tf)
+  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
 
   # Solve the nonlinear problem
   if (cache==nothing)
@@ -33,20 +34,15 @@ end
 function residual!(b::AbstractVector,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
   vF = (x-op.u0)/op.dt
-  residual!(b,op.odeop,op.tF,uF,vF)
-end
-
-# @santiagobadia : TO BE CHANGED, just a hack!!!
-function fill_entries!(J::AbstractArray,v)
-  J .= convert(eltype(J),v)
+  residual!(b,op.odeop,op.tF,uF,vF,op.op_state)
 end
 
 function jacobian!(A::AbstractMatrix,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
   vF = (x-op.u0)/op.dt
   fill_entries!(A,0.0)
-  jacobian!(A,op.odeop,op.tF,uF,vF)
-  jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt))
+  jacobian!(A,op.odeop,op.tF,uF,vF,op.op_state)
+  jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt),op.op_state)
 end
 
 function allocate_residual(op::BackwardEulerNonlinearOperator,x::AbstractVector)

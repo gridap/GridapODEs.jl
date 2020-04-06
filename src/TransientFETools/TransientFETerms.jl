@@ -1,8 +1,12 @@
-abstract type TransientFETerm <: FETerm end
+abstract type TransientFETerm end
 
-get_cell_jacobian_t(::FETerm,uh,uh_t,du_t,v) = @notimplemented #or 0
+get_cell_residual(::FETerm,t,uh,uh_t,du_t,v) = @notimplemented #or 0
+get_cell_jacobian(::FETerm,t,uh,uh_t,du_t,v) = @notimplemented #or 0
+get_cell_jacobian_t(::FETerm,t,uh,uh_t,du_t,v) = @notimplemented #or 0
 
 get_cell_jacobian_t(::TransientFETerm,uh,uh_t,du_t,v) = @notimplemented #or 0
+get_cell_values
+get_cell_id
 
 struct TransientFETermFromIntegration <: TransientFETerm
   res::Function

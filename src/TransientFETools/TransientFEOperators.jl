@@ -38,101 +38,71 @@ end
 
 struct TransientFEOperatorFromTerms <: TransientFEOperator
   trial::Union{FESpace,TransientTrialFESpace}
+  trial_t::Union{FESpace,TransientTrialFESpace}
   test::FESpace
-  # @santiagobadia : not sure it should be here
-  assem::Assembler
+  assem_t::Function
   terms
-  # @santiagobadia : cache ... ????
-  trial_0::FESpace
-  uhD::AbstractVector
-  uhtD::AbstractVector
-  function TransientFEOperatorFromTerms(trial,test::FESpace,assem::Assembler,terms::FETerm...)
-    new(trial,test,assem,terms)
+  function TransientFEOperatorFromTerms(trial,test::FESpace,terms::FETerm...)
+    new(trial,test,terms)
   end
 end
 
 function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
   test::FESpace,terms)
-  # @santiagobadia : The time step value does not provide much info here...
-  # so I can just use the one at 0.0, but not sure... we want to keep the
-  # same assembler all the time...
-  tr0 = trial(0.0)
-  assem = SparseMatrixAssembler(test,tr0)
-  TransientFEOperatorFromTerms(trial,tr0,test,assem,terms)
+  TransientFEOperatorFromTerms(trial,∂t(trial),test,terms)
 end
-
-function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
-  test::FESpace,terms)
-  # @santiagobadia : The time step value does not provide much info here...
-  # so I can just use the one at 0.0, but not sure... we want to keep the
-  # same assembler all the time...
-  assem = SparseMatrixAssembler(test,trial_0)
-  TransientFEOperatorFromTerms(trial,test,assem,terms)
-end
-
-# function (tfes::TransientFEOperatorFromTerms)(t::Real)
-#   FEOperator
-#   # trial(t),test,assem,terms
-#   # return a fe_operator
-# end
-# see comment above, I don't think it has much sense
 
 get_test(op::TransientFEOperatorFromTerms,t) = op.test
 
 get_trial(op::TransientFEOperatorFromTerms,t) = op.trial(t)
 
-function allocate_residual(op::TransientFEOperatorFromTerms,uh)
+function allocate_residual(op::TransientFEOperatorFromTerms,uh,assem)
   @assert is_a_fe_function(uh)
   v = get_cell_basis(op.test)
   _, cellids = collect_cell_residual(uh,v,op.terms)
-  # @santiagobadia : How do we do this? This assembler should be in the
-  #
-  allocate_vector(op.assem, cellids)
+  allocate_vector(assem,cellids)
 end
 
 function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t)
+  t::Real,uh,uh_t,assem)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   v = get_cell_basis(op.test)
   cellvecs, cellids = collect_cell_residual(t,uh,uh_t,v,op.terms)
-  # @santiagobadia : not sure op will have Assembler
-  assemble_vector!(b,op.assem, cellvecs, cellids)
+  assemble_vector!(b,assem,cellvecs,cellids)
   b
 end
 
-function allocate_jacobian(op::TransientFEOperatorFromTerms,uh)
+function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,assem)
   @assert is_a_fe_function(uh)
   # @santiagobadia : not sure op will have Assembler
   du = get_cell_basis(op.trial_0)
   # this is not a test function, it needs time... and it is not efficient
   v = get_cell_basis(op.test)
   _, cellidsrows, cellidscols = collect_cell_jacobian(uh,du,v,op.terms)
-  allocate_matrix(op.assem, cellidsrows, cellidscols)
+  allocate_matrix(assem, cellidsrows, cellidscols)
 end
 
 function jacobian!(A::AbstractMatrix,op::FEOperatorFromTerms,
-  t::Real,uh,uh_t)
+  t::Real,uh,uh_t,assem)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   du = get_cell_basis(op.trial_0)
   v = get_cell_basis(op.test)
   cellmats, cellidsrows, cellidscols = collect_cell_jacobian(t,uh,du,v,op.terms)
-  assemble_matrix!(A,op.assem, cellmats, cellidsrows, cellidscols)
+  assemble_matrix!(A,assem, cellmats, cellidsrows, cellidscols)
   A
 end
 
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t)
+  t::Real,uh,uh_t,assem)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   du = get_cell_basis(op.trial_0)
-  # This is not going to work, even though not needed Dir data here
-  # @santiagobadia: get_trial can be expensive, how can we reuse its call?
   v = get_cell_basis(op.test)
   # to be implemented... collect_cell_jacobian_t
   cellmats, cellidsrows, cellidscols = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,op.terms)
-  assemble_matrix!(A,op.assem, cellmats, cellidsrows, cellidscols)
+  assemble_matrix!(A,assem, cellmats, cellidsrows, cellidscols)
   A
 end
 
@@ -140,28 +110,61 @@ struct ODEOpFromFEOp <: ODEOperator
   feop::TransientFEOperator
 end
 
-function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector)
-  uhD = ...
-  uhtD = ...
-  uh = uhF, uhD
-  uht = uhtF, uhtD
-  # @santiagobadia : Here we need to reuse uh uht from somewhere, cache?
-  # and create new FEFunctions by modifying the already assembled arrays
+function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,op_state)
+  Uh, Uht = op_state
+  uh = FEFunction(uhF,Uh)
+  uht = FEFunction(uhtF,Uht)
   residual!(b,op.feop,t,uh,uht)
 end
 
+function allocate_state(op::OpFromFEOp)
+  Uh, Uht = _allocate_state(op,get_trial(op.feop))
+  assem = op.assem_t(0.0)
+  Uh, Uht, assem
+end
+
+function _allocate_state(fesp::FESpace)
+  Uh = fesp
+  Uht = HomogeneousTrialFESpace(fesp)
+  Uh, Uht
+end
+
+function _allocate_state(fesp::TransientFESpace)
+  Uh = HomogeneousTrialFESpace(fesp.space)
+  Uht = HomogeneousTrialFESpace(fesp.space)
+  Uh, Uht
+end
+
+function update_state!(state,op::OpFromFEOp,t::Real)
+  _update_state!(state,get_trial(op.feop))
+end
+
+_update_state(state,::FESpace) = nothing
+
+
+function _update_state!(state,tfesp::TransientFESpace)
+  Uh, Uht, assem = state
+  Uhnew = TrialFESpace!(get_dirichlet_values(Uh),Uh,tfesp.dirichlet_t(t))
+  fun = tfesp.dirichlet_t
+  fun_t = ∂t(fun)
+  Uhtnew = TrialFESpace!(get_dirichlet_values(Uht),Uht,fun_t(t))
+  Uhnew, Uhtnew, assem
+end
+# to be called state = update_state!(state,op)
+
+
 # EvaluationFunction not FEFunction
 
-function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector)
-  uhD = ...
-  uhtD = ...
-  uh = uhF, uhD
-  uht = uhtF, uhtD
-  # @santiagobadia : I want to do this only once!!!
+function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,op_state)
+  Uh, Uht = op_state
+  uh = FEFunction(uhF,Uh)
+  uht = FEFunction(uhtF,Uht)
   jacobian!(A,op.feop,t,uh,uht)
 end
 
-function jacobian_t!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
-  # @santiagobadia : Idem above
+function jacobian_t!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht,op_state)
+  Uh, Uht = op_state
+  uh = FEFunction(uhF,Uh)
+  uht = FEFunction(uhtF,Uht)
   jacobian_t!(A,op.feop,t,uh,uht)
 end
