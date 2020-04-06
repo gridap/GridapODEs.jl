@@ -138,17 +138,27 @@ struct ODEOpFromFEOp <: ODEOperator
 end
 
 function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector)
-  # @santiagobadia : uh are just free dof array, idem uht
-  # Here we should think about strong bcs
+  uhD = ...
+  uhtD = ...
+  uh = uhF, uhD
+  uht = uhtF, uhtD
+  # @santiagobadia : Here we need to reuse uh uht from somewhere, cache?
+  # and create new FEFunctions by modifying the already assembled arrays
   residual!(b,op.feop,t,uh,uht)
 end
 
 # EvaluationFunction not FEFunction
 
-function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
+function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector)
+  uhD = ...
+  uhtD = ...
+  uh = uhF, uhD
+  uht = uhtF, uhtD
+  # @santiagobadia : I want to do this only once!!!
   jacobian!(A,op.feop,t,uh,uht)
 end
 
 function jacobian_t!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
+  # @santiagobadia : Idem above
   jacobian_t!(A,op.feop,t,uh,uht)
 end
