@@ -39,11 +39,16 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
 end
 
 function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
-  test::FESpace,assem::Assembler,terms)
+  test::FESpace,terms)
+  # @santiagobadia : The time step value does not provide much info here...
+  # so I can just use the one at 0.0, but not sure... we want to keep the
+  # same assembler all the time...
+  assem = SparseMatrixAssembler(test,trial(0.0))
   TransientFEOperatorFromTerms(trial,test,assem,terms)
 end
 
 function (tfes::TransientFEOperatorFromTerms)(t::Real)
+  FEOperator
   # trial(t),test,assem,terms
   # return a fe_operator
 end
@@ -100,6 +105,6 @@ function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
   jacobian!(A,op.feop,t,uh,uht)
 end
 
-function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,t,uh,uht)
+function jacobian_t!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uh,uht)
   jacobian_t!(A,op.feop,t,uh,uht)
 end

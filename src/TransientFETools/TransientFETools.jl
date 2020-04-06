@@ -21,6 +21,7 @@ export TransientFEOperator
 # export TransientFEOperatorFromTerms
 # import Gridap.FESpaces: get_trial
 using Gridap.FESpaces: Assembler
+using Gridap.FESpaces: SparseMatrixAssembler
 import GridapTimeStepper.ODETools: ODEOperator
 import GridapTimeStepper.ODETools: residual!
 import GridapTimeStepper.ODETools: jacobian!

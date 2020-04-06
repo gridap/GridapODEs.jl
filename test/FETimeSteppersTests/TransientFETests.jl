@@ -67,18 +67,17 @@ res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
 
-##
 # TransientFETerm or FETerm, what do we prefer?
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 
 # We create the transient operator
-op = TransientFEOperator(V,U,t_Ω)
+op = TransientFEOperator(U,V0,t_Ω)
 
 t0 = 0.0
 tF = 1.0
 dt = 0.1
 
-u0 = zeros(V)
+# u0 = zeros(V0)
 
 using LineSearches: BackTracking
 nls = NLSolver(
@@ -86,11 +85,44 @@ nls = NLSolver(
 nlfes = FESolver(nls)
 
 # We create a ODE solver, e.g., Backward-Euler and solve the problem
-be = BackwardEuler(nlfes,dt)
+# @santiagobadia : BackwardEuler requires a NonlinearSolver but we
+# also need for FE machinery a NonlinearFESolver. What to do here?
+# I don't want to create a method for every solver... How can I solve it?
+be = BackwardEuler(nlfes.nls,dt)
+sbt = subtypes(ODESolver)
+bes = sbt[1]
+
+# eval(Meta.parse(bes))
+# (x) = 2*x
+
+# be(1.0)
+using Gridap.FESpaces: NonlinearFESolver
+import GridapTimeStepper.ODETools: BackwardEuler
+##
+# for odes in subtypes(ODESolver)
+#   (::odes)(nlfes::NonlinearFESolver,dt) = 2.0 # a(nlfes.nls,dt)
+# end
+# bes
+#
+# (::bes)(nlfes::NonlinearFESolver,dt) = 2.0 # a(nlfes.nls,dt)
+# bes(nlfes,dt)
+# # isa(nlfes,NonlinearFESolver)
+# nbe = BackwardEuler(nlfes,dt)
+
+
+
+
+nlfes
+
+
+
+be(1.0,1.0)
+
 sol_t = solve(be,op,u0,t0,tF)
 
 l2(w) = w*w
 h1(w) = a(w,w) + l2(w)
+##
 
 # We test it ...
 for (uh_tn, tn) in sol_t
