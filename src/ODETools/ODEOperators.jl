@@ -44,9 +44,9 @@ function allocate_jacobian(op::ODEOperator,u::AbstractVector)
   @abstractmethod
 end
 
-function allocate_state(op::ODEOperator) = @notimplemented
+allocate_state(op::ODEOperator) = @notimplemented
 
-function update_state(op::ODEOperator,t::Real) = @notimplemented
+update_state(op::ODEOperator,t::Real) = @notimplemented
 
 """
 """

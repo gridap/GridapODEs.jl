@@ -1,12 +1,22 @@
+function get_cell_residual(fet::FETerm,t,uh,uh_t,v)
+  get_cell_residual(fet,uh,v)
+end
+
+function get_cell_jacobian(fet::FETerm,t,uh,uh_t,du,v)
+  get_cell_residual(fet,uh,du,v)
+end
+
+function get_cell_jacobian_t(fet::FETerm,t,uh,uh_t,du_t,v)
+  nothing
+end
+
 abstract type TransientFETerm end
 
-get_cell_residual(::FETerm,t,uh,uh_t,du_t,v) = @notimplemented #or 0
-get_cell_jacobian(::FETerm,t,uh,uh_t,du_t,v) = @notimplemented #or 0
-get_cell_jacobian_t(::FETerm,t,uh,uh_t,du_t,v) = @notimplemented #or 0
-
-get_cell_jacobian_t(::TransientFETerm,uh,uh_t,du_t,v) = @notimplemented #or 0
-get_cell_values
-get_cell_id
+get_cell_residual(::TransientFETerm,t,uh,uh_t,v) = @notimplemented
+get_cell_jacobian(::TransientFETerm,t,uh,uh_t,du_t,v) = @notimplemented
+get_cell_jacobian_t(::TransientFETerm,t,uh,uh_t,du_t,v) = @notimplemented
+get_cell_values(tr::TransientFETerm,uhd) = @notimplemented
+get_cell_id(tr::TransientFETerm) = @notimplemented
 
 struct TransientFETermFromIntegration <: TransientFETerm
   res::Function
@@ -76,4 +86,44 @@ function collect_cell_residual(t::Real,uh,uh_t,v,terms::TransientFETerm)
     _push_vector_contribution!(w,r,cellvals,cellids)
   end
   (w,r)
+end
+
+function collect_cell_jacobian(t::Real,uh,uh_t,du,v,terms)
+  @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
+  @assert is_a_fe_cell_basis(v)
+  @assert is_a_fe_cell_basis(du)
+  w = []
+  r = []
+  c = []
+  for term in terms
+    cellvals = get_cell_jacobian(term,t,uh,uh_t,du,v)
+    cellids = get_cell_id(term)
+    _push_matrix_contribution!(w,r,c,cellvals,cellids)
+  end
+  (w,r,c)
+end
+
+# We need _push_vector and _push_matrix contribution
+# internal methods from Gridap
+
+function _push_matrix_contribution!(w,r,c,cellvals,cellids)
+  push!(w,cellvals)
+  push!(r,cellids)
+  push!(c,cellids)
+  nothing
+end
+
+function _push_matrix_contribution!(w,r,c,cellvals::Nothing,cellids)
+  nothing
+end
+
+function _push_vector_contribution!(v,r,cellvals,cellids)
+  push!(v,cellvals)
+  push!(r,cellids)
+  nothing
+end
+
+function _push_vector_contribution!(v,r,cellvals::Nothing,cellids)
+  nothing
 end
