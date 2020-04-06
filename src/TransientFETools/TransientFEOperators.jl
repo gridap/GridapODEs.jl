@@ -38,11 +38,14 @@ end
 
 struct TransientFEOperatorFromTerms <: TransientFEOperator
   trial::Union{FESpace,TransientTrialFESpace}
-  trial_0::FESpace
   test::FESpace
   # @santiagobadia : not sure it should be here
   assem::Assembler
   terms
+  # @santiagobadia : cache ... ????
+  trial_0::FESpace
+  uhD::AbstractVector
+  uhtD::AbstractVector
   function TransientFEOperatorFromTerms(trial,test::FESpace,assem::Assembler,terms::FETerm...)
     new(trial,test,assem,terms)
   end
