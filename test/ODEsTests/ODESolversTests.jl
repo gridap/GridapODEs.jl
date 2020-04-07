@@ -1,4 +1,4 @@
-# module ODESolversTests
+module ODESolversTests
 
 using GridapTimeStepper
 using GridapTimeStepper.ODETools: GenericODESolution
@@ -26,6 +26,8 @@ u0 = ones(2)*2
 # NonlinearOperator tests
 
 sop = OperatorMock(op,tf,dt,u0)
+
+state = allocate_state(op)
 
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0
@@ -55,7 +57,8 @@ r, J, dx = cache
 odesol = ODESolverMock(nls,dt)
 uf = copy(u0)
 uf.=1.0
-uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,nothing)
+
+uf, tf, state, cache = solve_step!(uf,odesol,op,u0,t0,state,nothing)
 uf
 @test tf==t0+dt
 @test all(uf.≈x)
@@ -93,11 +96,12 @@ _J = jacobian(sop,x)
 odesol = BackwardEuler(nls,dt)
 uf = copy(u0)
 uf.=1.0
-uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,nothing)
+uf, tf, state, cache = solve_step!(uf,odesol,op,u0,t0,state,nothing)
 uf
 @test tf==t0+dt
 @test all(uf.≈1+11/9)
 
 @test test_ode_solver(odesol,op,u0,t0,uf,tf)
+test_ode_solver(odesol,op,u0,t0,uf,tf)
 
-# end #module
+end #module

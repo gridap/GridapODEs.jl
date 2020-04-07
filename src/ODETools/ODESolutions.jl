@@ -47,7 +47,7 @@ function Base.iterate(sol::GenericODESolution, state)
   end
 
   # Solve step
-  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,cache)
+  uf, tf, state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,state,cache)
 
   # Update
   u0 .= uf

@@ -19,11 +19,12 @@ export jacobian_t!
 export test_ode_operator
 
 export ODESolver
-export BackwardEuler
 export test_ode_solver
 import Gridap.Algebra: solve!
 import Gridap.Algebra: zero_initial_guess
 
+export BackwardEuler
+import Gridap.Algebra: fill_entries!
 export ODESolution
 import Gridap: solve
 export test_ode_solution

@@ -1,38 +1,41 @@
+using Gridap.Algebra: residual
+using Gridap.Algebra: jacobian
+using Gridap.Algebra: fill_entries!
 import Gridap.Algebra: NonlinearSolver
 import Gridap.Algebra: NonlinearOperator
 import Gridap.Algebra: solve!
 import GridapTimeStepper.ODETools: solve_step!
 import GridapTimeStepper.ODETools: ODESolver
-using Gridap.Algebra: residual
-using Gridap.Algebra: jacobian
 import GridapTimeStepper.ODETools: zero_initial_guess
 import GridapTimeStepper.ODETools: residual!
 import GridapTimeStepper.ODETools: jacobian!
 import GridapTimeStepper.ODETools: solve!
-
-function fill_entries!(J::AbstractArray,v)
-  J .= convert(eltype(J),v)
-end
 
 struct OperatorMock <: NonlinearOperator
   odeop
   tf::Float64
   dt::Float64
   u0::AbstractVector
+  state
+end
+
+function OperatorMock(odeop::ODEOperator,tf::Real,dt::Real,u0::AbstractVector)
+  state = nothing
+  OperatorMock(odeop,tf,dt,u0,state)
 end
 
 function residual!(b::AbstractVector,op::OperatorMock,x::AbstractVector)
   uf = x
   uf_t = (x-op.u0)/op.dt
-  residual!(b,op.odeop,op.tf,uf,uf_t)
+  residual!(b,op.odeop,op.tf,uf,uf_t,op.state)
 end
 
 function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
   uf = x
   uf_t = (x-op.u0)/op.dt
   fill_entries!(A,0.0)
-  jacobian!(A,op.odeop,op.tf,uf,uf_t)
-  jacobian_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt))
+  jacobian!(A,op.odeop,op.tf,uf,uf_t,op.state)
+  jacobian_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt),op.state)
 end
 
 function allocate_residual(op::OperatorMock,x::AbstractVector)
@@ -79,7 +82,8 @@ function solve_step!(
 
   dt = solver.dt
   tf = t0+dt
-  nlop = OperatorMock(op,tf,dt,u0)
+  update_state!(op_state,op,tf)
+  nlop = OperatorMock(op,tf,dt,u0,op_state)
 
   if (cache==nothing)
     cache = solve!(uf,solver.nls,nlop)
@@ -87,5 +91,5 @@ function solve_step!(
     cache = solve!(uf,solver.nls,nlop,cache)
   end
 
-  return (uf, tf, cache)
+  return (uf, tf, op_state, cache)
 end
