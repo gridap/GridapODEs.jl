@@ -74,7 +74,8 @@ struct ODESolverMock <: ODESolver
 end
 
 function solve_step!(
-  uf::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
+  uf::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, op_state, cache) # -> (uF,tF)
+
 
   dt = solver.dt
   tf = t0+dt

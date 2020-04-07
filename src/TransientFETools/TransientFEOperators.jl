@@ -83,7 +83,7 @@ function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,assem)
   allocate_matrix(assem, cellidsrows, cellidscols)
 end
 
-function jacobian!(A::AbstractMatrix,op::FEOperatorFromTerms,
+function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,assem)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
@@ -110,14 +110,7 @@ struct ODEOpFromFEOp <: ODEOperator
   feop::TransientFEOperator
 end
 
-function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,op_state)
-  Uh, Uht = op_state
-  uh = FEFunction(uhF,Uh)
-  uht = FEFunction(uhtF,Uht)
-  residual!(b,op.feop,t,uh,uht)
-end
-
-function allocate_state(op::OpFromFEOp)
+function allocate_state(op::ODEOpFromFEOp)
   Uh, Uht = _allocate_state(op,get_trial(op.feop))
   assem = op.assem_t(0.0)
   Uh, Uht, assem
@@ -129,20 +122,20 @@ function _allocate_state(fesp::FESpace)
   Uh, Uht
 end
 
-function _allocate_state(fesp::TransientFESpace)
+function _allocate_state(fesp::TransientTrialFESpace)
   Uh = HomogeneousTrialFESpace(fesp.space)
   Uht = HomogeneousTrialFESpace(fesp.space)
   Uh, Uht
 end
 
-function update_state!(state,op::OpFromFEOp,t::Real)
+function update_state!(state,op::ODEOpFromFEOp,t::Real)
   _update_state!(state,get_trial(op.feop))
 end
 
-_update_state(state,::FESpace) = nothing
+_update_state!(state,::FESpace) = nothing
 
 
-function _update_state!(state,tfesp::TransientFESpace)
+function _update_state!(state,tfesp::TransientTrialFESpace)
   Uh, Uht, assem = state
   Uhnew = TrialFESpace!(get_dirichlet_values(Uh),Uh,tfesp.dirichlet_t(t))
   fun = tfesp.dirichlet_t
@@ -150,10 +143,13 @@ function _update_state!(state,tfesp::TransientFESpace)
   Uhtnew = TrialFESpace!(get_dirichlet_values(Uht),Uht,fun_t(t))
   Uhnew, Uhtnew, assem
 end
-# to be called state = update_state!(state,op)
 
-
-# EvaluationFunction not FEFunction
+function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,op_state)
+  Uh, Uht = op_state
+  uh = FEFunction(uhF,Uh)
+  uht = FEFunction(uhtF,Uht)
+  residual!(b,op.feop,t,uh,uht)
+end
 
 function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,op_state)
   Uh, Uht = op_state

@@ -14,7 +14,7 @@ abstract type ODEOperator <: GridapType end
 """
 It provides A(t,u,u_t) for a given (t,u,u_t)
 """
-function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,state)
+function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_state)
   @abstractmethod
 end
 
@@ -25,7 +25,7 @@ end
 """
 It adds [∂A/∂u](t,u,u_t) for a given (t,u,u_t) to a given matrix J
 """
-function jacobian!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,state)
+function jacobian!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_state)
   @abstractmethod
   # Add values to J
 end
@@ -33,7 +33,7 @@ end
 """
 It adds [∂A/∂u_t](t,u,u_t) for a given (t,u,u_t) to a given matrix J
 """
-function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,state)
+function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,op_state)
   @abstractmethod
   # Add values to J
 end
@@ -46,15 +46,17 @@ end
 
 allocate_state(op::ODEOperator) = @notimplemented
 
-update_state(op::ODEOperator,t::Real) = @notimplemented
+update_state!(state,op::ODEOperator,t::Real) = @notimplemented
 
 """
 """
 function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
+  state = allocate_state(op)
+  state = update_state!(state,op,0.0)
   r = allocate_residual(op,u)
-  residual!(r,op,t,u,u_t)
+  residual!(r,op,t,u,u_t,state)
   J = allocate_jacobian(op,u)
-  jacobian!(J,op,t,u,u_t)
-  jacobian_t!(J,op,t,u,u_t,1.0)
+  jacobian!(J,op,t,u,u_t,state)
+  jacobian_t!(J,op,t,u,u_t,0.0,state)
   true
 end
