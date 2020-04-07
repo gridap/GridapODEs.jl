@@ -1,17 +1,31 @@
 struct TransientTrialFESpace
   space::FESpace
-  dirichlet_t::Vector{<:Function}
+  dirichlet_t#::Vector{<:Function}
   dirichlet_values::AbstractVector
 end
 
-function TransientTrialFESpace(U::FESpace,dir_fun)
+# function TransientTrialFESpace(U::FESpace,dir_fun)
+  # TransientTrialFESpace(U,[dir_fun])
+# end
+
+function TransientTrialFESpace(U::FESpace,objects)
  dirichlet_vals = similar(get_dirichlet_values(U))
-  TransientTrialFESpace(U,dir_fun,dirichlet_values)
+  TransientTrialFESpace(U,objects,dirichlet_vals)
 end
 
 function (fes::TransientTrialFESpace)(t::Real)
-  TrialFESpace!(fes.dirichlet_values,fes.space,fes.dirichlet_t(t))
+  # dir_t = [ud(t) for ud in fes.dirichlet_t]
+  dir_t = fes.dirichlet_t(t)
+  TrialFESpace(fes.dirichlet_values,fes.space,dir_t)
 end
+
+using Gridap.FESpaces: _prepare_trial_cell_basis
+using Gridap.FESpaces: constraint_style
+
+function TrialFESpace(dir_values::AbstractVector,fesp,dir_funs)
+  TrialFESpace(fesp,dir_values,_prepare_trial_cell_basis(fesp),constraint_style(fesp))
+end
+
 
 (tfes::FESpace)(t::Real) = tfes
 

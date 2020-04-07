@@ -40,18 +40,19 @@ V0 = TestFESpace(
   reffe=:Lagrangian, order=order, valuetype=Float64,
   conformity=:H1, model=model, dirichlet_tags="boundary")
 
+
 U = TransientTrialFESpace(V0,u)
 U0 = U(1.0)
-ud0 = get_dirichlet_values(U0)
+ud0 = copy(get_dirichlet_values(U0))
 U1 = U(2.0)
-ud1 = get_dirichlet_values(U1)
+ud1 = copy(get_dirichlet_values(U1))
 @test all(ud0 .≈ 0.5ud1)
 
 Ut = ∂t(U)
 Ut0 = Ut(0.0)
 Ut1 = Ut(1.0)
-utd0 = get_dirichlet_values(Ut0)
-utd1 = get_dirichlet_values(Ut1)
+utd0 = copy(get_dirichlet_values(Ut0))
+utd1 = copy(get_dirichlet_values(Ut1))
 @test all(utd0 .== utd1)
 @test all(utd1 .== ud0)
 trian = Triangulation(model)

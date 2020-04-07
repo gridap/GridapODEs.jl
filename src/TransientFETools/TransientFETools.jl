@@ -10,6 +10,7 @@ export get_trial_space
 import Gridap.FESpaces: FESpace
 import Gridap.FESpaces: SingleFieldFESpace
 import Gridap.FESpaces: TrialFESpace
+import Gridap.FESpaces: get_dirichlet_values
 
 export TransientFETerm
 import Gridap.FESpaces: FETerm
