@@ -40,12 +40,14 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
   trial::Union{FESpace,TransientTrialFESpace}
   trial_t::Union{FESpace,TransientTrialFESpace}
   test::FESpace
-  assem_t::Function
+  assem_t::Assembler
   terms
 end
 
 function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
   test::FESpace,terms)
+  # @santiagobadia : I am here assem_t ... can we create assem here?
+  assem_t = SparseMatrixAssembler(test,trial(0.0))
   TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,terms)
 end
 

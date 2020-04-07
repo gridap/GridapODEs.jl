@@ -55,6 +55,7 @@ utd0 = copy(get_dirichlet_values(Ut0))
 utd1 = copy(get_dirichlet_values(Ut1))
 @test all(utd0 .== utd1)
 @test all(utd1 .== ud0)
+
 trian = Triangulation(model)
 degree = 2
 quad = CellQuadrature(trian,degree)
@@ -63,7 +64,6 @@ a(u,v) = ∇(v)*∇(u)
 b(v,t) = v*f(t)
 
 # Next, we create the transient and steady terms
-
 res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
@@ -74,12 +74,21 @@ t_Ω = FETerm(res,jac,jac_t,trian,quad)
 # We create the transient operator
 op = TransientFEOperator(U,V0,t_Ω)
 
+u0 = u(0.0)
 t0 = 0.0
 tF = 1.0
 dt = 0.1
 
 # u0 = zeros(V0)
+ls = LUSolver()
+nls = NLSolver(ls;show_trace=true,method=:newton)
+odes = BackwardEuler(nls,dt)
+solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 
+steps = solve(solver,op) # Return a specialization of TransientFESolution
+for (un,tn) in steps
+   # un is a FE function
+end
 using LineSearches: BackTracking
 nls = NLSolver(
   show_trace=true, method=:newton, linesearch=BackTracking())
@@ -90,36 +99,11 @@ nlfes = FESolver(nls)
 # also need for FE machinery a NonlinearFESolver. What to do here?
 # I don't want to create a method for every solver... How can I solve it?
 be = BackwardEuler(nlfes.nls,dt)
-sbt = subtypes(ODESolver)
-bes = sbt[1]
-
-# eval(Meta.parse(bes))
-# (x) = 2*x
-
-# be(1.0)
-using Gridap.FESpaces: NonlinearFESolver
-import GridapTimeStepper.ODETools: BackwardEuler
-##
-# for odes in subtypes(ODESolver)
-#   (::odes)(nlfes::NonlinearFESolver,dt) = 2.0 # a(nlfes.nls,dt)
-# end
-# bes
-#
-# (::bes)(nlfes::NonlinearFESolver,dt) = 2.0 # a(nlfes.nls,dt)
-# bes(nlfes,dt)
-# # isa(nlfes,NonlinearFESolver)
-# nbe = BackwardEuler(nlfes,dt)
-
-
-
-
-nlfes
-
-
-
-be(1.0,1.0)
 
 sol_t = solve(be,op,u0,t0,tF)
+isa(be,ODESolver)
+isa(op,ODEOperator)
+solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,tf::Real)
 
 l2(w) = w*w
 h1(w) = a(w,w) + l2(w)

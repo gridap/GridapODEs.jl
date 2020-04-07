@@ -28,10 +28,16 @@ import GridapTimeStepper.ODETools: residual!
 import GridapTimeStepper.ODETools: jacobian!
 import GridapTimeStepper.ODETools: jacobian_t!
 
+export TransientFESolver
+import Gridap.FESpaces: FESolver
+import GridapTimeStepper.ODETools: ODESolver
+
 include("TransientFESpaces.jl")
 
 include("TransientFETerms.jl")
 
 include("TransientFEOperators.jl")
+
+include("TransientFESolvers.jl")
 
 end #module
