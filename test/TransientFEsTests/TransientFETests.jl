@@ -84,7 +84,7 @@ op = TransientFEOperator(U,V0,t_Ω)
 U0 = U(0.0)
 u0 = interpolate_everywhere(U0,0.0)
 _u0 = get_free_values(u0)
-test_transient_fe_operator(op,u0)
+@test test_transient_fe_operator(op,u0)
 
 u0 = u(0.0)
 t0 = 0.0
@@ -97,11 +97,11 @@ ls = LUSolver()
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
-test_transient_fe_solver(solver,op,u0,t0,tf)
-  solution = solve(solver,op,u0,t0,tf)
-  # @santiagobadia : Do it!
-  # test_transient_fe_solution(solution)
-end
+@test test_transient_fe_solver(solver,op,u0,t0,tF)
+
+
+
+
 
 odeop = get_algebraic_operator(op)
 sol_ode_t = solve(odes,odeop,_u0,t0,tF)

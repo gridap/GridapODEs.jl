@@ -145,4 +145,5 @@ function test_transient_fe_operator(op::TransientFEOperator,uh)
   # uhF = get_free_values(uh)
   # test_ode_operator(odeop,0.0,uhF,uhF)
   # get_assembler(feop::TransientFEOperator) = @notimplemented
+  true
 end
