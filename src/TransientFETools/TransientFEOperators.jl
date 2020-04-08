@@ -4,6 +4,7 @@
 """
 abstract type TransientFEOperator <: GridapType end
 
+# @santiagobadia : To be eliminated ?
 (tfes::TransientFEOperator)(t::Real) = @notimplemented #::FEOperator
 
 function get_test(op::TransientFEOperator)
@@ -59,7 +60,7 @@ function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
   TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,terms...)
 end
 
-get_test(op::TransientFEOperatorFromTerms,t) = op.test
+get_test(op::TransientFEOperatorFromTerms) = op.test
 
 get_trial(op::TransientFEOperatorFromTerms) = op.trial
 
@@ -117,4 +118,31 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   cellmats, cellidsrows, cellidscols = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,op.terms)
   assemble_matrix!(A,op.assem_t, cellmats, cellidsrows, cellidscols)
   A
+end
+
+function test_transient_fe_operator(op::TransientFEOperator,uh)
+  odeop = get_algebraic_operator(op)
+  @test isa(odeop,ODEOperator)
+  state = allocate_state(odeop)
+  V = get_test(op)
+  @test isa(V,FESpace)
+  U = get_trial(op)
+  @test isa(U,Union{FESpace,TransientTrialFESpace})
+  U0 = U(0.0)
+  @test isa(U0,FESpace)
+  # uh = FEFunction(U0,0.0)
+  r = allocate_residual(op,uh)
+  @test isa(r,AbstractVector)
+  residual!(r,op,0.0,uh,uh,state)
+  # r2 = residual(op)
+  @test isa(r,AbstractVector)
+  J = allocate_jacobian(op,uh,state)
+  @test isa(J,AbstractMatrix)
+  jacobian!(J,op,0.0,uh,uh,state)
+  @test isa(J,AbstractMatrix)
+  jacobian_t!(J,op,0.0,uh,uh,1.0,state)
+  @test isa(J,AbstractMatrix)
+  # uhF = get_free_values(uh)
+  # test_ode_operator(odeop,0.0,uhF,uhF)
+  # get_assembler(feop::TransientFEOperator) = @notimplemented
 end

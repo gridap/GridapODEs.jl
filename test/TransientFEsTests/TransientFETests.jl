@@ -79,9 +79,12 @@ jac_t(t,u,ut,dut,v) = dut*v
 
 # TransientFETerm or FETerm, what do we prefer?
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
-
 # We create the transient operator
 op = TransientFEOperator(U,V0,t_Ω)
+U0 = U(0.0)
+u0 = interpolate_everywhere(U0,0.0)
+_u0 = get_free_values(u0)
+test_transient_fe_operator(op,u0)
 
 u0 = u(0.0)
 t0 = 0.0
@@ -94,10 +97,6 @@ ls = LUSolver()
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
-
-U0 = U(0.0)
-u0 = interpolate_everywhere(U0,0.0)
-_u0 = get_free_values(u0)
 
 odeop = get_algebraic_operator(op)
 sol_ode_t = solve(odes,odeop,_u0,t0,tF)

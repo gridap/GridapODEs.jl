@@ -1,5 +1,7 @@
 module TransientFETools
 
+using Test
+
 using Gridap.Helpers
 
 export time_derivative
@@ -46,6 +48,8 @@ import Gridap.FESpaces: allocate_matrix
 using Gridap.FESpaces: is_a_fe_function
 using Gridap.FESpaces: is_a_fe_cell_basis
 using Gridap.FESpaces: get_cell_basis
+using GridapTimeStepper.ODETools: test_ode_operator
+export test_transient_fe_operator
 
 export TransientFESolver
 import Gridap.FESpaces: FESolver

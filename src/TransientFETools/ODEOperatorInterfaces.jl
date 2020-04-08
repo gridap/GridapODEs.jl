@@ -11,7 +11,7 @@ function allocate_state(op::ODEOpFromFEOp)
   Uh, Uht = _allocate_state(get_trial(op.feop))
   # assem = op.assem_t(0.0)
   assem = get_assembler(op.feop)
-  Uh, Uht, assem
+  Uh, Uht
 end
 
 function _allocate_state(fesp::FESpace)
