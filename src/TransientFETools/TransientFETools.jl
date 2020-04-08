@@ -56,6 +56,7 @@ import Gridap.FESpaces: FESolver
 import GridapTimeStepper.ODETools: ODESolver
 import Gridap.Algebra: solve!
 import GridapTimeStepper.ODETools: solve_step!
+export test_transient_fe_solver
 
 export TransientFEFunction
 import Gridap.FESpaces: FEFunction

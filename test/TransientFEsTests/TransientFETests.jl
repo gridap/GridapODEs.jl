@@ -97,6 +97,11 @@ ls = LUSolver()
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
+test_transient_fe_solver(solver,op,u0,t0,tf)
+  solution = solve(solver,op,u0,t0,tf)
+  # @santiagobadia : Do it!
+  # test_transient_fe_solution(solution)
+end
 
 odeop = get_algebraic_operator(op)
 sol_ode_t = solve(odes,odeop,_u0,t0,tF)
