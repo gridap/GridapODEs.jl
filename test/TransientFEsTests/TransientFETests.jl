@@ -136,54 +136,54 @@ end
 
 # @santiagobadia : Now it is time to check the FE problem !!!
 
-##
-# Base.iterate(sol_ode_t)
-uf = copy(sol.u0)
-u0 = copy(sol.u0)
-cache = nothing
-t0 = sol.t0
-op_state = allocate_state(sol.op)
-
-solver = odes
-
-
-
-op = sol.op
-# uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
-# function solve_step!(
-#   uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_state,cache) # -> (uF,tF)
-dt = solver.dt
-tf = t0+dt
-update_state!(op_state,op,tf)
-using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
-nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
-# cache =
-solve!(uf,solver.nls,nlop)
-using GridapTimeStepper.ODETools: allocate_residual
-allocate_residual(nlop,u0)
-# @show nlop.op_state
-allocate_residual(nlop.odeop,u0)
-
-# Solve the nonlinear problem
-# if (cache==nothing)
-# else
-#   solve!(uf,solver.nls,nlop,cache)
-# end
-
-
-
-# uf, tf, op_state, cache =
-solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
-# @test test_ode_operator(odeop,0.0,_u0,_u0)
-
-# test_ode_solution(sol_ode_t)
-
-
-# @test test_ode_solver(odes,odeop,_u0,t0,tF)
-
-
+# ##
+# # Base.iterate(sol_ode_t)
+# uf = copy(sol.u0)
+# u0 = copy(sol.u0)
+# cache = nothing
+# t0 = sol.t0
+# op_state = allocate_state(sol.op)
 #
-
+# solver = odes
+#
+#
+#
+# op = sol.op
+# # uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
+# # function solve_step!(
+# #   uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_state,cache) # -> (uF,tF)
+# dt = solver.dt
+# tf = t0+dt
+# update_state!(op_state,op,tf)
+# using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
+# nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
+# # cache =
+# solve!(uf,solver.nls,nlop)
+# using GridapTimeStepper.ODETools: allocate_residual
+# allocate_residual(nlop,u0)
+# # @show nlop.op_state
+# allocate_residual(nlop.odeop,u0)
+#
+# # Solve the nonlinear problem
+# # if (cache==nothing)
+# # else
+# #   solve!(uf,solver.nls,nlop,cache)
+# # end
+#
+#
+#
+# # uf, tf, op_state, cache =
+# solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
+# # @test test_ode_operator(odeop,0.0,_u0,_u0)
+#
+# # test_ode_solution(sol_ode_t)
+#
+#
+# # @test test_ode_solver(odes,odeop,_u0,t0,tF)
+#
+#
+# #
+#
 
 
 
