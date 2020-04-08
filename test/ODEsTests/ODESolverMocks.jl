@@ -10,6 +10,8 @@ import GridapTimeStepper.ODETools: zero_initial_guess
 import GridapTimeStepper.ODETools: residual!
 import GridapTimeStepper.ODETools: jacobian!
 import GridapTimeStepper.ODETools: solve!
+import GridapTimeStepper.ODETools: allocate_residual
+import GridapTimeStepper.ODETools: allocate_jacobian
 
 struct OperatorMock <: NonlinearOperator
   odeop
@@ -39,11 +41,11 @@ function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
 end
 
 function allocate_residual(op::OperatorMock,x::AbstractVector)
-  allocate_residual(op.odeop,x)
+  allocate_residual(op.odeop,x,op.state)
 end
 
 function allocate_jacobian(op::OperatorMock,x::AbstractVector)
-  allocate_jacobian(op.odeop,x)
+  allocate_jacobian(op.odeop,x,op.state)
 end
 
 function zero_initial_guess(::Type{T},op::OperatorMock) where T

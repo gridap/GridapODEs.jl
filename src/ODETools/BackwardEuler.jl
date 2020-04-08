@@ -16,9 +16,9 @@ function solve_step!(
   # Solve the nonlinear problem
   # @santiagobadia : Commented for the moment
   if (cache==nothing)
-    # cache = solve!(uf,solver.nls,nlop)
+    cache = solve!(uf,solver.nls,nlop)
   else
-    # solve!(uf,solver.nls,nlop,cache)
+    solve!(uf,solver.nls,nlop,cache)
   end
 
   # Return pair
