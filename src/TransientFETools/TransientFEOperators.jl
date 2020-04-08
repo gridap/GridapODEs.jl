@@ -30,7 +30,7 @@ function jacobian!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht,state)
   @notimplemented
 end
 
-function jacobian_t!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht,state)
+function jacobian_t!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht,duht_du,state)
   @notimplemented
 end
 
@@ -107,7 +107,7 @@ function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
 end
 
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t,state)#,assem)
+  t::Real,uh,uh_t,duht_du::Real,state)#,assem)
   Uh, Uht = state
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)

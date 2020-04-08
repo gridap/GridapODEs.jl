@@ -10,8 +10,8 @@ export get_trial_space
 import Gridap.FESpaces: FESpace
 import Gridap.FESpaces: SingleFieldFESpace
 import Gridap.FESpaces: TrialFESpace
-import Gridap.FESpaces: TrialFESpace!
 import Gridap.FESpaces: get_dirichlet_values
+using Gridap.FESpaces: TrialFESpace!
 
 export TransientFETerm
 import Gridap.FESpaces: FETerm
@@ -40,7 +40,7 @@ import Gridap.FESpaces: collect_cell_residual
 import Gridap.FESpaces: collect_cell_jacobian
 import Gridap.FESpaces: assemble_vector!
 import Gridap.FESpaces: assemble_matrix!
-import Gridap.FESpaces: alocate_vector
+import Gridap.FESpaces: allocate_vector
 import Gridap.FESpaces: allocate_matrix
 using Gridap.FESpaces: is_a_fe_function
 using Gridap.FESpaces: is_a_fe_cell_basis

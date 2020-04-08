@@ -45,3 +45,13 @@ function HomogeneousTrialFESpace(U::FESpace)
   # TrialFESpace with dirichletvalues
   # TrialFESpace(U,dirichlet_vals)
 end
+
+function test_transient_trial_fe_space(Uh::TransientTrialFESpace)
+  Uh0=Uh(0.0)
+  Uh00=Uh0(0.0)
+  Uht=∂(Uh)
+  Uht0=Uht(0.0)
+  Uhtt=∂(Uht)
+  Uh0t = ∂t(Uh0)
+  true
+end

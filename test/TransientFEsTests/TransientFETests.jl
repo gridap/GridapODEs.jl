@@ -42,6 +42,8 @@ V0 = TestFESpace(
 
 
 U = TransientTrialFESpace(V0,u)
+@test test_transient_trial_fe_space(U)
+
 U0 = U(1.0)
 ud0 = copy(get_dirichlet_values(U0))
 _ud0 = get_dirichlet_values(U0)
@@ -53,6 +55,10 @@ all(_ud0 .≈ _ud1)
 
 Ut = ∂t(U)
 Ut0 = Ut(0.0)
+
+using Gridap.FESpaces: TrialFESpace!
+TrialFESpace!(Ut0,u(0))
+
 Ut1 = Ut(1.0)
 utd0 = copy(get_dirichlet_values(Ut0))
 utd1 = copy(get_dirichlet_values(Ut1))
@@ -97,6 +103,54 @@ odeop = get_algebraic_operator(op)
 sol_ode_t = solve(odes,odeop,_u0,t0,tF)
 typeof(sol_ode_t)
 
+sol = sol_ode_t
+
+_t_n = t0
+Base.iterate(sol_ode_t)
+for (u_n, t_n) in sol_ode_t
+  global _t_n
+  _t_n += dt
+  @test t_n≈_t_n
+end
+
+##
+# Base.iterate(sol_ode_t)
+uf = copy(sol.u0)
+u0 = copy(sol.u0)
+cache = nothing
+t0 = sol.t0
+op_state = allocate_state(sol.op)
+
+solver = odes
+
+
+
+op = sol.op
+# uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
+# function solve_step!(
+#   uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_state,cache) # -> (uF,tF)
+dt = solver.dt
+tf = t0+dt
+update_state!(op_state,op,tf)
+using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
+nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
+# cache =
+solve!(uf,solver.nls,nlop)
+using GridapTimeStepper.ODETools: allocate_residual
+allocate_residual(nlop,u0)
+# @show nlop.op_state
+allocate_residual(nlop.odeop,u0)
+
+# Solve the nonlinear problem
+# if (cache==nothing)
+# else
+#   solve!(uf,solver.nls,nlop,cache)
+# end
+
+
+
+# uf, tf, op_state, cache =
+solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
 # @test test_ode_operator(odeop,0.0,_u0,_u0)
 
 # test_ode_solution(sol_ode_t)
@@ -110,13 +164,6 @@ typeof(sol_ode_t)
 
 
 
-# _t_n = t0
-# Base.iterate(sol_ode_t)
-# for (u_n, t_n) in sol_ode_t
-#   global _t_n
-#   _t_n += dt
-#   @test t_n≈_t_n
-# end
 
 
 

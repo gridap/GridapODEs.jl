@@ -33,12 +33,13 @@ end
 _update_state!(state,::FESpace,t) = nothing
 
 function _update_state!(state,tfesp::TransientTrialFESpace,t::Real)
-  Uh, Uht, assem = state
-  Uhnew = TrialFESpace!(Uh,tfesp.dirichlet_t(t))
+  Uh, Uht = state
+  TrialFESpace!(Uh,0.0)
+  TrialFESpace!(Uh,tfesp.dirichlet_t(t))
   fun = tfesp.dirichlet_t
   fun_t = ∂t(fun)
-  Uhtnew = TrialFESpace!(Uht,fun_t(t))
-  Uhnew, Uhtnew, assem
+  TrialFESpace!(Uht,fun_t(t))
+  Uh, Uht
 end
 
 function allocate_residual(op::ODEOpFromFEOp,uhF::AbstractVector,op_state)
@@ -67,9 +68,9 @@ function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVect
   jacobian!(A,op.feop,t,uh,uht,op_state)
 end
 
-function jacobian_t!(A::AbstractMatrix,op::ODEOpFromFEOp,t,uhF,uhtF,op_state)
+function jacobian_t!(J::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,dut_u::Real,op_state)
   Uh, Uht = op_state
   uh = FEFunction(Uh,uhF)
   uht = FEFunction(Uht,uhtF)
-  jacobian_t!(A,op.feop,t,uh,uht,op_state)
+  jacobian_t!(J,op.feop,t,uh,uht,dut_u,op_state)
 end

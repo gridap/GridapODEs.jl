@@ -10,7 +10,7 @@ function solve_step!(
   dt = solver.dt
   tf = t0+dt
   update_state!(op_state,op,tf)
-  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0) # See below
+  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
 
   # Solve the nonlinear problem
   if (cache==nothing)
@@ -30,9 +30,9 @@ struct BackwardEulerNonlinearOperator <: NonlinearOperator
   dt::Float64
   u0::AbstractVector
   op_state
-  function BackwardEulerNonlinearOperator(odeop::ODEOperator,tF::Float64,dt::Float64,u0::AbstractVector)
-    new(odeop,tF,dt,u0,nothing)
-  end
+  # function BackwardEulerNonlinearOperator(odeop::ODEOperator,tF::Float64,dt::Float64,u0::AbstractVector)
+  #   new(odeop,tF,dt,u0,)
+  # end
 end
 
 function residual!(b::AbstractVector,op::BackwardEulerNonlinearOperator,x::AbstractVector)
