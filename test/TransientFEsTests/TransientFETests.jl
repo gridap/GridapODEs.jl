@@ -106,33 +106,33 @@ solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 odeop = get_algebraic_operator(op)
 sol_ode_t = solve(odes,odeop,_u0,t0,tF)
 # test_ode_solution(sol_ode_t)
-state = iterate(sol_ode_t)
-sol = sol_ode_t
-
-uf = copy(sol.u0)
-u0 = copy(sol.u0)
-cache = nothing
-t0 = sol.t0
-op_state = allocate_state(sol.op)
-
-# Solve step
-uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
-
-# Update
-u0 .= uf
-state = (uf,u0,tf,cache)
-
-
-
-sol = sol_ode_t
-
-_t_n = t0
-Base.iterate(sol_ode_t)
-for (u_n, t_n) in sol_ode_t
-  global _t_n
-  _t_n += dt
-  @test t_n≈_t_n
-end
+# state = iterate(sol_ode_t)
+# sol = sol_ode_t
+#
+# uf = copy(sol.u0)
+# u0 = copy(sol.u0)
+# cache = nothing
+# t0 = sol.t0
+# op_state = allocate_state(sol.op)
+#
+# # Solve step
+# # uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
+#
+# # Update
+# u0 .= uf
+# state = (uf,u0,tf,cache)
+#
+#
+#
+# sol = sol_ode_t
+#
+# _t_n = t0
+# Base.iterate(sol_ode_t)
+# for (u_n, t_n) in sol_ode_t
+#   global _t_n
+#   _t_n += dt
+#   @test t_n≈_t_n
+# end
 
 # @santiagobadia : Now it is time to check the FE problem !!!
 
@@ -193,7 +193,7 @@ end
 
 
 
-sol_t = solve(solver,op,u0,t0,tF)
+# sol_t = solve(solver,op,u0,t0,tF)
 
 l2(w) = w*w
 h1(w) = a(w,w) + l2(w)
