@@ -78,7 +78,7 @@ uf, tf = current
 # BackwardEulerNonlinearOperator tests
 
 tf = t0+dt
-sop = BackwardEulerNonlinearOperator(op,tf,dt,u0) # See below
+sop = BackwardEulerNonlinearOperator(op,tf,dt,u0,state) # See below
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0
 r = allocate_residual(sop,x)
