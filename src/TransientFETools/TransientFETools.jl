@@ -31,6 +31,14 @@ import GridapTimeStepper.ODETools: jacobian_t!
 export TransientFESolver
 import Gridap.FESpaces: FESolver
 import GridapTimeStepper.ODETools: ODESolver
+import Gridap.Algebra: solve!
+import GridapTimeStepper.ODETools: solve_step!
+
+export TransientFEFunction
+import Gridap.FESpaces: FEFunction
+
+export TransientFESolution
+import Gridap: solve
 
 include("TransientFESpaces.jl")
 
@@ -39,5 +47,7 @@ include("TransientFETerms.jl")
 include("TransientFEOperators.jl")
 
 include("TransientFESolvers.jl")
+
+include("TransientFESolutions.jl")
 
 end #module

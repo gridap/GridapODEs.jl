@@ -81,43 +81,28 @@ dt = 0.1
 
 # u0 = zeros(V0)
 ls = LUSolver()
-nls = NLSolver(ls;show_trace=true,method=:newton)
+# using LineSearches: BackTracking
+nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 
-steps = solve(solver,op) # Return a specialization of TransientFESolution
-for (un,tn) in steps
-   # un is a FE function
-end
-using LineSearches: BackTracking
-nls = NLSolver(
-  show_trace=true, method=:newton, linesearch=BackTracking())
-nlfes = FESolver(nls)
-
-# We create a ODE solver, e.g., Backward-Euler and solve the problem
-# @santiagobadia : BackwardEuler requires a NonlinearSolver but we
-# also need for FE machinery a NonlinearFESolver. What to do here?
-# I don't want to create a method for every solver... How can I solve it?
-be = BackwardEuler(nlfes.nls,dt)
-
-sol_t = solve(be,op,u0,t0,tF)
-isa(be,ODESolver)
-isa(op,ODEOperator)
-solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,tf::Real)
+U0 = U(0.0)
+u0 = interpolate_everywhere(U0,0.0)
+sol_t = solve(solver,op,u0,t0,tF)
 
 l2(w) = w*w
 h1(w) = a(w,w) + l2(w)
 ##
 
 # We test it ...
-for (uh_tn, tn) in sol_t
-  u(x::Point) = u(x,tn)
-  ∇u(x::Point) = ∇u(x,tn)
-
-  e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
-  eh1 = sqrt(sum( integrate(h1(e),trian,quad) ))
-  @test el2 < tol
-  @test eh1 < tol
-  # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
-end
+# for (uh_tn, tn) in sol_t
+#   u(x::Point) = u(x,tn)
+#   ∇u(x::Point) = ∇u(x,tn)
+#
+#   e = u(tn) - uh_tn
+#   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+#   eh1 = sqrt(sum( integrate(h1(e),trian,quad) ))
+#   @test el2 < tol
+#   @test eh1 < tol
+#   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
+# end
