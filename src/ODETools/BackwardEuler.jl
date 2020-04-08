@@ -12,11 +12,13 @@ function solve_step!(
   update_state!(op_state,op,tf)
   nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
 
+
   # Solve the nonlinear problem
+  # @santiagobadia : Commented for the moment
   if (cache==nothing)
-    cache = solve!(uf,solver.nls,nlop)
+    # cache = solve!(uf,solver.nls,nlop)
   else
-    solve!(uf,solver.nls,nlop,cache)
+    # solve!(uf,solver.nls,nlop,cache)
   end
 
   # Return pair

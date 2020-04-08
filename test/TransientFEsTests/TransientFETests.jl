@@ -94,18 +94,35 @@ dt = 0.1
 # u0 = zeros(V0)
 ls = LUSolver()
 # using LineSearches: BackTracking
+tol = 1.0
+maxiters = 20
+using Gridap.Algebra: NewtonRaphsonSolver
+# nls = NewtonRaphsonSolver(ls,tol,maxiters)
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 @test test_transient_fe_solver(solver,op,u0,t0,tF)
 
-
-
-
-
 odeop = get_algebraic_operator(op)
 sol_ode_t = solve(odes,odeop,_u0,t0,tF)
-typeof(sol_ode_t)
+# test_ode_solution(sol_ode_t)
+state = iterate(sol_ode_t)
+sol = sol_ode_t
+
+uf = copy(sol.u0)
+u0 = copy(sol.u0)
+cache = nothing
+t0 = sol.t0
+op_state = allocate_state(sol.op)
+
+# Solve step
+uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
+
+# Update
+u0 .= uf
+state = (uf,u0,tf,cache)
+
+
 
 sol = sol_ode_t
 
@@ -116,6 +133,8 @@ for (u_n, t_n) in sol_ode_t
   _t_n += dt
   @test t_n≈_t_n
 end
+
+# Now it is time to check the FE problem !!!
 
 ##
 # Base.iterate(sol_ode_t)

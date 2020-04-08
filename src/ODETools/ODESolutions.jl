@@ -33,25 +33,25 @@ function Base.iterate(sol::GenericODESolution)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,cache)
+  state = (uf,u0,tf,op_state,cache)
 
   return (uf, tf), state
 end
 
 function Base.iterate(sol::GenericODESolution, state)
 
-  uf,u0,t0,cache = state
+  uf,u0,t0,op_state,cache = state
 
   if t0 > sol.tF
     return nothing
   end
 
   # Solve step
-  uf, tf, state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,state,cache)
+  uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,cache)
+  state = (uf,u0,tf,op_state,cache)
 
   return (uf, tf), state
 end
