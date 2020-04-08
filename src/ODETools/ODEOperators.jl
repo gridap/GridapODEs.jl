@@ -18,7 +18,7 @@ function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u
   @abstractmethod
 end
 
-function allocate_residual(op::ODEOperator,u::AbstractVector)
+function allocate_residual(op::ODEOperator,u::AbstractVector,state)
   @abstractmethod
 end
 
@@ -53,10 +53,10 @@ update_state!(state,op::ODEOperator,t::Real) = @notimplemented
 function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
   state = allocate_state(op)
   state = update_state!(state,op,0.0)
-  r = allocate_residual(op,u)
+  r = allocate_residual(op,u,state)
   residual!(r,op,t,u,u_t,state)
-  J = allocate_jacobian(op,u)
+  J = allocate_jacobian(op,u,state)
   jacobian!(J,op,t,u,u_t,state)
-  jacobian_t!(J,op,t,u,u_t,0.0,state)
+  jacobian_t!(J,op,t,u,u_t,state)
   true
 end

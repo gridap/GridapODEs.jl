@@ -3,7 +3,7 @@ function get_cell_residual(fet::FETerm,t,uh,uh_t,v)
 end
 
 function get_cell_jacobian(fet::FETerm,t,uh,uh_t,du,v)
-  get_cell_residual(fet,uh,du,v)
+  get_cell_jacobian(fet,uh,du,v)
 end
 
 function get_cell_jacobian_t(fet::FETerm,t,uh,uh_t,du_t,v)
@@ -37,7 +37,7 @@ function get_cell_residual(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,v)
   _v = restrict(v,tr.trian)
   _uh = restrict(uh,tr.trian)
   _uh_t = restrict(uh_t,tr.trian)
-  integrate(tr.res(_uh,_uh_t,_v),t.trian,t.quad)
+  integrate(tr.res(t,_uh,_uh_t,_v),tr.trian,tr.quad)
 end
 
 function get_cell_jacobian(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,du,v)
@@ -49,7 +49,7 @@ function get_cell_jacobian(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,du
   _uh = restrict(uh,tr.trian)
   _uh_t = restrict(uh_t,tr.trian)
   _du = restrict(du,tr.trian)
-  integrate(tr.jac(t,_uh,_uh_t,_du,_v),t.trian,t.quad)
+  integrate(tr.jac(t,_uh,_uh_t,_du,_v),tr.trian,tr.quad)
 end
 
 function get_cell_jacobian_t(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,du_t,v)
@@ -74,14 +74,15 @@ function get_cell_id(t::TransientFETermFromIntegration)
   get_cell_id(t.trian)
 end
 
-function collect_cell_residual(t::Real,uh,uh_t,v,terms::TransientFETerm)
+function collect_cell_residual(t::Real,uh,uh_t,v,terms)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   @assert is_a_fe_cell_basis(v)
   w = []
   r = []
-  for term in terms
-    cellvals = get_cell_residual(t,term,uh,uh_t,v)
+  # @santiagobadia : I am not sure what is going on?????
+  for term in [terms]
+    cellvals = get_cell_residual(term,t,uh,uh_t,v)
     cellids = get_cell_id(term)
     _push_vector_contribution!(w,r,cellvals,cellids)
   end
@@ -96,8 +97,26 @@ function collect_cell_jacobian(t::Real,uh,uh_t,du,v,terms)
   w = []
   r = []
   c = []
-  for term in terms
+  # @santiagobadia : Error to be checked, hack
+  for term in [terms]
     cellvals = get_cell_jacobian(term,t,uh,uh_t,du,v)
+    cellids = get_cell_id(term)
+    _push_matrix_contribution!(w,r,c,cellvals,cellids)
+  end
+  (w,r,c)
+end
+
+function collect_cell_jacobian_t(t::Real,uh,uh_t,du,v,terms)
+  @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
+  @assert is_a_fe_cell_basis(v)
+  @assert is_a_fe_cell_basis(du)
+  w = []
+  r = []
+  c = []
+  # @santiagobadia : Error to be checked, hack
+  for term in [terms]
+    cellvals = get_cell_jacobian_t(term,t,uh,uh_t,du,v)
     cellids = get_cell_id(term)
     _push_matrix_contribution!(w,r,c,cellvals,cellids)
   end

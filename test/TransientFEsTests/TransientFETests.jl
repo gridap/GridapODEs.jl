@@ -2,7 +2,7 @@ using Gridap
 using Test
 using GridapTimeStepper.ODETools
 using GridapTimeStepper.TransientFETools
-
+using Gridap.FESpaces: get_algebraic_operator
 
 # First, we define the transient problem
 u(x,t) = (x[1] + x[2])*t
@@ -44,9 +44,12 @@ V0 = TestFESpace(
 U = TransientTrialFESpace(V0,u)
 U0 = U(1.0)
 ud0 = copy(get_dirichlet_values(U0))
+_ud0 = get_dirichlet_values(U0)
 U1 = U(2.0)
 ud1 = copy(get_dirichlet_values(U1))
+_ud1 = get_dirichlet_values(U1)
 @test all(ud0 .≈ 0.5ud1)
+all(_ud0 .≈ _ud1)
 
 Ut = ∂t(U)
 Ut0 = Ut(0.0)
@@ -88,6 +91,38 @@ solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 
 U0 = U(0.0)
 u0 = interpolate_everywhere(U0,0.0)
+_u0 = get_free_values(u0)
+
+odeop = get_algebraic_operator(op)
+sol_ode_t = solve(odes,odeop,_u0,t0,tF)
+typeof(sol_ode_t)
+
+# @test test_ode_operator(odeop,0.0,_u0,_u0)
+
+# test_ode_solution(sol_ode_t)
+
+
+# @test test_ode_solver(odes,odeop,_u0,t0,tF)
+
+
+#
+
+
+
+
+# _t_n = t0
+# Base.iterate(sol_ode_t)
+# for (u_n, t_n) in sol_ode_t
+#   global _t_n
+#   _t_n += dt
+#   @test t_n≈_t_n
+# end
+
+
+
+
+
+
 sol_t = solve(solver,op,u0,t0,tF)
 
 l2(w) = w*w

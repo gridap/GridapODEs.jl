@@ -12,7 +12,7 @@ function solve(
   GenericODESolution(solver,op,u0,t0,tf)
 end
 
-function test_ode_solver(solver::ODESolver,op::ODEOperator,u0,t0,uf,tf)
+function test_ode_solver(solver::ODESolver,op::ODEOperator,u0,t0,tf)
   solution = solve(solver,op,u0,t0,tf)
   test_ode_solution(solution)
 end

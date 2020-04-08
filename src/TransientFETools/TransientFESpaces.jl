@@ -19,12 +19,13 @@ function (fes::TransientTrialFESpace)(t::Real)
   TrialFESpace(fes.dirichlet_values,fes.space,dir_t)
 end
 
-using Gridap.FESpaces: _prepare_trial_cell_basis
-using Gridap.FESpaces: constraint_style
-
-function TrialFESpace(dir_values::AbstractVector,fesp,dir_funs)
-  TrialFESpace(fesp,dir_values,_prepare_trial_cell_basis(fesp),constraint_style(fesp))
-end
+# # @santiagobadia : Using private methods from Gridal
+# using Gridap.FESpaces: _prepare_trial_cell_basis
+# using Gridap.FESpaces: constraint_style
+#
+# function TrialFESpace(dir_values::AbstractVector,fesp,dir_funs)
+#   TrialFESpace(fesp,dir_values,_prepare_trial_cell_basis(fesp),constraint_style(fesp))
+# end
 
 
 (tfes::FESpace)(t::Real) = tfes
@@ -36,9 +37,11 @@ end
 
 # to gridap
 function HomogeneousTrialFESpace(U::FESpace)
- dirichlet_vals = similar(get_dirichlet_values(U))
-  fill!(dirichlet_vals,zero(eltype(dirichlet_vals)))
+  # @santiagobadia : To be improved
+  TrialFESpace(U,0.0)
+ # dirichlet_vals = similar(get_dirichlet_values(U))
+  # fill!(dirichlet_vals,zero(eltype(dirichlet_vals)))
   # to be done in Gridap
   # TrialFESpace with dirichletvalues
-  TrialFESpace(U,dirichlet_values)
+  # TrialFESpace(U,dirichlet_vals)
 end

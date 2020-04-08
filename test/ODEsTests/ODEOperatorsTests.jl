@@ -18,10 +18,10 @@ u_t = ones(2)*2.0
 state = allocate_state(op)
 state = update_state!(state,op,0.0)
 
-r = allocate_residual(op,u)
+r = allocate_residual(op,u,state)
 @test r == zeros(2)
 
-J = allocate_jacobian(op,u)
+J = allocate_jacobian(op,u,state)
 @test J == zeros(2,2)
 
 t = 0.0

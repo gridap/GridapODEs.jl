@@ -101,7 +101,7 @@ uf
 @test tf==t0+dt
 @test all(uf.≈1+11/9)
 
-@test test_ode_solver(odesol,op,u0,t0,uf,tf)
-test_ode_solver(odesol,op,u0,t0,uf,tf)
+@test test_ode_solver(odesol,op,u0,t0,tf)
+test_ode_solver(odesol,op,u0,t0,tf)
 
 end #module
