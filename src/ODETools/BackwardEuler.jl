@@ -46,7 +46,8 @@ end
 function jacobian!(A::AbstractMatrix,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
   vF = (x-op.u0)/op.dt
-  fill_entries!(A,0.0)
+  z = zero(eltype(A))
+  fill_entries!(A,z)
   jacobian!(A,op.odeop,op.tF,uF,vF,op.op_state)
   jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt),op.op_state)
 end
@@ -60,7 +61,7 @@ function allocate_jacobian(op::BackwardEulerNonlinearOperator,x::AbstractVector)
 end
 
 function zero_initial_guess(::Type{T},op::BackwardEulerNonlinearOperator) where T
-  x0 = similar(op.u0)
-  fill!(x0,zero(eltype(x0)))
+  x0 = similar(op.u0,T)
+  fill!(x0,zero(T))
   x0
 end

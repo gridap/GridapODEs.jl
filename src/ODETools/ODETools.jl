@@ -27,8 +27,10 @@ import Gridap.Algebra: zero_initial_guess
 
 export BackwardEuler
 import Gridap.Algebra: fill_entries!
+
 export ODESolution
 export test_ode_solution
+import Base: iterate
 
 include("ODEOperators.jl")
 

@@ -5,9 +5,17 @@ using GridapTimeStepper.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
 
 # First, we define the transient problem
-u(x,t) = (x[1] + x[2])*t
+# u(x,t) = (x[1] + x[2])*t
+# u(t::Real) = x -> u(x,t)
+# ∇u(x,t) = VectorValue(1,1)*t
+# ∇u(t::Real) = x -> ∇u(x,t)
+# import Gridap: ∇
+# ∇(::typeof(u)) = ∇u
+# ∇(u) === ∇u
+amp = 1.0
+u(x,t) = amp*(x[1] + x[2])*t
 u(t::Real) = x -> u(x,t)
-∇u(x,t) = VectorValue(1,1)*t
+∇u(x,t) = amp*VectorValue(1,1)*t
 ∇u(t::Real) = x -> ∇u(x,t)
 import Gridap: ∇
 ∇(::typeof(u)) = ∇u
@@ -24,15 +32,15 @@ import Gridap: ∇
 #   @show ∇u(p)
 # end
 
-∂tu(t) = x -> x[1]+x[2]
+∂tu(t) = x -> amp*(x[1]+x[2])
 import GridapTimeStepper.TransientFETools: ∂t
 ∂t(::typeof(u)) = ∂tu
 @test ∂t(u) === ∂tu
 
-f(t) = x -> x[1]+x[2]
+f(t) = x -> (x[1]+x[2])
 
 domain = (0,1,0,1)
-partition = (4,4)
+partition = (2,2)
 model = CartesianDiscreteModel(domain,partition)
 
 order = 1
@@ -77,14 +85,38 @@ res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
 
+U0 = U(0.0)
+_res(u,v) = a(u,v) + 10.0*u*v - b(v,0.0)
+_jac(u,du,v) = a(du,v) + 10.0*du*v
+_t_Ω = FETerm(_res,_jac,trian,quad)
+_op = FEOperator(U0,V0,_t_Ω)
+
+uh = interpolate_everywhere(U0,0.0)#1.0)
+using Gridap.FESpaces: allocate_residual, allocate_jacobian
+_r = allocate_residual(_op,uh)
+_J = allocate_jacobian(_op,uh)
+using Gridap.FESpaces: residual!, jacobian!
+residual!(_r,_op,uh)
+jacobian!(_J,_op,uh)
+
 # TransientFETerm or FETerm, what do we prefer?
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
-# We create the transient operator
 op = TransientFEOperator(U,V0,t_Ω)
+odeop = get_algebraic_operator(op)
+state = allocate_state(odeop)
+
+r = allocate_residual(op,uh)
+J = allocate_jacobian(op,uh,state)
+uh10 = interpolate_everywhere(U0,0.0)#10.0)
+residual!(r,op,0.0,uh,uh10,state)
+jacobian!(J,op,1.0,uh,uh10,state)
+jacobian_t!(J,op,1.0,uh,uh10,10.0,state)
+@test all(r.≈_r)
+@test all(J.≈_J)
+
 U0 = U(0.0)
-u0 = interpolate_everywhere(U0,0.0)
-_u0 = get_free_values(u0)
-@test test_transient_fe_operator(op,u0)
+uh0 = interpolate_everywhere(U0,0.0)
+@test test_transient_fe_operator(op,uh0)
 
 u0 = u(0.0)
 t0 = 0.0
@@ -101,113 +133,135 @@ using Gridap.Algebra: NewtonRaphsonSolver
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
-@test test_transient_fe_solver(solver,op,u0,t0,tF)
+@test test_transient_fe_solver(solver,op,uh0,t0,tF)
 
+residual!(r,op,0.1,uh,uh,state)
+jacobian!(J,op,1.0,uh,uh10,state)
+jacobian_t!(J,op,1.0,uh,uh10,10.0,state)
+
+u0 = get_free_values(uh0)
+odes
+solver = odes
+# op = odeop
+t0 = 0.0
+op_state = allocate_state(odeop)
+cache = nothing
+uf = copy(u0)
+dt = solver.dt
+tf = t0+dt
+update_state!(op_state,odeop,tf)
+using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
+nlop = BackwardEulerNonlinearOperator(odeop,tf,dt,u0,op_state)
+# cache = solve!(uf,solver.nls,nlop)
+
+x = copy(nlop.u0)
+# r = copy(nlop.u0)
+# zeros(size(x))
+
+b1 = allocate_residual(nlop,x)
+residual!(b1,nlop,x)
+b2 = allocate_residual(nlop,x)
+residual!(b2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_state)
+@test all(b1 .≈ b2)
+J1 = allocate_jacobian(nlop,x)
+jacobian!(J1,nlop,x)
+J2 = allocate_jacobian(nlop,x)
+jacobian!(J2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_state)
+jacobian_t!(J2,nlop.odeop,nlop.tF,x,10.0*x,10.0,nlop.op_state)
+@test all(J1 .≈ J2)
+using Gridap.Algebra: test_nonlinear_operator
+test_nonlinear_operator(nlop,x,b1,jac=J1)
+
+x .= 0.0
+r = allocate_residual(nlop,x)
+residual!(r,nlop,x)
+J = allocate_jacobian(nlop,x)
+jacobian!(J,nlop,x)
+
+cache = solve!(uf,solver.nls,nlop)
+df = cache.df
+ns = cache.ns
+
+function linsolve!(x,A,b)
+  numerical_setup!(ns,A)
+  solve!(x,ns,b)
+end
+
+p = copy(x)
+p .= 0.0
+l_sol = linsolve!(p,J,-r)
+J*l_sol .≈ -r
+x = x + l_sol
+@test all(abs.(residual!(r,nlop,x)) .< 1e-6)
+
+residual!(r,nlop,x)
+jacobian!(J,nlop,x)
+p .= 0.0
+l_sol = linsolve!(p,J,-r)
+
+cache = solve!(uf,solver.nls,nlop)
+@test all(uf .≈ x)
+solve!(uf,solver.nls,nlop,cache)
+@test all(uf .≈ x)
+
+#
+# Now we must test the
+uf .= 0.0
+x = copy(nlop.u0)
+cache = Gridap.Algebra._new_nlsolve_cache(x,nls,nlop)
+df = cache.df
+ns = cache.ns
+x .= 0.0
+l_sol = linsolve!(x,df.DF,df.F)
+@test all(df.DF*l_sol.≈df.F)
+x .= 0
+Gridap.Algebra.nlsolve(df,x;linsolve=linsolve!,nls.kwargs...)
+
+using Gridap.FESpaces: get_algebraic_operator
 odeop = get_algebraic_operator(op)
-sol_ode_t = solve(odes,odeop,_u0,t0,tF)
-# test_ode_solution(sol_ode_t)
-# state = iterate(sol_ode_t)
-# sol = sol_ode_t
-#
-# uf = copy(sol.u0)
-# u0 = copy(sol.u0)
-# cache = nothing
-# t0 = sol.t0
-# op_state = allocate_state(sol.op)
-#
-# # Solve step
-# # uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
-#
-# # Update
-# u0 .= uf
-# state = (uf,u0,tf,cache)
-#
-#
-#
-# sol = sol_ode_t
-#
-# _t_n = t0
+sol_ode_t = solve(odes,odeop,u0,t0,tF)
+
+test_ode_solution(sol_ode_t)
+_t_n = t0
 # Base.iterate(sol_ode_t)
-# for (u_n, t_n) in sol_ode_t
-#   global _t_n
-#   _t_n += dt
-#   @test t_n≈_t_n
-# end
-
-# @santiagobadia : Now it is time to check the FE problem !!!
-
-# ##
-# # Base.iterate(sol_ode_t)
-# uf = copy(sol.u0)
-# u0 = copy(sol.u0)
-# cache = nothing
-# t0 = sol.t0
-# op_state = allocate_state(sol.op)
-#
-# solver = odes
-#
-#
-#
-# op = sol.op
-# # uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
-# # function solve_step!(
-# #   uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_state,cache) # -> (uF,tF)
-# dt = solver.dt
-# tf = t0+dt
-# update_state!(op_state,op,tf)
-# using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
-# nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
-# # cache =
-# solve!(uf,solver.nls,nlop)
-# using GridapTimeStepper.ODETools: allocate_residual
-# allocate_residual(nlop,u0)
-# # @show nlop.op_state
-# allocate_residual(nlop.odeop,u0)
-#
-# # Solve the nonlinear problem
-# # if (cache==nothing)
-# # else
-# #   solve!(uf,solver.nls,nlop,cache)
-# # end
-#
-#
-#
-# # uf, tf, op_state, cache =
-# solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
-# # @test test_ode_operator(odeop,0.0,_u0,_u0)
-#
-# # test_ode_solution(sol_ode_t)
-#
-#
-# # @test test_ode_solver(odes,odeop,_u0,t0,tF)
-#
-#
-# #
-#
+for (u_n, t_n) in sol_ode_t
+  global _t_n
+  _t_n += dt
+  @test t_n≈_t_n
+  @test all(u_n .≈ t_n)
+end
 
 
+solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
+sol_t = solve(solver,op,uh0,t0,tF)
 
-
-
-
-
-
-
-# sol_t = solve(solver,op,u0,t0,tF)
+_t_n = 0.0
+for (u_n, t_n) in sol_t
+  global _t_n
+  _t_n += dt
+  @show t_n
+  @show _t_n
+  @show u_n.dirichlet_values
+  @test t_n≈_t_n
+  @test all(u_n.free_values .≈ t_n)
+end
 
 l2(w) = w*w
-h1(w) = a(w,w) + l2(w)
-##
+# h1(w) = a(w,w) + l2(w)
 
-# We test it ...
-# for (uh_tn, tn) in sol_t
-#   u(x::Point) = u(x,tn)
-#   ∇u(x::Point) = ∇u(x,tn)
-#
-#   e = u(tn) - uh_tn
-#   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
-#   eh1 = sqrt(sum( integrate(h1(e),trian,quad) ))
-#   @test el2 < tol
-#   @test eh1 < tol
+
+_t_n = t0
+for (uh_tn, tn) in sol_t
+  # u(x::Point) = u(x,tn)
+  # ∇u(x::Point) = ∇u(x,tn)
+  global _t_n
+  _t_n += dt
+  @test tn≈_t_n
+  e = u(tn) - uh_tn
+  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  # @santiagobadia : Check errors...
+  # eh1 = sqrt(sum( integrate(h1(e),trian,quad) ))
+  @test el2 < tol
+  # @test eh1 < tol
 #   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
-# end
+end

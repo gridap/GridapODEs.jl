@@ -103,7 +103,7 @@ function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   du = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
   cellmats, cellidsrows, cellidscols = collect_cell_jacobian(t,uh,uh_t,du,v,op.terms)
-  assemble_matrix!(A,op.assem_t, cellmats, cellidsrows, cellidscols)
+  assemble_matrix_add!(A,op.assem_t, cellmats, cellidsrows, cellidscols)
   A
 end
 
@@ -115,10 +115,20 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   du_t = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
   # to be implemented... collect_cell_jacobian_t
-  cellmats, cellidsrows, cellidscols = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,op.terms)
-  assemble_matrix!(A,op.assem_t, cellmats, cellidsrows, cellidscols)
+  cellmats, cellidsrows, cellidscols = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,duht_du,op.terms)
+  assemble_matrix_add!(A,op.assem_t, cellmats, cellidsrows, cellidscols)
   A
 end
+
+# function residual_and_jacobian!(b::AbstractVector,A::AbstractMatrix,op::FEOperatorFromTerms,
+#   t::Real,uh,uh_t,duht_du)
+#   @assert is_a_fe_function(uh)
+#   du = get_cell_basis(op.trial)
+#   v = get_cell_basis(op.test)
+#   data = collect_cell_jacobian_and_residual(uh,du,v,op.terms)
+#   assemble_matrix_and_vector!(A, b, op.assem,data...)
+#   (b,A)
+# end
 
 function test_transient_fe_operator(op::TransientFEOperator,uh)
   odeop = get_algebraic_operator(op)

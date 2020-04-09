@@ -12,6 +12,7 @@ export get_trial_space
 import Gridap.FESpaces: FESpace
 import Gridap.FESpaces: SingleFieldFESpace
 import Gridap.FESpaces: TrialFESpace
+import Gridap.FESpaces: get_free_values
 import Gridap.FESpaces: get_dirichlet_values
 using Gridap.FESpaces: TrialFESpace!
 export test_transient_trial_fe_space
@@ -42,7 +43,7 @@ import Gridap.FESpaces: get_algebraic_operator
 import Gridap.FESpaces: collect_cell_residual
 import Gridap.FESpaces: collect_cell_jacobian
 import Gridap.FESpaces: assemble_vector!
-import Gridap.FESpaces: assemble_matrix!
+import Gridap.FESpaces: assemble_matrix_add!
 import Gridap.FESpaces: allocate_vector
 import Gridap.FESpaces: allocate_matrix
 using Gridap.FESpaces: is_a_fe_function
@@ -54,6 +55,7 @@ export test_transient_fe_operator
 export TransientFESolver
 import Gridap.FESpaces: FESolver
 import GridapTimeStepper.ODETools: ODESolver
+import Gridap: solve
 import Gridap.Algebra: solve!
 import GridapTimeStepper.ODETools: solve_step!
 export test_transient_fe_solver
@@ -63,6 +65,9 @@ import Gridap.FESpaces: FEFunction
 
 export TransientFESolution
 import Gridap: solve
+import GridapTimeStepper.ODETools: ODESolution
+import GridapTimeStepper.ODETools: GenericODESolution
+import Base: iterate
 
 include("TransientFESpaces.jl")
 

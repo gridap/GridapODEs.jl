@@ -2,12 +2,12 @@
 abstract type ODESolution <: GridapType end
 
 # First time step
-function Base.iterate(u::ODESolution) # (u0,t0)-> (uf,tf) or nothing
+function iterate(u::ODESolution) # (u0,t0)-> (uf,tf) or nothing
   @abstractmethod
 end
 
 # Following time steps
-function Base.iterate(u::ODESolution,state) # (u0,t0)-> (uf,tf) or nothing
+function iterate(u::ODESolution,state) # (u0,t0)-> (uf,tf) or nothing
   @abstractmethod
 end
 

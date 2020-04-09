@@ -52,7 +52,7 @@ function get_cell_jacobian(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,du
   integrate(tr.jac(t,_uh,_uh_t,_du,_v),tr.trian,tr.quad)
 end
 
-function get_cell_jacobian_t(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,du_t,v)
+function get_cell_jacobian_t(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,du_t,v,duht_du::Real)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   @assert is_a_fe_cell_basis(v)
@@ -61,7 +61,7 @@ function get_cell_jacobian_t(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,
   _uh = restrict(uh,tr.trian)
   _uh_t = restrict(uh_t,tr.trian)
   _du_t = restrict(du_t,tr.trian)
-  integrate(tr.jac_t(t,_uh,_uh_t,_du_t,_v),tr.trian,tr.quad)
+  integrate(duht_du*tr.jac_t(t,_uh,_uh_t,_du_t,_v),tr.trian,tr.quad)
 end
 
 function get_cell_values(tr::TransientFETermFromIntegration,uhd)
@@ -106,7 +106,7 @@ function collect_cell_jacobian(t::Real,uh,uh_t,du,v,terms)
   (w,r,c)
 end
 
-function collect_cell_jacobian_t(t::Real,uh,uh_t,du,v,terms)
+function collect_cell_jacobian_t(t::Real,uh,uh_t,du,v,duht_du::Real,terms)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   @assert is_a_fe_cell_basis(v)
@@ -116,7 +116,7 @@ function collect_cell_jacobian_t(t::Real,uh,uh_t,du,v,terms)
   c = []
   # @santiagobadia : Error to be checked, hack
   for term in [terms]
-    cellvals = get_cell_jacobian_t(term,t,uh,uh_t,du,v)
+    cellvals = get_cell_jacobian_t(term,t,uh,uh_t,du,v,duht_du)
     cellids = get_cell_id(term)
     _push_matrix_contribution!(w,r,c,cellvals,cellids)
   end
