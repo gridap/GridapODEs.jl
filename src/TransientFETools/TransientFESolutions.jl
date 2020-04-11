@@ -1,13 +1,7 @@
-# """
-# A general TransientFESolution
-# """
+ """
+ It represents a FE function at a set of time steps
+ """
 struct TransientFESolution
-  # solver::TransientFESolver
-  # op::TransientFEOperator
-  # u0#::CellField # What should I put here, SingleFieldFEFunction???
-  # We need a name for all FEFunction, why not called FEFunction ???
-  # t0::Real
-  # tF::Real
   odesol::ODESolution
 end
 
