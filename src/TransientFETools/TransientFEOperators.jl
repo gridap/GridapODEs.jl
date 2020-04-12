@@ -70,9 +70,9 @@ at every time step (if transient trial spaces are being used due to variable
 strong Dirichlet boundary conditions)
 """
 function allocate_state(feop::TransientFEOperator)
-  Uh, Uht = _allocate_state(get_trial(feop))
-  assem = get_assembler(feop)
-  Uh, Uht
+  state = _allocate_state(get_trial(feop))
+  # assem = get_assembler(feop)
+  state
 end
 
 """
@@ -166,7 +166,7 @@ function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
 end
 
 function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,state)
-  Uh, Uht = state
+  Uh = state.Uh;  Uht = state.Uht
   @assert is_a_fe_function(uh)
   du = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
@@ -176,7 +176,7 @@ end
 
 function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,state)#,assem)
-  Uh, Uht = state
+  Uh = state.Uh;  Uht = state.Uht
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   du = get_cell_basis(Uh)
@@ -188,7 +188,7 @@ end
 
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,duht_du::Real,state)#,assem)
-  Uh, Uht = state
+  Uh = state.Uh;  Uht = state.Uht
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   du_t = get_cell_basis(Uh)
