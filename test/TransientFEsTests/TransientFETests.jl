@@ -144,14 +144,14 @@ odes
 solver = odes
 # op = odeop
 t0 = 0.0
-op_cache = allocate_cache(odeop)
+ode_cache = allocate_cache(odeop)
 cache = nothing
 uf = copy(u0)
 dt = solver.dt
 tf = t0+dt
-update_cache!(op_cache,odeop,tf)
+update_cache!(ode_cache,odeop,tf)
 using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
-nlop = BackwardEulerNonlinearOperator(odeop,tf,dt,u0,op_cache)
+nlop = BackwardEulerNonlinearOperator(odeop,tf,dt,u0,ode_cache)
 # cache = solve!(uf,solver.nls,nlop)
 
 x = copy(nlop.u0)
@@ -161,13 +161,13 @@ x = copy(nlop.u0)
 b1 = allocate_residual(nlop,x)
 residual!(b1,nlop,x)
 b2 = allocate_residual(nlop,x)
-residual!(b2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_cache)
+residual!(b2,nlop.odeop,nlop.tF,x,10.0*x,nlop.ode_cache)
 @test all(b1 .≈ b2)
 J1 = allocate_jacobian(nlop,x)
 jacobian!(J1,nlop,x)
 J2 = allocate_jacobian(nlop,x)
-jacobian!(J2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_cache)
-jacobian_t!(J2,nlop.odeop,nlop.tF,x,10.0*x,10.0,nlop.op_cache)
+jacobian!(J2,nlop.odeop,nlop.tF,x,10.0*x,nlop.ode_cache)
+jacobian_t!(J2,nlop.odeop,nlop.tF,x,10.0*x,10.0,nlop.ode_cache)
 @test all(J1 .≈ J2)
 using Gridap.Algebra: test_nonlinear_operator
 test_nonlinear_operator(nlop,x,b1,jac=J1)

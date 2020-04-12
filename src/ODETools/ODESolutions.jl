@@ -2,7 +2,7 @@
 # struct ODEState
 #   uf
 #   tf
-#   op_cache
+#   ode_cache
 #   nl_cache
 # end
 
@@ -39,32 +39,32 @@ function Base.iterate(sol::GenericODESolution)
   u0 = copy(sol.u0)
   nl_cache = nothing
   t0 = sol.t0
-  op_cache = allocate_cache(sol.op)
+  ode_cache = allocate_cache(sol.op)
 
   # Solve step
-  uf, tf, op_cache, nl_cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_cache,nl_cache)
+  uf, tf, ode_cache, nl_cache = solve_step!(uf,sol.solver,sol.op,u0,t0,ode_cache,nl_cache)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,op_cache,nl_cache)
+  state = (uf,u0,tf,ode_cache,nl_cache)
 
   return (uf, tf), state
 end
 
 function Base.iterate(sol::GenericODESolution, state)
 
-  uf,u0,t0,op_cache,nl_cache = state
+  uf,u0,t0,ode_cache,nl_cache = state
 
   if t0 > sol.tF
     return nothing
   end
 
   # Solve step
-  uf, tf, op_cache, nl_cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_cache,nl_cache)
+  uf, tf, ode_cache, nl_cache = solve_step!(uf,sol.solver,sol.op,u0,t0,ode_cache,nl_cache)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,op_cache,nl_cache)
+  state = (uf,u0,tf,ode_cache,nl_cache)
 
   return (uf, tf), state
 end

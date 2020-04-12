@@ -14,7 +14,7 @@ abstract type ODEOperator <: GridapType end
 """
 It provides A(t,u,∂tu) for a given (t,u,∂tu)
 """
-function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_cache)
+function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,ode_cache)
   @abstractmethod
 end
 
@@ -27,7 +27,7 @@ end
 """
 It adds [∂A/∂u](t,u,∂tu) for a given (t,u,∂tu) to a given matrix J
 """
-function jacobian!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_cache)
+function jacobian!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,ode_cache)
   @abstractmethod
   # Add values to J
 end
@@ -38,7 +38,7 @@ is a scaling coefficient provided by the `ODESolver`, e.g., 1/Δt for Backward
 Euler; It represents ∂(δt(u))/∂(u), in which δt(⋅) is the approximation of ∂t(⋅)
 in the solver.
 """
-function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,op_cache)
+function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,ode_cache)
   @abstractmethod
   # Add values to J
 end
