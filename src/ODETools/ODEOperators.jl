@@ -52,17 +52,16 @@ end
 """
 Allocates the state data required by the `ODESolution` for a given `ODEOperator`
 """
-allocate_state(op::ODEOperator) = @notimplemented
+allocate_cache(op::ODEOperator) = @notimplemented
 
-update_state!(state,op::ODEOperator,t::Real) = @notimplemented
+update_cache!(state,op::ODEOperator,t::Real) = @notimplemented
 
 """
 Tests the interface of `ODEOperator` specializations
 """
 function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
-  state = allocate_state(op)
-  # state = update_state!(state,op,0.0)
-  update_state!(state,op,0.0)
+  state = allocate_cache(op)
+  update_cache!(state,op,0.0)
   r = allocate_residual(op,u,state)
   residual!(r,op,t,u,u_t,state)
   J = allocate_jacobian(op,u,state)
