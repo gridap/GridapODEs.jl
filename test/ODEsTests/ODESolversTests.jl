@@ -61,7 +61,7 @@ odesol = ODESolverMock(nls,dt)
 uf = copy(u0)
 uf.=1.0
 
-uf, tf, op_cache, cache = solve_step!(uf,odesol,op,u0,t0,op_cache,nothing)
+uf, tf, op_cache, nl_cache = solve_step!(uf,odesol,op,u0,t0,op_cache,nothing)
 uf
 @test tf==t0+dt
 @test all(uf.≈x)
@@ -99,7 +99,8 @@ _J = jacobian(sop,x)
 odesol = BackwardEuler(nls,dt)
 uf = copy(u0)
 uf.=1.0
-uf, tf, op_cache, cache = solve_step!(uf,odesol,op,u0,t0,op_cache,nothing)
+nl_cache = nothing
+uf, tf, op_cache, nl_cache = solve_step!(uf,odesol,op,u0,t0,op_cache,nl_cache)
 uf
 @test tf==t0+dt
 @test all(uf.≈1+11/9)

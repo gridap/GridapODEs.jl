@@ -4,7 +4,7 @@ struct BackwardEuler <: ODESolver
 end
 
 function solve_step!(
-  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_cache,cache) # -> (uF,tF)
+  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_cache,nl_cache) # -> (uF,tF)
 
   # Build the nonlinear problem to solve at this step
   dt = solver.dt
@@ -15,13 +15,13 @@ function solve_step!(
 
   # Solve the nonlinear problem
   if (cache==nothing)
-    cache = solve!(uf,solver.nls,nlop)
+    nl_cache = solve!(uf,solver.nls,nlop)
   else
-    solve!(uf,solver.nls,nlop,cache)
+    solve!(uf,solver.nls,nlop,nl_cache)
   end
 
   # Return pair
-  return (uf,tf,op_cache,cache)
+  return (uf,tf,op_cache,nl_cache)
 end
 
 # Struct representing the nonlinear algebraic problem to be solved at a given step
