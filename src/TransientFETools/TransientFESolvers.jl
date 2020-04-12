@@ -16,8 +16,6 @@ function solve(
 end
 
 function test_transient_fe_solver(solver::TransientFESolver,op::TransientFEOperator,u0,t0,tf)
-  # solution = solve(solver,op,u0,t0,tf)
-  # @santiagobadia : Do it!
-  # test_transient_fe_solution(solution)
-  true
+  solution = solve(solver,op,u0,t0,tf)
+  test_transient_fe_solution(solution)
 end

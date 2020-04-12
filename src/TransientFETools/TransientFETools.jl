@@ -27,8 +27,6 @@ using Gridap.FESpaces: integrate
 import Gridap.Geometry: get_cell_id
 
 export TransientFEOperator
-# export TransientFEOperatorFromTerms
-# import Gridap.FESpaces: get_trial
 using Gridap.FESpaces: Assembler
 using Gridap.FESpaces: SparseMatrixAssembler
 import GridapTimeStepper.ODETools: allocate_cache

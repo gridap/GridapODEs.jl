@@ -1,6 +1,9 @@
-# const ∂t = time_derivative
-
-# TransientFEOPerator cache
+"""
+`TransientFEOperator` cache, which includes two `FESpace` where one stores
+the arrays of fixed Dirichlet values once and overwrite them
+at every time step (if transient trial spaces are being used due to variable
+strong Dirichlet boundary conditions)
+"""
 struct TransientFEOperatorCache
   Uh::FESpace
   Uht::FESpace
@@ -71,7 +74,6 @@ strong Dirichlet boundary conditions)
 """
 function allocate_cache(feop::TransientFEOperator)
   cache = _allocate_cache(get_trial(feop))
-  # assem = get_assembler(feop)
   cache
 end
 

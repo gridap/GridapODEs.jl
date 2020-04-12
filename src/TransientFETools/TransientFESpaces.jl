@@ -25,8 +25,6 @@ end
 
 ∂t(fes::TrialFESpace) = HomogeneousTrialFESpace(fes.space)
 
-
-# to gridap
 function HomogeneousTrialFESpace(U::FESpace)
   # @santiagobadia : To be improved
   TrialFESpace(U,0.0)

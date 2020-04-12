@@ -39,3 +39,9 @@ function Base.iterate(sol::TransientFESolution, state)
   uh = FEFunction(Uh,uf)
   (uh, tf), state
 end
+
+function test_transient_fe_solution(fesol::TransientFESolution)
+  (uf, tf), state = iterate(fesol)
+  (uf, tf), state = iterate(fesol,state)
+  true
+end

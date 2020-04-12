@@ -2,7 +2,11 @@
 # struct ODEOperatorFromFEOperator <: ODEOperator
 #   op::FEOperator
 # end
-
+"""
+A wrapper of `TransientFEOperator` that transforms it to `ODEOperator`, i.e.,
+takes A(t,uh,∂tuh,vh) and returns A(t,uF,∂tuF) where uF and ∂tuF represent the
+free values of the `FEFunction` uh and ∂tuh.
+"""
 struct ODEOpFromFEOp <: ODEOperator
   feop::TransientFEOperator
 end
