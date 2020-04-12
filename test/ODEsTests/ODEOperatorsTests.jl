@@ -15,8 +15,8 @@ u_t = ones(2)*2.0
 @assert(length(u) == 2)
 @assert(length(u_t) == 2)
 
-state = allocate_state(op)
-state = update_state!(state,op,0.0)
+state = allocate_cache(op)
+update_cache!(state,op,0.0)
 
 r = allocate_residual(op,u,state)
 @test r == zeros(2)

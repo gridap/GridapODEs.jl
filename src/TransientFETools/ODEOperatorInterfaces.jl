@@ -7,12 +7,12 @@ struct ODEOpFromFEOp <: ODEOperator
   feop::TransientFEOperator
 end
 
-function allocate_state(op::ODEOpFromFEOp)
-  allocate_state(op.feop)
+function allocate_cache(op::ODEOpFromFEOp)
+  allocate_cache(op.feop)
 end
 
-function update_state!(state,op::ODEOpFromFEOp,t::Real)
-  update_state!(state,op.feop,t)
+function update_cache!(state,op::ODEOpFromFEOp,t::Real)
+  update_cache!(state,op.feop,t)
 end
 
 function allocate_residual(op::ODEOpFromFEOp,uhF::AbstractVector,op_state)

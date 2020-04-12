@@ -3,8 +3,8 @@
 # u_2_t - b * u_1 - c * u_2 = 0
 
 import GridapTimeStepper.ODETools: ODEOperator
-import GridapTimeStepper.ODETools: allocate_state
-import GridapTimeStepper.ODETools: update_state!
+import GridapTimeStepper.ODETools: allocate_cache
+import GridapTimeStepper.ODETools: update_cache!
 import GridapTimeStepper.ODETools: allocate_residual
 import GridapTimeStepper.ODETools: jacobian!
 import GridapTimeStepper.ODETools: jacobian_t!
@@ -45,5 +45,5 @@ function allocate_jacobian(op::ODEOperatorMock,u::AbstractVector,state)
   zeros(2,2)
 end
 
-allocate_state(op::ODEOperatorMock) = nothing
-update_state!(state,op::ODEOperatorMock,t::Real) = nothing
+allocate_cache(op::ODEOperatorMock) = nothing
+update_cache!(state,op::ODEOperatorMock,t::Real) = nothing

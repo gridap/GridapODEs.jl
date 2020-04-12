@@ -12,8 +12,8 @@ import Gridap.Algebra: residual!
 import Gridap.Algebra: jacobian!
 import Gridap.Algebra: allocate_residual
 import Gridap.Algebra: allocate_jacobian
-export allocate_state
-export update_state!
+export allocate_cache
+export update_cache!
 export jacobian!
 export jacobian_t!
 export test_ode_operator

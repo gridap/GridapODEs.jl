@@ -103,7 +103,7 @@ jacobian!(_J,_op,uh)
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(U,V0,t_Ω)
 odeop = get_algebraic_operator(op)
-state = allocate_state(odeop)
+state = allocate_cache(odeop)
 
 r = allocate_residual(op,uh)
 J = allocate_jacobian(op,uh,state)
@@ -144,12 +144,12 @@ odes
 solver = odes
 # op = odeop
 t0 = 0.0
-op_state = allocate_state(odeop)
+op_state = allocate_cache(odeop)
 cache = nothing
 uf = copy(u0)
 dt = solver.dt
 tf = t0+dt
-update_state!(op_state,odeop,tf)
+update_cache!(op_state,odeop,tf)
 using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
 nlop = BackwardEulerNonlinearOperator(odeop,tf,dt,u0,op_state)
 # cache = solve!(uf,solver.nls,nlop)

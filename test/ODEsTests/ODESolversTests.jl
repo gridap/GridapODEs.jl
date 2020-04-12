@@ -28,7 +28,7 @@ u0 = ones(2)*2
 sop = OperatorMock(op,tf,dt,u0)
 isa(sop,NonlinearOperator)
 
-state = allocate_state(op)
+state = allocate_cache(op)
 
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0

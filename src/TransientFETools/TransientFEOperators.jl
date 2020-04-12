@@ -69,8 +69,8 @@ pre-allocate the arrays of fixed Dirichlet values once and overwrite them
 at every time step (if transient trial spaces are being used due to variable
 strong Dirichlet boundary conditions)
 """
-function allocate_state(feop::TransientFEOperator)
-  state = _allocate_state(get_trial(feop))
+function allocate_cache(feop::TransientFEOperator)
+  state = _allocate_cache(get_trial(feop))
   # assem = get_assembler(feop)
   state
 end
@@ -79,8 +79,8 @@ end
 Updates the state, i.e., the strong Dirichlet values when dealing with
 time-dependent Dirichlet data.
 """
-function update_state!(state,feop::TransientFEOperator,t::Real)
-  _update_state!(state,get_trial(feop),t)
+function update_cache!(state,feop::TransientFEOperator,t::Real)
+  _update_cache!(state,get_trial(feop),t)
 end
 
 """
@@ -94,21 +94,21 @@ get_assembler(feop::TransientFEOperator) = @notimplemented
 
 # Internal functions
 
-function _allocate_state(fesp::FESpace)
+function _allocate_cache(fesp::FESpace)
   Uh = fesp
   Uht = HomogeneousTrialFESpace(fesp)
   TransientFEOperatorCache(Uh,Uht)
 end
 
-function _allocate_state(fesp::TransientTrialFESpace)
+function _allocate_cache(fesp::TransientTrialFESpace)
   Uh = HomogeneousTrialFESpace(fesp.space)
   Uht = HomogeneousTrialFESpace(fesp.space)
   TransientFEOperatorCache(Uh,Uht)
 end
 
-_update_state!(state,::FESpace,t) = nothing
+_update_cache!(state,::FESpace,t) = nothing
 
-function _update_state!(state,tfesp::TransientTrialFESpace,t::Real)
+function _update_cache!(state,tfesp::TransientTrialFESpace,t::Real)
   Uh = state.Uh; Uht = state.Uht
   TrialFESpace!(Uh,0.0)
   TrialFESpace!(Uh,tfesp.dirichlet_t(t))
@@ -116,7 +116,6 @@ function _update_state!(state,tfesp::TransientTrialFESpace,t::Real)
   fun_t = ∂t(fun)
   TrialFESpace!(Uht,fun_t(t))
   state #Uh, Uht
-  TransientFEOperatorCache(Uh,Uht)
 end
 
 
@@ -203,7 +202,7 @@ end
 function test_transient_fe_operator(op::TransientFEOperator,uh)
   odeop = get_algebraic_operator(op)
   @test isa(odeop,ODEOperator)
-  state = allocate_state(odeop)
+  state = allocate_cache(odeop)
   V = get_test(op)
   @test isa(V,FESpace)
   U = get_trial(op)

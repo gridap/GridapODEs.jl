@@ -61,7 +61,8 @@ Tests the interface of `ODEOperator` specializations
 """
 function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
   state = allocate_state(op)
-  state = update_state!(state,op,0.0)
+  # state = update_state!(state,op,0.0)
+  update_state!(state,op,0.0)
   r = allocate_residual(op,u,state)
   residual!(r,op,t,u,u_t,state)
   J = allocate_jacobian(op,u,state)

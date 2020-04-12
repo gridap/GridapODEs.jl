@@ -84,7 +84,7 @@ function solve_step!(
 
   dt = solver.dt
   tf = t0+dt
-  update_state!(op_state,op,tf)
+  update_cache!(op_state,op,tf)
   nlop = OperatorMock(op,tf,dt,u0,op_state)
 
   if (cache==nothing)
