@@ -1,9 +1,12 @@
 # Now, we need an abstract type representing a numerical discretization scheme
 # for the ODE
+"""
+Represents a map that given (t_n,u_n) returns (t_n+1,u_n+1) and cache
+"""
 abstract type ODESolver <: GridapType end
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,op_cache,nl_cache) # -> (uF,tF,cache)
+  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,ode_cache,nl_cache) # -> (uF,tF,cache)
   @abstractmethod
 end
 
