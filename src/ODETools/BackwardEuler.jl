@@ -14,7 +14,7 @@ function solve_step!(
 
 
   # Solve the nonlinear problem
-  if (cache==nothing)
+  if (nl_cache==nothing) 
     nl_cache = solve!(uf,solver.nls,nlop)
   else
     solve!(uf,solver.nls,nlop,nl_cache)

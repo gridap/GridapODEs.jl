@@ -1,3 +1,10 @@
+struct ODEState
+  uf
+  tf
+  op_cache
+  nl_cache
+end
+
 # Represents a lazy iterator over all solution in a time interval
 """
 It represents the solution of a ODE at a given time interval. It is a lazy implementation,
