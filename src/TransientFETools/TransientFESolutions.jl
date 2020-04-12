@@ -35,7 +35,7 @@ function Base.iterate(sol::TransientFESolution, state)
   end
   (uf, tf), state = Base.iterate(sol.odesol,state)
   uf,u0,tf,op_state,cache = state
-  Uh ,Uht = op_state
+  Uh = op_state.Uh; Uht = op_state.Uht
   uh = FEFunction(Uh,uf)
   (uh, tf), state
 end
