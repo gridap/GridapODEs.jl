@@ -31,32 +31,32 @@ function Base.iterate(sol::GenericODESolution)
   u0 = copy(sol.u0)
   cache = nothing
   t0 = sol.t0
-  op_state = allocate_cache(sol.op)
+  op_cache = allocate_cache(sol.op)
 
   # Solve step
-  uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
+  uf, tf, op_cache, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_cache,cache)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,op_state,cache)
+  state = (uf,u0,tf,op_cache,cache)
 
   return (uf, tf), state
 end
 
 function Base.iterate(sol::GenericODESolution, state)
 
-  uf,u0,t0,op_state,cache = state
+  uf,u0,t0,op_cache,cache = state
 
   if t0 > sol.tF
     return nothing
   end
 
   # Solve step
-  uf, tf, op_state, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_state,cache)
+  uf, tf, op_cache, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,op_cache,cache)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,op_state,cache)
+  state = (uf,u0,tf,op_cache,cache)
 
   return (uf, tf), state
 end

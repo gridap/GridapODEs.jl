@@ -14,20 +14,20 @@ abstract type ODEOperator <: GridapType end
 """
 It provides A(t,u,∂tu) for a given (t,u,∂tu)
 """
-function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_state)
+function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_cache)
   @abstractmethod
 end
 
 """
 """
-function allocate_residual(op::ODEOperator,u::AbstractVector,state)
+function allocate_residual(op::ODEOperator,u::AbstractVector,cache)
   @abstractmethod
 end
 
 """
 It adds [∂A/∂u](t,u,∂tu) for a given (t,u,∂tu) to a given matrix J
 """
-function jacobian!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_state)
+function jacobian!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,op_cache)
   @abstractmethod
   # Add values to J
 end
@@ -38,7 +38,7 @@ is a scaling coefficient provided by the `ODESolver`, e.g., 1/Δt for Backward
 Euler; It represents ∂(δt(u))/∂(u), in which δt(⋅) is the approximation of ∂t(⋅)
 in the solver.
 """
-function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,op_state)
+function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,op_cache)
   @abstractmethod
   # Add values to J
 end
@@ -50,22 +50,22 @@ function allocate_jacobian(op::ODEOperator,u::AbstractVector)
 end
 
 """
-Allocates the state data required by the `ODESolution` for a given `ODEOperator`
+Allocates the cache data required by the `ODESolution` for a given `ODEOperator`
 """
 allocate_cache(op::ODEOperator) = @notimplemented
 
-update_cache!(state,op::ODEOperator,t::Real) = @notimplemented
+update_cache!(cache,op::ODEOperator,t::Real) = @notimplemented
 
 """
 Tests the interface of `ODEOperator` specializations
 """
 function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
-  state = allocate_cache(op)
-  update_cache!(state,op,0.0)
-  r = allocate_residual(op,u,state)
-  residual!(r,op,t,u,u_t,state)
-  J = allocate_jacobian(op,u,state)
-  jacobian!(J,op,t,u,u_t,state)
-  jacobian_t!(J,op,t,u,u_t,1.0,state)
+  cache = allocate_cache(op)
+  update_cache!(cache,op,0.0)
+  r = allocate_residual(op,u,cache)
+  residual!(r,op,t,u,u_t,cache)
+  J = allocate_jacobian(op,u,cache)
+  jacobian!(J,op,t,u,u_t,cache)
+  jacobian_t!(J,op,t,u,u_t,1.0,cache)
   true
 end

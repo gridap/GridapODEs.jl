@@ -103,14 +103,14 @@ jacobian!(_J,_op,uh)
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(U,V0,t_Ω)
 odeop = get_algebraic_operator(op)
-state = allocate_cache(odeop)
+cache = allocate_cache(odeop)
 
 r = allocate_residual(op,uh)
-J = allocate_jacobian(op,uh,state)
+J = allocate_jacobian(op,uh,cache)
 uh10 = interpolate_everywhere(U0,0.0)#10.0)
-residual!(r,op,0.0,uh,uh10,state)
-jacobian!(J,op,1.0,uh,uh10,state)
-jacobian_t!(J,op,1.0,uh,uh10,10.0,state)
+residual!(r,op,0.0,uh,uh10,cache)
+jacobian!(J,op,1.0,uh,uh10,cache)
+jacobian_t!(J,op,1.0,uh,uh10,10.0,cache)
 @test all(r.≈_r)
 @test all(J.≈_J)
 
@@ -135,23 +135,23 @@ odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 @test test_transient_fe_solver(solver,op,uh0,t0,tF)
 
-residual!(r,op,0.1,uh,uh,state)
-jacobian!(J,op,1.0,uh,uh10,state)
-jacobian_t!(J,op,1.0,uh,uh10,10.0,state)
+residual!(r,op,0.1,uh,uh,cache)
+jacobian!(J,op,1.0,uh,uh10,cache)
+jacobian_t!(J,op,1.0,uh,uh10,10.0,cache)
 
 u0 = get_free_values(uh0)
 odes
 solver = odes
 # op = odeop
 t0 = 0.0
-op_state = allocate_cache(odeop)
+op_cache = allocate_cache(odeop)
 cache = nothing
 uf = copy(u0)
 dt = solver.dt
 tf = t0+dt
-update_cache!(op_state,odeop,tf)
+update_cache!(op_cache,odeop,tf)
 using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
-nlop = BackwardEulerNonlinearOperator(odeop,tf,dt,u0,op_state)
+nlop = BackwardEulerNonlinearOperator(odeop,tf,dt,u0,op_cache)
 # cache = solve!(uf,solver.nls,nlop)
 
 x = copy(nlop.u0)
@@ -161,13 +161,13 @@ x = copy(nlop.u0)
 b1 = allocate_residual(nlop,x)
 residual!(b1,nlop,x)
 b2 = allocate_residual(nlop,x)
-residual!(b2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_state)
+residual!(b2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_cache)
 @test all(b1 .≈ b2)
 J1 = allocate_jacobian(nlop,x)
 jacobian!(J1,nlop,x)
 J2 = allocate_jacobian(nlop,x)
-jacobian!(J2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_state)
-jacobian_t!(J2,nlop.odeop,nlop.tF,x,10.0*x,10.0,nlop.op_state)
+jacobian!(J2,nlop.odeop,nlop.tF,x,10.0*x,nlop.op_cache)
+jacobian_t!(J2,nlop.odeop,nlop.tF,x,10.0*x,10.0,nlop.op_cache)
 @test all(J1 .≈ J2)
 using Gridap.Algebra: test_nonlinear_operator
 test_nonlinear_operator(nlop,x,b1,jac=J1)

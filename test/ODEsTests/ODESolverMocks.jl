@@ -18,34 +18,34 @@ struct OperatorMock <: NonlinearOperator
   tf::Float64
   dt::Float64
   u0::AbstractVector
-  state
+  cache
 end
 
 function OperatorMock(odeop::ODEOperator,tf::Real,dt::Real,u0::AbstractVector)
-  state = nothing
-  OperatorMock(odeop,tf,dt,u0,state)
+  cache = nothing
+  OperatorMock(odeop,tf,dt,u0,cache)
 end
 
 function residual!(b::AbstractVector,op::OperatorMock,x::AbstractVector)
   uf = x
   uf_t = (x-op.u0)/op.dt
-  residual!(b,op.odeop,op.tf,uf,uf_t,op.state)
+  residual!(b,op.odeop,op.tf,uf,uf_t,op.cache)
 end
 
 function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
   uf = x
   uf_t = (x-op.u0)/op.dt
   fill_entries!(A,0.0)
-  jacobian!(A,op.odeop,op.tf,uf,uf_t,op.state)
-  jacobian_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt),op.state)
+  jacobian!(A,op.odeop,op.tf,uf,uf_t,op.cache)
+  jacobian_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt),op.cache)
 end
 
 function allocate_residual(op::OperatorMock,x::AbstractVector)
-  allocate_residual(op.odeop,x,op.state)
+  allocate_residual(op.odeop,x,op.cache)
 end
 
 function allocate_jacobian(op::OperatorMock,x::AbstractVector)
-  allocate_jacobian(op.odeop,x,op.state)
+  allocate_jacobian(op.odeop,x,op.cache)
 end
 
 function zero_initial_guess(::Type{T},op::OperatorMock) where T
@@ -79,13 +79,13 @@ struct ODESolverMock <: ODESolver
 end
 
 function solve_step!(
-  uf::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, op_state, cache) # -> (uF,tF)
+  uf::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, op_cache, cache) # -> (uF,tF)
 
 
   dt = solver.dt
   tf = t0+dt
-  update_cache!(op_state,op,tf)
-  nlop = OperatorMock(op,tf,dt,u0,op_state)
+  update_cache!(op_cache,op,tf)
+  nlop = OperatorMock(op,tf,dt,u0,op_cache)
 
   if (cache==nothing)
     cache = solve!(uf,solver.nls,nlop)
@@ -93,5 +93,5 @@ function solve_step!(
     cache = solve!(uf,solver.nls,nlop,cache)
   end
 
-  return (uf, tf, op_state, cache)
+  return (uf, tf, op_cache, cache)
 end

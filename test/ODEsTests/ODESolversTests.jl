@@ -28,7 +28,7 @@ u0 = ones(2)*2
 sop = OperatorMock(op,tf,dt,u0)
 isa(sop,NonlinearOperator)
 
-state = allocate_cache(op)
+op_cache = allocate_cache(op)
 
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0
@@ -61,7 +61,7 @@ odesol = ODESolverMock(nls,dt)
 uf = copy(u0)
 uf.=1.0
 
-uf, tf, state, cache = solve_step!(uf,odesol,op,u0,t0,state,nothing)
+uf, tf, op_cache, cache = solve_step!(uf,odesol,op,u0,t0,op_cache,nothing)
 uf
 @test tf==t0+dt
 @test all(uf.≈x)
@@ -78,7 +78,7 @@ uf, tf = current
 # BackwardEulerNonlinearOperator tests
 
 tf = t0+dt
-sop = BackwardEulerNonlinearOperator(op,tf,dt,u0,state) # See below
+sop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_cache) # See below
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0
 r = allocate_residual(sop,x)
@@ -99,7 +99,7 @@ _J = jacobian(sop,x)
 odesol = BackwardEuler(nls,dt)
 uf = copy(u0)
 uf.=1.0
-uf, tf, state, cache = solve_step!(uf,odesol,op,u0,t0,state,nothing)
+uf, tf, op_cache, cache = solve_step!(uf,odesol,op,u0,t0,op_cache,nothing)
 uf
 @test tf==t0+dt
 @test all(uf.≈1+11/9)

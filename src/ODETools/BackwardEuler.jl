@@ -4,13 +4,13 @@ struct BackwardEuler <: ODESolver
 end
 
 function solve_step!(
-  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_state,cache) # -> (uF,tF)
+  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,op_cache,cache) # -> (uF,tF)
 
   # Build the nonlinear problem to solve at this step
   dt = solver.dt
   tf = t0+dt
-  update_cache!(op_state,op,tf)
-  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_state) # See below
+  update_cache!(op_cache,op,tf)
+  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,op_cache) # See below
 
 
   # Solve the nonlinear problem
@@ -21,7 +21,7 @@ function solve_step!(
   end
 
   # Return pair
-  return (uf,tf,op_state,cache)
+  return (uf,tf,op_cache,cache)
 end
 
 # Struct representing the nonlinear algebraic problem to be solved at a given step
@@ -30,13 +30,13 @@ struct BackwardEulerNonlinearOperator <: NonlinearOperator
   tF::Float64
   dt::Float64
   u0::AbstractVector
-  op_state
+  op_cache
 end
 
 function residual!(b::AbstractVector,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
   vF = (x-op.u0)/op.dt
-  residual!(b,op.odeop,op.tF,uF,vF,op.op_state)
+  residual!(b,op.odeop,op.tF,uF,vF,op.op_cache)
 end
 
 function jacobian!(A::AbstractMatrix,op::BackwardEulerNonlinearOperator,x::AbstractVector)
@@ -44,16 +44,16 @@ function jacobian!(A::AbstractMatrix,op::BackwardEulerNonlinearOperator,x::Abstr
   vF = (x-op.u0)/op.dt
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian!(A,op.odeop,op.tF,uF,vF,op.op_state)
-  jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt),op.op_state)
+  jacobian!(A,op.odeop,op.tF,uF,vF,op.op_cache)
+  jacobian_t!(A,op.odeop,op.tF,uF,vF,(1/op.dt),op.op_cache)
 end
 
 function allocate_residual(op::BackwardEulerNonlinearOperator,x::AbstractVector)
-  allocate_residual(op.odeop,x,op.op_state)
+  allocate_residual(op.odeop,x,op.op_cache)
 end
 
 function allocate_jacobian(op::BackwardEulerNonlinearOperator,x::AbstractVector)
-  allocate_jacobian(op.odeop,x,op.op_state)
+  allocate_jacobian(op.odeop,x,op.op_cache)
 end
 
 function zero_initial_guess(::Type{T},op::BackwardEulerNonlinearOperator) where T
