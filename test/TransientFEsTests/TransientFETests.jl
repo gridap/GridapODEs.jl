@@ -234,6 +234,7 @@ end
 
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 sol_t = solve(solver,op,uh0,t0,tF)
+@test test_transient_fe_solution(sol_t)
 
 _t_n = 0.0
 for (u_n, t_n) in sol_t

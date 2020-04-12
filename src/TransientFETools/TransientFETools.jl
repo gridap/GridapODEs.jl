@@ -66,6 +66,7 @@ import Gridap: solve
 import GridapTimeStepper.ODETools: ODESolution
 import GridapTimeStepper.ODETools: GenericODESolution
 import Base: iterate
+export test_transient_fe_solution
 
 include("TransientFESpaces.jl")
 
