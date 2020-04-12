@@ -1,9 +1,10 @@
-struct ODEState
-  uf
-  tf
-  op_cache
-  nl_cache
-end
+# @santiagobadia : Probably a struct for ODEState, cleaner
+# struct ODEState
+#   uf
+#   tf
+#   op_cache
+#   nl_cache
+# end
 
 # Represents a lazy iterator over all solution in a time interval
 """

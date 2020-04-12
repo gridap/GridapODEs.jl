@@ -87,7 +87,7 @@ function solve_step!(
   update_cache!(op_cache,op,tf)
   nlop = OperatorMock(op,tf,dt,u0,op_cache)
 
-  if (cache==nothing)
+  if (nl_cache==nothing)
     nl_cache = solve!(uf,solver.nls,nlop)
   else
     nl_cache = solve!(uf,solver.nls,nlop,nl_cache)

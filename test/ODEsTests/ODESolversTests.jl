@@ -94,8 +94,6 @@ _J = jacobian(sop,x)
 
 # BackwardEuler tests
 
-# @santiagobadia : I have a question, how to use an existing NL Solver
-# One from Julia package? One from Gridap? Dif's? @fverdugo help on this
 odesol = BackwardEuler(nls,dt)
 uf = copy(u0)
 uf.=1.0
