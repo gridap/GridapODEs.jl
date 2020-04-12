@@ -14,7 +14,6 @@ function solve_step!(
 
 
   # Solve the nonlinear problem
-  # @santiagobadia : Commented for the moment
   if (cache==nothing)
     cache = solve!(uf,solver.nls,nlop)
   else
@@ -32,9 +31,6 @@ struct BackwardEulerNonlinearOperator <: NonlinearOperator
   dt::Float64
   u0::AbstractVector
   op_state
-  # function BackwardEulerNonlinearOperator(odeop::ODEOperator,tF::Float64,dt::Float64,u0::AbstractVector)
-  #   new(odeop,tF,dt,u0,)
-  # end
 end
 
 function residual!(b::AbstractVector,op::BackwardEulerNonlinearOperator,x::AbstractVector)

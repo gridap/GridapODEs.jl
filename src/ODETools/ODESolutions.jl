@@ -1,4 +1,9 @@
 # Represents a lazy iterator over all solution in a time interval
+"""
+It represents the solution of a ODE at a given time interval. It is a lazy implementation,
+i.e., the object is an iterator that computes the solution at each time step
+when accessing the solution at each time step.
+"""
 abstract type ODESolution <: GridapType end
 
 # First time step

@@ -1,6 +1,9 @@
- """
- It represents a FE function at a set of time steps
- """
+"""
+It represents a FE function at a set of time steps. It is a wrapper of a ODE
+solution for free values combined with data for Dirichlet values. Thus, it is a
+lazy iterator that computes the solution at each time step when accessing the
+solution.
+"""
 struct TransientFESolution
   odesol::ODESolution
 end
@@ -16,7 +19,6 @@ function TransientFESolution(solver::TransientFESolver,
   ode_sol = GenericODESolution(odes,ode_op,u0,t0,tF)
   TransientFESolution(ode_sol)
 end
-
 
 function Base.iterate(sol::TransientFESolution)
   (uf, tf), state = Base.iterate(sol.odesol)
