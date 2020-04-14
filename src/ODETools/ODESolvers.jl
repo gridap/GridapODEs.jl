@@ -7,7 +7,7 @@ corresponding `ODEOperator` and `NonlinearOperator`
 abstract type ODESolver <: GridapType end
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,ode_cache,nl_cache) # -> (uF,tF,cache)
+  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,ode_cache,nl_cache) # -> (uF,tF,ode_cache,nl_cache)
   @abstractmethod
 end
 

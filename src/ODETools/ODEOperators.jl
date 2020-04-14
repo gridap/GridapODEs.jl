@@ -18,6 +18,7 @@ function residual!(r::AbstractVector,op::ODEOperator,t::Real,u::AbstractVector,u
   @abstractmethod
 end
 
+#@fverdugo I think that the cache is not needed in the functions that allocate. 
 """
 """
 function allocate_residual(op::ODEOperator,u::AbstractVector,cache)
@@ -54,6 +55,7 @@ Allocates the cache data required by the `ODESolution` for a given `ODEOperator`
 """
 allocate_cache(op::ODEOperator) = @notimplemented
 
+#@fverdugo to be used as `cache = update_cache!(cache,op,t)`
 update_cache!(cache,op::ODEOperator,t::Real) = @notimplemented
 
 """

@@ -19,12 +19,14 @@ function update_cache!(cache,op::ODEOpFromFEOp,t::Real)
   update_cache!(cache,op.feop,t)
 end
 
+#@fverdugo cache not needed here
 function allocate_residual(op::ODEOpFromFEOp,uhF::AbstractVector,ode_cache)
   Uh = ode_cache.Uh; Uht = ode_cache.Uht
   uh = FEFunction(Uh,uhF)
   allocate_residual(op.feop,uh)#,ode_cache)
 end
 
+#@fverdugo cache not needed here
 function allocate_jacobian(op::ODEOpFromFEOp,uhF::AbstractVector,ode_cache)
   Uh = ode_cache.Uh; Uht = ode_cache.Uht
   uh = FEFunction(Uh,uhF)

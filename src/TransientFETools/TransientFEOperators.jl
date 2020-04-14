@@ -28,14 +28,18 @@ function get_trial(op::TransientFEOperator)
   @abstractmethod # time dependent
 end
 
+#@fverdugo cache not needed here
 function allocate_residual(op::TransientFEOperator,uh)#,cache)
   @notimplemented
 end
 
+#@fverdugo cache not needed here
 function allocate_jacobian(op::TransientFEOperator,uh,cache)
   @notimplemented
 end
 
+#@fverdugo having a cache in these following functions is not harmful and it is nice since we recover the same API as in ODEOperator
+# However, I do not believe that the cache is strictly needed. Most of the specializations will ignore it.
 """
 Idem as `residual!` of `ODEOperator`
 """
@@ -108,10 +112,12 @@ function _allocate_cache(fesp::TransientTrialFESpace)
   TransientFEOperatorCache(Uh,Uht)
 end
 
+#@fverdugo return cache
 _update_cache!(cache,::FESpace,t) = nothing
 
 function _update_cache!(cache,tfesp::TransientTrialFESpace,t::Real)
   Uh = cache.Uh; Uht = cache.Uht
+  #@fverdugo I think that interpolating 0.0 is not needed
   TrialFESpace!(Uh,0.0)
   TrialFESpace!(Uh,tfesp.dirichlet_t(t))
   fun = tfesp.dirichlet_t
@@ -133,11 +139,16 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
   assem_t::Assembler
   terms
 end
+#@fverdugo this specialization should ignore the cache in residual!, jacobian! and jacobian_t!
+# Now you need the cache since the `TransientTrialFESpace` is not 100% well resolved.
+# Once we a better design for TransientTrialFESpace the cache wont be needed.
 
 get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t
 
 function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
   test::FESpace,terms::Union{FETerm,TransientFETerm}...)
+  #@fverdugo we can try to build the assembler without interpolating Dirichlet values
+  # Related with the TransientTrialFESpace design
   assem_t = SparseMatrixAssembler(test,trial(0.0))
   TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,terms...)
 end
@@ -146,6 +157,7 @@ get_test(op::TransientFEOperatorFromTerms) = op.test
 
 get_trial(op::TransientFEOperatorFromTerms) = op.trial
 
+#@fverdugo perhaps not needed. It is not in the abstract interface anyway.
 get_trial(op::TransientFEOperatorFromTerms,t) = op.trial(t)
 
 function allocate_residual(op::TransientFEOperatorFromTerms,uh)#,cache)#,assem)
@@ -156,6 +168,8 @@ function allocate_residual(op::TransientFEOperatorFromTerms,uh)#,cache)#,assem)
   allocate_vector(op.assem_t,cellids)
 end
 
+#@fverdugo It should be possible to write this function without using the cache
+# Related with the TransientTrialFESpace design
 function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,cache)#,assem)
   @assert is_a_fe_function(uh)
@@ -166,6 +180,8 @@ function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
   b
 end
 
+#@fverdugo It should be possible to write this function without using the cache
+# Related with the TransientTrialFESpace design
 function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,cache)
   Uh = cache.Uh;  Uht = cache.Uht
   @assert is_a_fe_function(uh)
@@ -175,6 +191,8 @@ function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,cache)
   allocate_matrix(op.assem_t, cellidsrows, cellidscols)
 end
 
+#@fverdugo It should be possible to write this function without using the cache
+# Related with the TransientTrialFESpace design
 function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,cache)#,assem)
   Uh = cache.Uh;  Uht = cache.Uht
@@ -187,6 +205,8 @@ function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   A
 end
 
+#@fverdugo It should be possible to write this function without using the cache
+# Related with the TransientTrialFESpace design
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,duht_du::Real,cache)#,assem)
   Uh = cache.Uh;  Uht = cache.Uht
