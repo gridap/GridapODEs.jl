@@ -1,81 +1,132 @@
-#@fverdugo this is the part that needs some improvements.
-# - Most of the comments in other files are related with the design of this part.
-#   Specially, with the cache objects.
-# - We also want Dirichlet conditions represented by several objects.
-#   For the moment, it is assumed that the Dirichlet conditions are described by a single function.
-# - Some extra considerations have to be taken into account for MultiField problems.
-#
-# We can define a transient trial fe space as a FE space whose underlying dirichlet values 
-# depend on time, but all other behavior is stationary (e.g., shape functions, cell dof basis, etc.)
-# This is enough for the method of lines.
-#
-# Specifically, this is the behavior we need for a transient trial fe space.
-#
-# - evaluation at a given time t (We have this now,
-#   but perhaps we need to modify a bit the API to avoid side effects
-#   when evaluating the same object in two different time points, see below.)
-#
-# - Differentiation with respect to t (We have this now)
-#
-# - In may context we need a FE Space but we don't care about
-# the underlying Dirichlet data  (e.g., for building an assembler, for getting
-#  the shape functions when evaluating the jacobian in the TransientFEOperator, etc.).
-#  This is the missing part that would help to improve other parts of the code.
-#  We can implement (U::TransientTrialFESpace)(::Nothing) to be called as U(nothing)
-#  that returns a space with arbitrary Dirichlet values to be used in contexts when we do not
-#  care about the specific Dirichlet data. We can also implement
-#  HomogeneousTrialFESpace(::TransientTrialFESpace) which could also be used in similar contexts.
-#
 
+"""
+A single field FE space with transient Dirichlet data (see Multifield below).
+"""
 struct TransientTrialFESpace
-  space::FESpace
-  dirichlet_t#::Vector{<:Function} #@fverdugo extend to dirichlet conditions represented by several objects. Not all of them need to be functions.
-  dirichlet_values::AbstractVector #@fverdugo this is very dangerous since we cannot evaluate this
-  # space at two different times simultaneously, which is a strong limitation.
-  # We need to store this vector somewhere else (e.g., in the ode cache).
+  space::SingleFieldFESpace
+  dirichlet_t::Vector{<:Function}
+  Ud0::TrialFESpace
+
+  function TransientTrialFESpace(space::SingleFieldFESpace,dirichlet_t::Vector{<:Function})
+    Ud0 = HomogeneousTrialFESpace(space)
+    new(space,dirichlet_t,Ud0)
+  end
 end
 
-# function TransientTrialFESpace(U::FESpace,dir_fun)
-  # TransientTrialFESpace(U,[dir_fun])
-# end
-
-function TransientTrialFESpace(U::FESpace,objects)
- dirichlet_vals = similar(get_dirichlet_values(U))
-  TransientTrialFESpace(U,objects,dirichlet_vals)
+"""
+Time evaluation without allocating Dirichlet vals
+"""
+function evaluate!(Ut::TrialFESpace,U::TransientTrialFESpace,t::Real)
+  objects_at_t = map( o->o(t), U_t.dirichlet_t)
+  TrialFESpace!(Ut,objects_at_t)
+  Ut
 end
 
-function (fes::TransientTrialFESpace)(t::Real)
-  # dir_t = [ud(t) for ud in fes.dirichlet_t]
-  dir_t = fes.dirichlet_t(t)
-  #@fverdugo This constructor needs to be called TrialFESpace! since the first argument is mutated.
-  # To be changed in Gridap
-  TrialFESpace(fes.dirichlet_values,fes.space,dir_t)
+"""
+Allocate the space to be used as first argument in evaluate!
+"""
+function allocate_trial_space(U::TransientTrialFESpace)
+  dirichlet_values = zero_dirichlet_values(U.space)
+  TrialFESpace(dirichlet_values,U.space)
 end
 
-(tfes::FESpace)(t::Real) = tfes
-
-∂t(fes::TransientTrialFESpace) = TransientTrialFESpace(fes.space,∂t.(fes.dirichlet_t))
-
-∂t(fes::TrialFESpace) = HomogeneousTrialFESpace(fes.space)
-
-#@fverdugo this has to be moved to Gridap
-function HomogeneousTrialFESpace(U::FESpace)
-  # @santiagobadia : To be improved
-  TrialFESpace(U,0.0)
-  # @fverdugo this should to be implemented as:
-  #
-  # dirichlet_values = zero_dirichlet_values(U)
-  # TrialFESpace(dirichlet_values,U)
-  #
-  # The constructor TrialFESpace(dirichlet_values,U) is missing. To be added in Gridap.
-  # In fact, this should be the inner constructor of the TrialFESpace struct.
+"""
+Time evaluation allocating Dirichlet vals
+"""
+function evaluate(U::TransientTrialFESpace,t::Real)
+  Ut = allocate_trial_space(U)
+  evaluate!(Ut,U,t)
+  Ut
 end
 
-function test_transient_trial_fe_space(Uh::TransientTrialFESpace)
-  Uh0=Uh(0.0)
-  Uh00=Uh0(0.0)
+"""
+We can evaluate at `nothing` when we do not care about the Dirichlet vals
+"""
+function evaluate(U::TransientTrialFESpace,t::Nothing)
+  U.Ud0
+end
+
+"""
+Functor-like evaluation. It allocates Dirichlet vals in general.
+"""
+(U::TransientTrialFESpace)(t) = evaluate(U,t)
+
+"""
+Time derivative of the Dirichlet functions
+"""
+∂t(U::TransientTrialFESpace) = TransientTrialFESpace(fes.space,∂t.(fes.dirichlet_t))
+
+
+# Testing the interface
+
+function test_transient_trial_fe_space(Uh)
+  UhX = Uh(nothing)
+  @test isa(UhX,FESpace)
+  Uh0 = allocate_trial_space(Uh)
+  Uh0 = evaluate!(Uh0,Uh,0.0)
+  @test isa(Uh0,FESpace)
+  Uh0 = evaluate(Uh,0.0)
+  @test isa(Uh0,FESpace)
+  Uh0 = Uh(0.0)
+  @test isa(Uh0,FESpace)
   Uht=∂t(Uh)
   Uht0=Uht(0.0)
-  Uh0t = ∂t(Uh0)
+  @test isa(Uht0,FESpace)
   true
 end
+
+# Define the TransientTrialFESpace interface for stationary spaces
+
+function evaluate!(Ut::FESpace,U::FESpace,t::Real)
+  U
+end
+
+function allocate_trial_space(U::FESpace)
+  U
+end
+
+function evaluate(U::FESpace,t::Real)
+  U
+end
+
+function evaluate(U::FESpace,t::Nothing)
+  U
+end
+
+(U::FESpace)(t) = U
+
+∂t(U::FESpace) = HomogeneousTrialFESpace(U)
+
+# Define the interface for MultiField
+
+struct TransientMultiFieldTrialFESpace
+  spaces::Vector{TransientTrialFESpace}
+end
+
+function MultiFieldFESpace(spaces::Vector{TransientTrialFESpace})
+  TransientMultiFieldTrialFESpace(spaces)
+end
+
+function evaluate!(Ut::MultiFieldFESpace,U::TransientMultiFieldTrialFESpace,t::Real)
+  spaces_at_t = [evaluate!(Ut.spaces[i],U.spaces[i],t) for i in 1:length(U.spaces)]
+  MultiFieldFESpace(spaces_at_t)
+end
+
+function allocate_trial_space(U::TransientMultiFieldTrialFESpace)
+  spaces = allocate_trial_space.(U.spaces)
+  MultiFieldFESpace(spaces)
+end
+
+function evaluate(U::TransientMultiFieldTrialFESpace,t::Real)
+  Ut = allocate_trial_space(U)
+  evaluate!(Ut,U,t)
+  Ut
+end
+
+(U::TransientMultiFieldTrialFESpace)(t) = evaluate(U,t)
+
+function ∂t(U::TransientMultiFieldTrialFESpace)
+  spaces = ∂t.(U.spaces)
+  MultiFieldFESpace(spaces)
+end
+

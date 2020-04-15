@@ -7,19 +7,21 @@ struct BackwardEuler <: ODESolver
 end
 
 function solve_step!(
-  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,ode_cache,nl_cache) # -> (uF,tF)
+  uf::AbstractVector,solver::BackwardEuler,op::ODEOperator,u0::AbstractVector,t0::Real,cache) # -> (uF,tF,cache)
 
-  #@fverdugo Between time steps, vF has to be stored in the `nl_cache` object,
-  # and allocated only once at the first step (i.e., when nl_cache === nothing).
-  # All this can be done locally by modifying the body of this function.
+  if cache === nothing
+    ode_cache = allocate_cache(op)
+    vF = similar(u0)
+    nl_cache = nothing
+  else
+    ode_cache, vF, nl_cache = cache
+  end
 
   # Build the nonlinear problem to solve at this step
   dt = solver.dt
   tf = t0+dt
-  #@fverdugo use ode_cache = update_cache!(ode_cache,op,tf)
-  update_cache!(ode_cache,op,tf)
-  #@fverdugo use vF to create BackwardEulerNonlinearOperator
-  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,ode_cache) # See below
+  ode_cache = update_cache!(ode_cache,op,tf)
+  nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,ode_cache,vF)
 
   # Solve the nonlinear problem
   if (nl_cache==nothing)
@@ -28,8 +30,9 @@ function solve_step!(
     solve!(uf,solver.nls,nlop,nl_cache)
   end
 
-  # Return pair
-  return (uf,tf,ode_cache,nl_cache)
+  cache = (ode_cache, vF, nl_cache)
+
+  return (uf,tf,cache)
 end
 
 # Struct representing the nonlinear algebraic problem to be solved at a given step
@@ -43,20 +46,20 @@ struct BackwardEulerNonlinearOperator <: NonlinearOperator
   dt::Float64
   u0::AbstractVector
   ode_cache
+  vF:AbstractVector
 end
-#@fverdugo store vF as scratch data in this struct.
 
 function residual!(b::AbstractVector,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
-  #@fverdugo vF is allocated each time we call this function (see comments above)
-  vF = (x-op.u0)/op.dt
+  vF = op.vF
+  vF .= (x .- op.u0) ./ op.dt
   residual!(b,op.odeop,op.tF,uF,vF,op.ode_cache)
 end
 
 function jacobian!(A::AbstractMatrix,op::BackwardEulerNonlinearOperator,x::AbstractVector)
   uF = x
-  #@fverdugo vF is allocated each time we call this function (see comments above)
-  vF = (x-op.u0)/op.dt
+  vF = op.vF
+  vF .= (x .- op.u0) ./ op.dt
   z = zero(eltype(A))
   fill_entries!(A,z)
   jacobian!(A,op.odeop,op.tF,uF,vF,op.ode_cache)

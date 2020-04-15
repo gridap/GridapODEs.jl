@@ -5,11 +5,6 @@ struct TransientFESolver
   odes::ODESolver
 end
 
-function solve_step!(
-  uF,solver::TransientFESolver,op::TransientFEOperator,u0,t0::Real,ode_cache,nl_cache) # -> (uF,tF,cache)
-  @abstractmethod
-end
-
 function solve(
   solver::TransientFESolver,op::TransientFEOperator,u0,t0::Real,tf::Real)
   TransientFESolution(solver,op,u0,t0,tf)
