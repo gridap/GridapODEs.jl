@@ -22,3 +22,5 @@ function test_ode_solver(solver::ODESolver,op::ODEOperator,u0,t0,tf)
 end
 
 include("BackwardEuler.jl")
+
+include("ThetaMethod.jl")
