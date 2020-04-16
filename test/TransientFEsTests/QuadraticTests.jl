@@ -1,3 +1,5 @@
+module QuadraticTests
+
 using Gridap
 using ForwardDiff
 using LinearAlgebra
@@ -192,3 +194,5 @@ for (uh_tn, tn) in sol_t
   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
   @test el2 < tol
 end
+
+end #module
