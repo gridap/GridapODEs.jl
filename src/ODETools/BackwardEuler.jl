@@ -24,11 +24,7 @@ function solve_step!(
   nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,ode_cache,vF)
 
   # Solve the nonlinear problem
-  if (nl_cache==nothing)
-    nl_cache = solve!(uf,solver.nls,nlop)
-  else
-    solve!(uf,solver.nls,nlop,nl_cache)
-  end
+  nl_cache = solve!(uf,solver.nls,nlop,nl_cache)
 
   cache = (ode_cache, vF, nl_cache)
 

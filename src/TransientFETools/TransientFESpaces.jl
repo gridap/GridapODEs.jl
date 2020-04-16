@@ -100,10 +100,10 @@ end
 # Define the interface for MultiField
 
 struct TransientMultiFieldTrialFESpace
-  spaces::Vector{TransientTrialFESpace}
+  spaces::Vector
 end
 
-function MultiFieldFESpace(spaces::Vector{TransientTrialFESpace})
+function MultiFieldFESpace(spaces::Vector)
   TransientMultiFieldTrialFESpace(spaces)
 end
 
