@@ -6,42 +6,72 @@ solution.
 """
 struct TransientFESolution
   odesol::ODESolution
+  trial
 end
 
-function TransientFESolution(solver::TransientFESolver,
-                             op::TransientFEOperator,
-                             uh0,
-                             t0::Real,
-                             tF::Real)
-  odes = solver.odes
+
+function TransientFESolution(
+  solver::TransientFESolver, op::TransientFEOperator, uh0, t0::Real, tF::Real)
+
+  ode_solver = solver.odes
   ode_op = get_algebraic_operator(op)
   u0 = get_free_values(uh0)
-  ode_sol = GenericODESolution(odes,ode_op,u0,t0,tF)
-  TransientFESolution(ode_sol)
+  ode_sol = solve(ode_solver,ode_op,u0,t0,tF)
+  trial = get_trial(op)
+
+  TransientFESolution(ode_sol, trial)
 end
 
+#@fverdugo this is a general implementation of iterate for TransientFESolution
+# We could also implement another one for the very common case that the
+# underlying ode_op is a ODEOpFromFEOp object
+
 function Base.iterate(sol::TransientFESolution)
-  (uf, tf), state = Base.iterate(sol.odesol)
-  uf,u0,tf,ode_cache,nl_cache = state
-  Uh = ode_cache.Uh; Uht = ode_cache.Uht
+
+  odesolnext = Base.iterate(sol.odesol)
+
+  if odesolnext === nothing
+    return nothing
+  end
+
+  (uf, tf), odesolstate = odesolnext
+
+  Uh = allocate_trial_space(sol.trial)
+  Uh = evaluate!(Uh,sol.trial,tf)
   uh = FEFunction(Uh,uf)
+
+  state = (Uh, odesolstate)
+
   (uh, tf), state
 end
 
 function Base.iterate(sol::TransientFESolution, state)
-  uf,u0,tf,ode_cache,nl_cache = state
-  if tf > sol.odesol.tF
+
+  Uh, odesolstate = state
+
+  odesolnext = Base.iterate(sol.odesol,odesolstate)
+
+  if odesolnext === nothing
     return nothing
   end
-  (uf, tf), state = Base.iterate(sol.odesol,state)
-  uf,u0,tf,ode_cache,nl_cache = state
-  Uh = ode_cache.Uh; Uht = ode_cache.Uht
+
+  (uf, tf), odesolstate = odesolnext
+
+  Uh = evaluate!(Uh,sol.trial,tf)
   uh = FEFunction(Uh,uf)
+
+  state = (Uh, odesolstate)
+
   (uh, tf), state
+
 end
 
 function test_transient_fe_solution(fesol::TransientFESolution)
-  (uf, tf), state = iterate(fesol)
-  (uf, tf), state = iterate(fesol,state)
+  for (uhn,tn) in fesol
+    @test is_a_fe_function(uhn)
+    @test isa(tn,Real)
+  end
   true
 end
+
+

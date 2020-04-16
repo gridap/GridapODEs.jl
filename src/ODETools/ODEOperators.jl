@@ -20,7 +20,7 @@ end
 
 """
 """
-function allocate_residual(op::ODEOperator,u::AbstractVector,cache)
+function allocate_residual(op::ODEOperator,u::AbstractVector,ode_cache)
   @abstractmethod
 end
 
@@ -45,23 +45,24 @@ end
 
 """
 """
-function allocate_jacobian(op::ODEOperator,u::AbstractVector)
+function allocate_jacobian(op::ODEOperator,u::AbstractVector,ode_cache)
   @abstractmethod
 end
 
 """
 Allocates the cache data required by the `ODESolution` for a given `ODEOperator`
 """
-allocate_cache(op::ODEOperator) = @notimplemented
+allocate_cache(op::ODEOperator) = @abstractmethod
 
-update_cache!(cache,op::ODEOperator,t::Real) = @notimplemented
+#@fverdugo to be used as `cache = update_cache!(cache,op,t)`
+update_cache!(cache,op::ODEOperator,t::Real) = @abstractmethod
 
 """
 Tests the interface of `ODEOperator` specializations
 """
 function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector)
   cache = allocate_cache(op)
-  update_cache!(cache,op,0.0)
+  cache = update_cache!(cache,op,0.0)
   r = allocate_residual(op,u,cache)
   residual!(r,op,t,u,u_t,cache)
   J = allocate_jacobian(op,u,cache)

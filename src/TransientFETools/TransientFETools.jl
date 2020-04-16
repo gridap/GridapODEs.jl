@@ -8,14 +8,17 @@ export time_derivative
 export ∂t
 
 export TransientTrialFESpace
-export get_trial_space
-import Gridap.FESpaces: FESpace
-import Gridap.FESpaces: SingleFieldFESpace
-import Gridap.FESpaces: TrialFESpace
-import Gridap.FESpaces: get_free_values
-import Gridap.FESpaces: get_dirichlet_values
-using Gridap.FESpaces: TrialFESpace!
 export test_transient_trial_fe_space
+import Gridap.Fields: evaluate
+import Gridap.Fields: evaluate!
+import Gridap.MultiField: MultiFieldFESpace
+using Gridap.FESpaces: FESpace
+using Gridap.FESpaces: SingleFieldFESpace
+using Gridap.FESpaces: TrialFESpace
+using Gridap.FESpaces: get_free_values
+using Gridap.FESpaces: get_dirichlet_values
+using Gridap.FESpaces: TrialFESpace!
+using Gridap.FESpaces: HomogeneousTrialFESpace
 
 export TransientFETerm
 import Gridap.FESpaces: FETerm
