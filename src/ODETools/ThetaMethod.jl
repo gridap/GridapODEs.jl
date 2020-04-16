@@ -33,17 +33,20 @@ function solve_step!(uf::AbstractVector,
   if (nl_cache==nothing)
     nl_cache = solve!(uf,solver.nls,nlop)
   else
-    solve!(uf,solver.nls,nlop,nl_cache)
+    # solve!(uf,solver.nls,nlop,nl_cache)
+    # @santiagobadia: What I am doing wrong here?
+    # could we create a function with methods dispatching based on solver
+    # linear or nonlinear? 
+    x = copy(nlop.u0)
+    b = allocate_residual(nlop,x)
+    residual!(b,nlop,x)
+    J = allocate_jacobian(nlop,x)
+    jacobian!(J,nlop,x)
+    uf = u0-J\b
   end
 
-  # Return pair
   if 0.0 < solver.θ < 1.0
-    iθ = 1/solver.θ
-    uf*=iθ
-    θm=(solver.θ-1)/solver.θ
-    uf+=θm*u0
-    uf=iθ*uf+θm*u0
-    # uf-=iθ*u0
+    uf = uf*(1.0/solver.θ)-u0*((1-solver.θ)/solver.θ)
   end
 
   return (uf,tf,ode_cache,nl_cache)

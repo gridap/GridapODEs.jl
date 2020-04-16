@@ -4,40 +4,15 @@ using GridapTimeStepper.ODETools
 using GridapTimeStepper.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
 
-# First, we define the transient problem
-# u(x,t) = (x[1] + x[2])*t
-# u(t::Real) = x -> u(x,t)
-# ∇u(x,t) = VectorValue(1,1)*t
-# ∇u(t::Real) = x -> ∇u(x,t)
-# import Gridap: ∇
-# ∇(::typeof(u)) = ∇u
-# ∇(u) === ∇u
-
-# u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
 u(x,t) = (x[1] + x[2])*t
 u(t::Real) = x -> u(x,t)
 ∇u(x,t) = VectorValue(1,1)*t
-# ∇u(x,t) = amp*VectorValue(x[2]-2x[1]x[2]-x[2]^2+2x[1]x[2]^2,x[1]-2x[2]x[1]-x[1]^2+2x[2]x[1]^2)*t
 ∇u(t::Real) = x -> ∇u(x,t)
 import Gridap: ∇
 ∇(::typeof(u)) = ∇u
 ∇(u) === ∇u
 
-
-
-
 θ = 1.0
-
-# u(x::Point) = u(x,0.0)
-# p = Point(1.0,1.0)
-# u(p)
-# for tn in 0:10
-#   global u, ∇u
-#   u(x::Point) = u(x,convert(Float64,tn))
-#   ∇u(x::Point) = ∇u(x,tn)
-#   @show u(p)
-#   @show ∇u(p)
-# end
 
 ∂tu(t) = x -> x[1]+x[2]
 import GridapTimeStepper.TransientFETools: ∂t
