@@ -1,4 +1,4 @@
-# module ODESolversTests
+module ODESolversTests
 
 using GridapTimeStepper
 using GridapTimeStepper.ODETools: GenericODESolution
@@ -61,7 +61,7 @@ odesol = ODESolverMock(nls,dt)
 uf = copy(u0)
 uf.=1.0
 
-uf, tf, ode_cache, nl_cache = solve_step!(uf,odesol,op,u0,t0,ode_cache,nothing)
+uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,nothing)
 uf
 @test tf==t0+dt
 @test all(uf.≈x)
@@ -78,7 +78,8 @@ uf, tf = current
 # BackwardEulerNonlinearOperator tests
 
 tf = t0+dt
-sop = BackwardEulerNonlinearOperator(op,tf,dt,u0,ode_cache) # See below
+vf = copy(u0)
+sop = BackwardEulerNonlinearOperator(op,tf,dt,u0,ode_cache,vf) # See below
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0
 r = allocate_residual(sop,x)
@@ -97,8 +98,8 @@ _J = jacobian(sop,x)
 odesol = BackwardEuler(nls,dt)
 uf = copy(u0)
 uf.=1.0
-nl_cache = nothing
-uf, tf, ode_cache, nl_cache = solve_step!(uf,odesol,op,u0,t0,ode_cache,nl_cache)
+cache = nothing
+uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
 uf
 @test tf==t0+dt
 @test all(uf.≈1+11/9)
@@ -106,4 +107,4 @@ uf
 @test test_ode_solver(odesol,op,u0,t0,tf)
 test_ode_solver(odesol,op,u0,t0,tf)
 
-# end #module
+end #module

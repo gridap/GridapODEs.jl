@@ -1,10 +1,3 @@
-# @santiagobadia : Probably a struct for ODEState, cleaner
-# struct ODEState
-#   uf
-#   tf
-#   ode_cache
-#   nl_cache
-# end
 
 # Represents a lazy iterator over all solution in a time interval
 """
@@ -24,6 +17,18 @@ function iterate(u::ODESolution,state) # (u0,t0)-> (uf,tf) or nothing
   @abstractmethod
 end
 
+# tester
+
+function test_ode_solution(sol::ODESolution)
+  for (u_n,t_n) in sol
+    @test isa(t_n,Real)
+    @test isa(u_n,AbstractVector)
+  end
+  true
+end
+
+# Specialization
+
 struct GenericODESolution <: ODESolution
   solver::ODESolver
   op::ODEOperator
@@ -37,42 +42,33 @@ function Base.iterate(sol::GenericODESolution)
 
   uf = copy(sol.u0)
   u0 = copy(sol.u0)
-  nl_cache = nothing
   t0 = sol.t0
-  ode_cache = allocate_cache(sol.op)
 
   # Solve step
-  uf, tf, ode_cache, nl_cache = solve_step!(uf,sol.solver,sol.op,u0,t0,ode_cache,nl_cache)
+  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,t0)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,ode_cache,nl_cache)
+  state = (uf,u0,tf,cache)
 
   return (uf, tf), state
 end
 
 function Base.iterate(sol::GenericODESolution, state)
 
-  uf,u0,t0,ode_cache,nl_cache = state
+  uf,u0,t0,cache = state
 
   if t0 > sol.tF
     return nothing
   end
 
   # Solve step
-  uf, tf, ode_cache, nl_cache = solve_step!(uf,sol.solver,sol.op,u0,t0,ode_cache,nl_cache)
+  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,cache)
 
   # Update
   u0 .= uf
-  state = (uf,u0,tf,ode_cache,nl_cache)
+  state = (uf,u0,tf,cache)
 
   return (uf, tf), state
 end
 
-function test_ode_solution(sol::GenericODESolution)
-  for (u_n,t_n) in sol
-    @test isa(t_n,Real)
-    @test isa(u_n,AbstractVector)
-  end
-  true
-end

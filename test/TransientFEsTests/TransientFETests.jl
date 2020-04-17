@@ -32,6 +32,7 @@ V0 = TestFESpace(
 
 
 U = TransientTrialFESpace(V0,u)
+U0 = TrialFESpace(V0,u(0.0))
 @test test_transient_trial_fe_space(U)
 
 U0 = U(1.0)
@@ -44,10 +45,9 @@ _ud1 = get_dirichlet_values(U1)
 all(_ud0 .≈ _ud1)
 
 Ut = ∂t(U)
+Ut.dirichlet_t
 Ut0 = Ut(0.0)
-
-using Gridap.FESpaces: TrialFESpace!
-TrialFESpace!(Ut0,u(0))
+Ut0.dirichlet_values
 
 Ut1 = Ut(1.0)
 utd0 = copy(get_dirichlet_values(Ut0))
@@ -87,7 +87,7 @@ op = TransientFEOperator(U,V0,t_Ω)
 odeop = get_algebraic_operator(op)
 cache = allocate_cache(odeop)
 
-r = allocate_residual(op,uh)
+r = allocate_residual(op,uh,cache)
 J = allocate_jacobian(op,uh,cache)
 uh10 = interpolate_everywhere(U0,0.0)#10.0)
 residual!(r,op,0.0,uh,uh10,cache)
@@ -133,7 +133,8 @@ dt = solver.dt
 tf = t0+dt
 update_cache!(ode_cache,odeop,tf)
 using GridapTimeStepper.ODETools: ThetaMethodNonlinearOperator
-nlop = ThetaMethodNonlinearOperator(odeop,tf,dt,u0,ode_cache)
+vf = copy(u0)
+nlop = ThetaMethodNonlinearOperator(odeop,tf,dt,u0,ode_cache,vf)
 # cache = solve!(uf,solver.nls,nlop)
 
 x = copy(nlop.u0)

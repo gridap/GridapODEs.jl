@@ -1,13 +1,3 @@
-"""
-`TransientFEOperator` cache, which includes two `FESpace` where one stores
-the arrays of fixed Dirichlet values once and overwrite them
-at every time step (if transient trial spaces are being used due to variable
-strong Dirichlet boundary conditions)
-"""
-struct TransientFEOperatorCache
-  Uh::FESpace
-  Uht::FESpace
-end
 
 """
 A transient version of the `Gridap` `FEOperator` that depends on time
@@ -28,8 +18,8 @@ function get_trial(op::TransientFEOperator)
   @abstractmethod # time dependent
 end
 
-function allocate_residual(op::TransientFEOperator,uh)#,cache)
-  @notimplemented
+function allocate_residual(op::TransientFEOperator,uh,cache)
+  @abstractmethod
 end
 
 function allocate_jacobian(op::TransientFEOperator,uh,cache)
@@ -40,49 +30,21 @@ end
 Idem as `residual!` of `ODEOperator`
 """
 function residual!(b::AbstractVector,op::TransientFEOperator,t,uh,uht,cache)
-  @notimplemented
+  @abstractmethod
 end
 
 """
 Idem as `residual!` of `ODEOperator`
 """
 function jacobian!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht,cache)
-  @notimplemented
+  @abstractmethod
 end
 
 """
 Idem as `jacobian_t!` of `ODEOperator`
 """
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht,duht_du,cache)
-  @notimplemented
-end
-
-"""
-Returns a `ODEOperator` wrapper of the `TransientFEOperator` that can be
-straightforwardly used with the `ODETools` module.
-"""
-function get_algebraic_operator(feop::TransientFEOperator)
-  ODEOpFromFEOp(feop)
-end
-
-"""
-Allocates the `cache` of a `TransientFEOperator`, which includes a `FESpace`
-for the trial space for the unknown and its time derivative. It is used to
-pre-allocate the arrays of fixed Dirichlet values once and overwrite them
-at every time step (if transient trial spaces are being used due to variable
-strong Dirichlet boundary conditions)
-"""
-function allocate_cache(feop::TransientFEOperator)
-  cache = _allocate_cache(get_trial(feop))
-  cache
-end
-
-"""
-Updates the cache, i.e., the strong Dirichlet values when dealing with
-time-dependent Dirichlet data.
-"""
-function update_cache!(cache,feop::TransientFEOperator,t::Real)
-  _update_cache!(cache,get_trial(feop),t)
+  @abstractmethod
 end
 
 """
@@ -92,34 +54,28 @@ operator.
 Note: adaptive FE spaces involve to generate new FE spaces and
 corresponding operators, due to the ummutable approach in `Gridap`
 """
-get_assembler(feop::TransientFEOperator) = @notimplemented
+get_assembler(feop::TransientFEOperator) = @abstractmethod
 
-# Internal functions
 
-function _allocate_cache(fesp::FESpace)
-  Uh = fesp
-  Uht = HomogeneousTrialFESpace(fesp)
-  TransientFEOperatorCache(Uh,Uht)
+# Default API
+
+"""
+Returns a `ODEOperator` wrapper of the `TransientFEOperator` that can be
+straightforwardly used with the `ODETools` module.
+"""
+function get_algebraic_operator(feop::TransientFEOperator)
+  ODEOpFromFEOp(feop)
 end
 
-function _allocate_cache(fesp::TransientTrialFESpace)
-  Uh = HomogeneousTrialFESpace(fesp.space)
-  Uht = HomogeneousTrialFESpace(fesp.space)
-  TransientFEOperatorCache(Uh,Uht)
+# @fverdugo This function is just in case we need to override it in the future for some specialization.
+# This default implementation is enough for the moment.
+function allocate_cache(op::TransientFEOperator)
+  nothing
 end
 
-_update_cache!(cache,::FESpace,t) = nothing
-
-function _update_cache!(cache,tfesp::TransientTrialFESpace,t::Real)
-  Uh = cache.Uh; Uht = cache.Uht
-  TrialFESpace!(Uh,0.0)
-  TrialFESpace!(Uh,tfesp.dirichlet_t(t))
-  fun = tfesp.dirichlet_t
-  fun_t = ∂t(fun)
-  TrialFESpace!(Uht,fun_t(t))
-  cache #Uh, Uht
+function update_cache!(cache::Nothing,op::TransientFEOperator,t::Real)
+  nothing
 end
-
 
 # Specializations
 
@@ -127,28 +83,25 @@ end
 Transient FE operator that is defined by a set of `TransientFETerm` (or `FETerm`)
 """
 struct TransientFEOperatorFromTerms <: TransientFEOperator
-  trial::Union{FESpace,TransientTrialFESpace}
-  trial_t::Union{FESpace,TransientTrialFESpace}
+  trial
+  trial_t
   test::FESpace
   assem_t::Assembler
   terms
 end
 
-get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t
-
-function TransientFEOperator(trial::Union{FESpace,TransientTrialFESpace},
-  test::FESpace,terms::Union{FETerm,TransientFETerm}...)
-  assem_t = SparseMatrixAssembler(test,trial(0.0))
+function TransientFEOperator(trial,test,terms...)
+  assem_t = SparseMatrixAssembler(test,trial(nothing))
   TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,terms...)
 end
+
+get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t
 
 get_test(op::TransientFEOperatorFromTerms) = op.test
 
 get_trial(op::TransientFEOperatorFromTerms) = op.trial
 
-get_trial(op::TransientFEOperatorFromTerms,t) = op.trial(t)
-
-function allocate_residual(op::TransientFEOperatorFromTerms,uh)#,cache)#,assem)
+function allocate_residual(op::TransientFEOperatorFromTerms,uh,cache)
   @assert is_a_fe_function(uh)
   v = get_cell_basis(op.test)
   _, cellids =
@@ -157,7 +110,7 @@ function allocate_residual(op::TransientFEOperatorFromTerms,uh)#,cache)#,assem)
 end
 
 function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t,cache)#,assem)
+  t::Real,uh,uh_t,cache)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   v = get_cell_basis(op.test)
@@ -167,7 +120,7 @@ function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
 end
 
 function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,cache)
-  Uh = cache.Uh;  Uht = cache.Uht
+  Uh = op.trial(nothing)
   @assert is_a_fe_function(uh)
   du = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
@@ -176,8 +129,8 @@ function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,cache)
 end
 
 function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t,cache)#,assem)
-  Uh = cache.Uh;  Uht = cache.Uht
+  t::Real,uh,uh_t,cache)
+  Uh = op.trial(nothing)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   du = get_cell_basis(Uh)
@@ -188,9 +141,8 @@ function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
 end
 
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t,duht_du::Real,cache)#,assem)
-  Uh = cache.Uh;  Uht = cache.Uht
-  @assert is_a_fe_function(uh)
+  t::Real,uh,uh_t,duht_du::Real,cache)
+  Uh = op.trial(nothing)
   @assert is_a_fe_function(uh_t)
   du_t = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
@@ -204,14 +156,13 @@ end
 function test_transient_fe_operator(op::TransientFEOperator,uh)
   odeop = get_algebraic_operator(op)
   @test isa(odeop,ODEOperator)
-  cache = allocate_cache(odeop)
+  cache = allocate_cache(op)
   V = get_test(op)
   @test isa(V,FESpace)
   U = get_trial(op)
-  @test isa(U,Union{FESpace,TransientTrialFESpace})
   U0 = U(0.0)
   @test isa(U0,FESpace)
-  r = allocate_residual(op,uh)
+  r = allocate_residual(op,uh,cache)
   @test isa(r,AbstractVector)
   residual!(r,op,0.0,uh,uh,cache)
   @test isa(r,AbstractVector)
@@ -221,5 +172,6 @@ function test_transient_fe_operator(op::TransientFEOperator,uh)
   @test isa(J,AbstractMatrix)
   jacobian_t!(J,op,0.0,uh,uh,1.0,cache)
   @test isa(J,AbstractMatrix)
+  cache = update_cache!(cache,op,0.0)
   true
 end

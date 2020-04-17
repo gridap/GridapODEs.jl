@@ -1,4 +1,4 @@
-module QuadraticTests
+# module QuadraticTests
 
 using Gridap
 using ForwardDiff
@@ -11,11 +11,11 @@ using Gridap.FESpaces: get_algebraic_operator
 import Gridap: ∇
 import GridapTimeStepper.TransientFETools: ∂t
 
-θ = 0.4
+θ = 0.5
 
 # Analytical functions
-u(x,t) = (x[1]+x[2])*t
-u(x,t) = (2*x[1]+x[2])*t
+# u(x,t) = (x[1]+x[2])*t
+# u(x,t) = (2*x[1]+x[2])*t
 u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
 
 # @santiagobadia : @fverdugo, take a look at this, we could probably start using
@@ -195,4 +195,4 @@ for (uh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-end #module
+# end #module

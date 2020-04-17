@@ -12,31 +12,31 @@ function solve_step!(uf::AbstractVector,
                      op::ODEOperator,
                      u0::AbstractVector,
                      t0::Real,
-                     ode_cache,
-                     nl_cache) # -> (uF,tF)
+                     cache) # -> (uF,tF)
 
-  # Build the nonlinear problem to solve at this step
+  if cache === nothing
+    ode_cache = allocate_cache(op)
+    vθ = similar(u0)
+    nl_cache = nothing
+  else
+    ode_cache, vθ, nl_cache = cache
+  end
+
   dt = solver.dt
   tf = t0+dt
   solver.θ == 0.0 ? dtθ = dt : dtθ = dt*solver.θ
   tθ = t0+dtθ
-  # if 0.0 < solver.θ < 1.0
-  #   v0 = (1-solver.θ)*u0
-  # else
-  #   v0 = u0
-  # end
-  update_cache!(ode_cache,op,tf)
+  ode_cache = update_cache!(ode_cache,op,tf)
 
-  nlop = ThetaMethodNonlinearOperator(op,tθ,dtθ,u0,ode_cache)
+  nlop = ThetaMethodNonlinearOperator(op,tθ,dtθ,u0,ode_cache,vθ)
 
-  # Solve the nonlinear problem
   if (nl_cache==nothing)
     nl_cache = solve!(uf,solver.nls,nlop)
   else
     # solve!(uf,solver.nls,nlop,nl_cache)
     # @santiagobadia: What I am doing wrong here?
     # could we create a function with methods dispatching based on solver
-    # linear or nonlinear? 
+    # linear or nonlinear?
     x = copy(nlop.u0)
     b = allocate_residual(nlop,x)
     residual!(b,nlop,x)
@@ -49,11 +49,12 @@ function solve_step!(uf::AbstractVector,
     uf = uf*(1.0/solver.θ)-u0*((1-solver.θ)/solver.θ)
   end
 
-  return (uf,tf,ode_cache,nl_cache)
+  cache = (ode_cache, vθ, nl_cache)
+
+  return (uf,tf,cache)
 
 end
 
-# Struct representing the nonlinear algebraic problem to be solved at a given step
 """
 Nonlinear operator that represents the θ-method nonlinear operator at a
 given time step, i.e., A(t,u_n+θ,(u_n+θ-u_n)/dt)
@@ -64,21 +65,24 @@ struct ThetaMethodNonlinearOperator <: NonlinearOperator
   dtθ::Float64
   u0::AbstractVector
   ode_cache
+  vθ::AbstractVector
 end
 
 function residual!(b::AbstractVector,op::ThetaMethodNonlinearOperator,x::AbstractVector)
   uθ = x
+  vθ = op.vθ
   vθ = (x-op.u0)/op.dtθ
   residual!(b,op.odeop,op.tθ,uθ,vθ,op.ode_cache)
 end
 
 function jacobian!(A::AbstractMatrix,op::ThetaMethodNonlinearOperator,x::AbstractVector)
   uF = x
-  vF = (x-op.u0)/op.dtθ
+  vθ = op.vθ
+  vθ = (x-op.u0)/op.dtθ
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian!(A,op.odeop,op.tθ,uF,vF,op.ode_cache)
-  jacobian_t!(A,op.odeop,op.tθ,uF,vF,(1/op.dtθ),op.ode_cache)
+  jacobian!(A,op.odeop,op.tθ,uF,vθ,op.ode_cache)
+  jacobian_t!(A,op.odeop,op.tθ,uF,vθ,(1/op.dtθ),op.ode_cache)
 end
 
 function allocate_residual(op::ThetaMethodNonlinearOperator,x::AbstractVector)
