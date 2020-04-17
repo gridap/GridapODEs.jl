@@ -162,11 +162,11 @@ function test_transient_fe_operator(op::TransientFEOperator,uh)
   U = get_trial(op)
   U0 = U(0.0)
   @test isa(U0,FESpace)
-  r = allocate_residual(op,uh)
+  r = allocate_residual(op,uh,cache)
   @test isa(r,AbstractVector)
   residual!(r,op,0.0,uh,uh,cache)
   @test isa(r,AbstractVector)
-  J = allocate_jacobian(op,uh)
+  J = allocate_jacobian(op,uh,cache)
   @test isa(J,AbstractMatrix)
   jacobian!(J,op,0.0,uh,uh,cache)
   @test isa(J,AbstractMatrix)
@@ -175,4 +175,3 @@ function test_transient_fe_operator(op::TransientFEOperator,uh)
   cache = update_cache!(cache,op,0.0)
   true
 end
-

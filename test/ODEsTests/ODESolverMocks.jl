@@ -79,19 +79,26 @@ struct ODESolverMock <: ODESolver
 end
 
 function solve_step!(
-  uf::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, ode_cache, nl_cache) # -> (uF,tF)
-
+  uf::AbstractVector,solver::ODESolverMock,op::ODEOperator,u0::AbstractVector,t0::Real, cache) # -> (uF,tF)
 
   dt = solver.dt
   tf = t0+dt
-  update_cache!(ode_cache,op,tf)
+  if (cache == nothing)
+    ode_cache = allocate_cache(op)
+  else
+    ode_cache, nl_cache = cache
+    update_cache!(ode_cache,op,tf)
+  end
+
   nlop = OperatorMock(op,tf,dt,u0,ode_cache)
 
-  if (nl_cache==nothing)
+  if (cache==nothing)
     nl_cache = solve!(uf,solver.nls,nlop)
   else
     nl_cache = solve!(uf,solver.nls,nlop,nl_cache)
   end
 
-  return (uf, tf, ode_cache, nl_cache)
+  cache = ode_cache, nl_cache
+
+  return (uf, tf, cache)
 end

@@ -4,10 +4,11 @@ A single field FE space with transient Dirichlet data (see Multifield below).
 """
 struct TransientTrialFESpace
   space::SingleFieldFESpace
-  dirichlet_t::Vector{<:Function}
+  dirichlet_t::Union{Function,Vector{<:Function}}
+  # @santiagobadia : It could also be a Function...
   Ud0::TrialFESpace
 
-  function TransientTrialFESpace(space::SingleFieldFESpace,dirichlet_t::Vector{<:Function})
+  function TransientTrialFESpace(space::SingleFieldFESpace,dirichlet_t::Union{Function,Vector{<:Function}})
     Ud0 = HomogeneousTrialFESpace(space)
     new(space,dirichlet_t,Ud0)
   end
@@ -17,7 +18,11 @@ end
 Time evaluation without allocating Dirichlet vals
 """
 function evaluate!(Ut::TrialFESpace,U::TransientTrialFESpace,t::Real)
-  objects_at_t = map( o->o(t), U_t.dirichlet_t)
+  if isa(U.dirichlet_t,Vector)
+    objects_at_t = map( o->o(t), U.dirichlet_t)
+  else
+    objects_at_t = U.dirichlet_t(t)
+  end
   TrialFESpace!(Ut,objects_at_t)
   Ut
 end
@@ -26,8 +31,9 @@ end
 Allocate the space to be used as first argument in evaluate!
 """
 function allocate_trial_space(U::TransientTrialFESpace)
-  dirichlet_values = zero_dirichlet_values(U.space)
-  TrialFESpace(dirichlet_values,U.space)
+  # dirichlet_values = zero_dirichlet_values(U.space)
+  # TrialFESpace(dirichlet_values,U.space)
+    HomogeneousTrialFESpace(U.space)
 end
 
 """
@@ -54,7 +60,7 @@ Functor-like evaluation. It allocates Dirichlet vals in general.
 """
 Time derivative of the Dirichlet functions
 """
-∂t(U::TransientTrialFESpace) = TransientTrialFESpace(fes.space,∂t.(fes.dirichlet_t))
+∂t(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
 
 
 # Testing the interface
@@ -129,4 +135,3 @@ function ∂t(U::TransientMultiFieldTrialFESpace)
   spaces = ∂t.(U.spaces)
   MultiFieldFESpace(spaces)
 end
-

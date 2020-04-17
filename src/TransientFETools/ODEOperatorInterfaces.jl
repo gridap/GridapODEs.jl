@@ -31,13 +31,13 @@ end
 
 function allocate_residual(op::ODEOpFromFEOp,uhF::AbstractVector,ode_cache)
   U,V,Ut,Vt,fecache = ode_cache
-  uh = FEFunction(Uh,uhF)
+  uh = FEFunction(U,uhF)
   allocate_residual(op.feop,uh,fecache)
 end
 
 function allocate_jacobian(op::ODEOpFromFEOp,uhF::AbstractVector,ode_cache)
   U,V,Ut,Vt,fecache = ode_cache
-  uh = FEFunction(Uh,uhF)
+  uh = FEFunction(U,uhF)
   allocate_jacobian(op.feop,uh,fecache)
 end
 

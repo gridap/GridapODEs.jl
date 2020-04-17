@@ -24,7 +24,11 @@ function solve_step!(
   nlop = BackwardEulerNonlinearOperator(op,tf,dt,u0,ode_cache,vF)
 
   # Solve the nonlinear problem
-  nl_cache = solve!(uf,solver.nls,nlop,nl_cache)
+  if (nl_cache == nothing)
+    nl_cache = solve!(uf,solver.nls,nlop)
+  else
+    nl_cache = solve!(uf,solver.nls,nlop,nl_cache)
+  end
 
   cache = (ode_cache, vF, nl_cache)
 
@@ -42,7 +46,7 @@ struct BackwardEulerNonlinearOperator <: NonlinearOperator
   dt::Float64
   u0::AbstractVector
   ode_cache
-  vF:AbstractVector
+  vF::AbstractVector
 end
 
 function residual!(b::AbstractVector,op::BackwardEulerNonlinearOperator,x::AbstractVector)

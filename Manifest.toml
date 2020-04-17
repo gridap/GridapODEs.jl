@@ -2,9 +2,9 @@
 
 [[ArrayInterface]]
 deps = ["LinearAlgebra", "Requires", "SparseArrays"]
-git-tree-sha1 = "b34d74dc877e6083c4c5c553a685e89e10ea4662"
+git-tree-sha1 = "5f34aee5e5dbc1ce5cfb137d63f719a64d98ae82"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "2.8.3"
+version = "2.8.5"
 
 [[BSON]]
 git-tree-sha1 = "e794bd8f3f319218e8c8b46657631bdbea2807ca"
@@ -46,9 +46,9 @@ version = "0.3.3+0"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "73eb18320fe3ba58790c8b8f6f89420f0a622773"
+git-tree-sha1 = "4dead20a1606a60292529023d6eac18a1ef6432e"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.11"
+version = "0.17.12"
 
 [[Dates]]
 deps = ["Printf"]
@@ -114,7 +114,7 @@ version = "0.10.10"
 
 [[Gridap]]
 deps = ["BSON", "Combinatorics", "DocStringExtensions", "FastGaussQuadrature", "FileIO", "FillArrays", "JLD2", "JSON", "LineSearches", "LinearAlgebra", "NLsolve", "QuadGK", "SparseArrays", "StaticArrays", "Test", "WriteVTK"]
-git-tree-sha1 = "d3491ef1e96aebf1fd905d7af21af4632a13c26a"
+git-tree-sha1 = "39ed815dec673ab8ba0b08822759cceb5c2c2f6f"
 repo-rev = "master"
 repo-url = "https://github.com/gridap/Gridap.jl.git"
 uuid = "56d4f2e9-7ea1-5844-9cf6-b9c51ca7ce8e"
