@@ -1,4 +1,4 @@
-module GridapTimeStepper
+module GridapODEs
 
 include("ODETools/ODETools.jl")
 

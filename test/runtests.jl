@@ -1,4 +1,4 @@
-module GridapTimeStepperRunTests
+module GridapODEsRunTests
 
 using Test
 

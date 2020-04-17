@@ -1,9 +1,9 @@
 module ODEOperatorsTests
 
-using GridapTimeStepper.ODETools
+using GridapODEs.ODETools
 using Test
 
-import GridapTimeStepper.ODETools: test_ode_operator
+import GridapODEs.ODETools: test_ode_operator
 
 include("ODEOperatorMocks.jl")
 

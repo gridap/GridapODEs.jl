@@ -1,14 +1,14 @@
 module ODESolversTests
 
-using GridapTimeStepper.ODETools: GenericODESolution
-using GridapTimeStepper.ODETools: BackwardEuler
-using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
-using GridapTimeStepper.ODETools: solve!
+using GridapODEs.ODETools: GenericODESolution
+using GridapODEs.ODETools: BackwardEuler
+using GridapODEs.ODETools: BackwardEulerNonlinearOperator
+using GridapODEs.ODETools: solve!
 
 using Test
 using Gridap
-using GridapTimeStepper
-using GridapTimeStepper.ODETools
+using GridapODEs
+using GridapODEs.ODETools
 
 
 include("ODEOperatorMocks.jl")

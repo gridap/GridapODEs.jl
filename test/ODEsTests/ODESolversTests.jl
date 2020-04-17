@@ -1,12 +1,12 @@
 module ODESolversTests
 
-using GridapTimeStepper
-using GridapTimeStepper.ODETools: GenericODESolution
-using GridapTimeStepper.ODETools: BackwardEuler
-using GridapTimeStepper.ODETools: ThetaMethodNonlinearOperator
-using GridapTimeStepper.ODETools: solve!
-using GridapTimeStepper
-using GridapTimeStepper.ODETools
+using GridapODEs
+using GridapODEs.ODETools: GenericODESolution
+using GridapODEs.ODETools: BackwardEuler
+using GridapODEs.ODETools: ThetaMethodNonlinearOperator
+using GridapODEs.ODETools: solve!
+using GridapODEs
+using GridapODEs.ODETools
 using Gridap
 using Test
 

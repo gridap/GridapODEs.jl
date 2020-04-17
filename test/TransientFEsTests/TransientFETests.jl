@@ -1,7 +1,7 @@
 using Gridap
 using Test
-using GridapTimeStepper.ODETools
-using GridapTimeStepper.TransientFETools
+using GridapODEs.ODETools
+using GridapODEs.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
 
 u(x,t) = (x[1] + x[2])*t
@@ -15,7 +15,7 @@ import Gridap: ∇
 θ = 1.0
 
 ∂tu(t) = x -> x[1]+x[2]
-import GridapTimeStepper.TransientFETools: ∂t
+import GridapODEs.TransientFETools: ∂t
 ∂t(::typeof(u)) = ∂tu
 @test ∂t(u) === ∂tu
 
@@ -132,7 +132,7 @@ uf = copy(u0)
 dt = solver.dt
 tf = t0+dt
 update_cache!(ode_cache,odeop,tf)
-using GridapTimeStepper.ODETools: ThetaMethodNonlinearOperator
+using GridapODEs.ODETools: ThetaMethodNonlinearOperator
 vf = copy(u0)
 nlop = ThetaMethodNonlinearOperator(odeop,tf,dt,u0,ode_cache,vf)
 # cache = solve!(uf,solver.nls,nlop)

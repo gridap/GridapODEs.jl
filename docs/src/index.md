@@ -1,8 +1,8 @@
-# GridapTimeStepper.jl
+# GridapODEs.jl
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [GridapTimeStepper]
+Modules = [GridapODEs]
 ```

@@ -2,14 +2,14 @@
 # u_1_t - a * u_1 = 0
 # u_2_t - b * u_1 - c * u_2 = 0
 
-import GridapTimeStepper.ODETools: ODEOperator
-import GridapTimeStepper.ODETools: allocate_cache
-import GridapTimeStepper.ODETools: update_cache!
-import GridapTimeStepper.ODETools: allocate_residual
-import GridapTimeStepper.ODETools: jacobian!
-import GridapTimeStepper.ODETools: jacobian_t!
-import GridapTimeStepper.ODETools: allocate_jacobian
-import GridapTimeStepper.ODETools: residual!
+import GridapODEs.ODETools: ODEOperator
+import GridapODEs.ODETools: allocate_cache
+import GridapODEs.ODETools: update_cache!
+import GridapODEs.ODETools: allocate_residual
+import GridapODEs.ODETools: jacobian!
+import GridapODEs.ODETools: jacobian_t!
+import GridapODEs.ODETools: allocate_jacobian
+import GridapODEs.ODETools: residual!
 
 struct ODEOperatorMock{T<:Real} <: ODEOperator
   a::T

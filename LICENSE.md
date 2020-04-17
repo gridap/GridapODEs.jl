@@ -1,9 +1,9 @@
-GridapTimeStepper.jl Copyright and License
+GridapODEs.jl Copyright and License
 ==
 
 Copyright (c) 2020 by [Santiago Badia](mailto:santiago.badia@monash.edu) and [Francesc Verdugo](mailto:fverdugo@cimne.upc.edu).
 
-GridapTimeStepper.jl is licensed under the MIT Expat License
+GridapODEs.jl is licensed under the MIT Expat License
 
 ```
 Permission is hereby granted, free of charge, to any person obtaining a copy
