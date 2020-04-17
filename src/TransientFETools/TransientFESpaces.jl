@@ -30,8 +30,6 @@ end
 Allocate the space to be used as first argument in evaluate!
 """
 function allocate_trial_space(U::TransientTrialFESpace)
-  # dirichlet_values = zero_dirichlet_values(U.space)
-  # TrialFESpace(dirichlet_values,U.space)
     HomogeneousTrialFESpace(U.space)
 end
 
