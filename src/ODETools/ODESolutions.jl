@@ -36,7 +36,6 @@ struct GenericODESolution <: ODESolution
   t0::Real
   tF::Real
 end
-# @santiagobadia: Do we want it to be type stable?
 
 function Base.iterate(sol::GenericODESolution)
 

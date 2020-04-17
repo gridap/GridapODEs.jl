@@ -5,7 +5,6 @@ A single field FE space with transient Dirichlet data (see Multifield below).
 struct TransientTrialFESpace
   space::SingleFieldFESpace
   dirichlet_t::Union{Function,Vector{<:Function}}
-  # @santiagobadia : It could also be a Function...
   Ud0::TrialFESpace
 
   function TransientTrialFESpace(space::SingleFieldFESpace,dirichlet_t::Union{Function,Vector{<:Function}})

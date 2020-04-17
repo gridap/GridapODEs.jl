@@ -3,7 +3,7 @@ module ODESolversTests
 using GridapTimeStepper
 using GridapTimeStepper.ODETools: GenericODESolution
 using GridapTimeStepper.ODETools: BackwardEuler
-using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
+using GridapTimeStepper.ODETools: ThetaMethodNonlinearOperator
 using GridapTimeStepper.ODETools: solve!
 using GridapTimeStepper
 using GridapTimeStepper.ODETools
@@ -79,7 +79,7 @@ uf, tf = current
 
 tf = t0+dt
 vf = copy(u0)
-sop = BackwardEulerNonlinearOperator(op,tf,dt,u0,ode_cache,vf) # See below
+sop = ThetaMethodNonlinearOperator(op,tf,dt,u0,ode_cache,vf) # See below
 x = zero_initial_guess(eltype(u0),sop)
 x .+= 1.0
 r = allocate_residual(sop,x)

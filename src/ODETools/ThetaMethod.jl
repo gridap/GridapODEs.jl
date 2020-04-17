@@ -7,6 +7,10 @@ struct ThetaMethod <: ODESolver
   θ::Float64
 end
 
+BackwardEuler(nls,dt) = ThetaMethod(nls,dt,1.0)
+ForwardEuler(nls,dt) = ThetaMethod(nls,dt,0.0)
+MidPoint(nls,dt) = ThetaMethod(nls,dt,0.5)
+
 function solve_step!(uf::AbstractVector,
                      solver::ThetaMethod,
                      op::ODEOperator,

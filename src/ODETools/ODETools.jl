@@ -26,6 +26,8 @@ import Gridap.Algebra: solve!
 import Gridap.Algebra: zero_initial_guess
 
 export BackwardEuler
+export ForwardEuler
+export MidPoint
 export ThetaMethod
 import Gridap.Algebra: fill_entries!
 
