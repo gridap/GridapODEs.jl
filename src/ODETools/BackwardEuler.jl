@@ -27,7 +27,13 @@ function solve_step!(
   if (nl_cache == nothing)
     nl_cache = solve!(uf,solver.nls,nlop)
   else
-    nl_cache = solve!(uf,solver.nls,nlop,nl_cache)
+    # solve!(uf,solver.nls,nlop,nl_cache)
+    x = copy(nlop.u0)
+    b1 = allocate_residual(nlop,x)
+    residual!(b1,nlop,x)
+    J1 = allocate_jacobian(nlop,x)
+    jacobian!(J1,nlop,x)
+    uf = u0-J1\b1
   end
 
   cache = (ode_cache, vF, nl_cache)

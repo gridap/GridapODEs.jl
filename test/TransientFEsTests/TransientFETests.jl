@@ -4,35 +4,17 @@ using GridapTimeStepper.ODETools
 using GridapTimeStepper.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
 
-# First, we define the transient problem
-# u(x,t) = (x[1] + x[2])*t
-# u(t::Real) = x -> u(x,t)
-# ∇u(x,t) = VectorValue(1,1)*t
-# ∇u(t::Real) = x -> ∇u(x,t)
-# import Gridap: ∇
-# ∇(::typeof(u)) = ∇u
-# ∇(u) === ∇u
-amp = 1.0
-u(x,t) = amp*(x[1] + x[2])*t
+u(x,t) = (x[1] + x[2])*t
 u(t::Real) = x -> u(x,t)
-∇u(x,t) = amp*VectorValue(1,1)*t
+∇u(x,t) = VectorValue(1,1)*t
 ∇u(t::Real) = x -> ∇u(x,t)
 import Gridap: ∇
 ∇(::typeof(u)) = ∇u
 ∇(u) === ∇u
 
-# u(x::Point) = u(x,0.0)
-# p = Point(1.0,1.0)
-# u(p)
-# for tn in 0:10
-#   global u, ∇u
-#   u(x::Point) = u(x,convert(Float64,tn))
-#   ∇u(x::Point) = ∇u(x,tn)
-#   @show u(p)
-#   @show ∇u(p)
-# end
+θ = 1.0
 
-∂tu(t) = x -> amp*(x[1]+x[2])
+∂tu(t) = x -> x[1]+x[2]
 import GridapTimeStepper.TransientFETools: ∂t
 ∂t(::typeof(u)) = ∂tu
 @test ∂t(u) === ∂tu
@@ -131,7 +113,7 @@ maxiters = 20
 using Gridap.Algebra: NewtonRaphsonSolver
 # nls = NewtonRaphsonSolver(ls,tol,maxiters)
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
-odes = BackwardEuler(nls,dt)
+odes = ThetaMethod(nls,dt,1.0)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 @test test_transient_fe_solver(solver,op,uh0,t0,tF)
 
@@ -150,9 +132,9 @@ uf = copy(u0)
 dt = solver.dt
 tf = t0+dt
 update_cache!(ode_cache,odeop,tf)
-using GridapTimeStepper.ODETools: BackwardEulerNonlinearOperator
+using GridapTimeStepper.ODETools: ThetaMethodNonlinearOperator
 vf = copy(u0)
-nlop = BackwardEulerNonlinearOperator(odeop,tf,dt,u0,ode_cache,vf)
+nlop = ThetaMethodNonlinearOperator(odeop,tf,dt,u0,ode_cache,vf)
 # cache = solve!(uf,solver.nls,nlop)
 
 x = copy(nlop.u0)
@@ -162,13 +144,13 @@ x = copy(nlop.u0)
 b1 = allocate_residual(nlop,x)
 residual!(b1,nlop,x)
 b2 = allocate_residual(nlop,x)
-residual!(b2,nlop.odeop,nlop.tF,x,10.0*x,nlop.ode_cache)
+residual!(b2,nlop.odeop,nlop.tθ,x,10.0*x,nlop.ode_cache)
 @test all(b1 .≈ b2)
 J1 = allocate_jacobian(nlop,x)
 jacobian!(J1,nlop,x)
 J2 = allocate_jacobian(nlop,x)
-jacobian!(J2,nlop.odeop,nlop.tF,x,10.0*x,nlop.ode_cache)
-jacobian_t!(J2,nlop.odeop,nlop.tF,x,10.0*x,10.0,nlop.ode_cache)
+jacobian!(J2,nlop.odeop,nlop.tθ,x,10.0*x,nlop.ode_cache)
+jacobian_t!(J2,nlop.odeop,nlop.tθ,x,10.0*x,10.0,nlop.ode_cache)
 @test all(J1 .≈ J2)
 using Gridap.Algebra: test_nonlinear_operator
 test_nonlinear_operator(nlop,x,b1,jac=J1)
@@ -232,6 +214,17 @@ for (u_n, t_n) in sol_ode_t
   @test all(u_n .≈ t_n)
 end
 
+odes = ThetaMethod(nls,dt,θ)
+sol_ode_t = solve(odes,odeop,u0,t0,tF)
+test_ode_solution(sol_ode_t)
+_t_n = t0
+un, tn = Base.iterate(sol_ode_t)
+for (u_n, t_n) in sol_ode_t
+  global _t_n
+  _t_n += dt
+  @test t_n≈_t_n
+  @test all(u_n .≈ t_n)
+end
 
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 sol_t = solve(solver,op,uh0,t0,tF)
