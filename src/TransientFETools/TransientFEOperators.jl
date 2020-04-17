@@ -91,7 +91,7 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
 end
 
 function TransientFEOperator(trial,test,terms...)
-  assem_t = SparseMatrixAssembler(test,trial(nothing))
+  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
   TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,terms...)
 end
 
@@ -120,7 +120,7 @@ function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
 end
 
 function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,cache)
-  Uh = op.trial(nothing)
+  Uh = evaluate(op.trial,nothing)
   @assert is_a_fe_function(uh)
   du = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
@@ -130,7 +130,7 @@ end
 
 function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,cache)
-  Uh = op.trial(nothing)
+  Uh = evaluate(op.trial,nothing)
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   du = get_cell_basis(Uh)
@@ -142,7 +142,7 @@ end
 
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,duht_du::Real,cache)
-  Uh = op.trial(nothing)
+  Uh = evaluate(op.trial,nothing)
   @assert is_a_fe_function(uh_t)
   du_t = get_cell_basis(Uh)
   v = get_cell_basis(op.test)

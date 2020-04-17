@@ -63,7 +63,7 @@ Time derivative of the Dirichlet functions
 # Testing the interface
 
 function test_transient_trial_fe_space(Uh)
-  UhX = Uh(nothing)
+  UhX = evaluate(Uh,nothing)
   @test isa(UhX,FESpace)
   Uh0 = allocate_trial_space(Uh)
   Uh0 = evaluate!(Uh0,Uh,0.0)
@@ -96,7 +96,9 @@ function evaluate(U::FESpace,t::Nothing)
   U
 end
 
-(U::FESpace)(t) = U
+@static if VERSION >= v"1.3"
+  (U::FESpace)(t) = U
+end
 
 ∂t(U::FESpace) = HomogeneousTrialFESpace(U)
 
