@@ -114,9 +114,7 @@ version = "0.10.10"
 
 [[Gridap]]
 deps = ["BSON", "Combinatorics", "DocStringExtensions", "FastGaussQuadrature", "FileIO", "FillArrays", "JLD2", "JSON", "LineSearches", "LinearAlgebra", "NLsolve", "QuadGK", "SparseArrays", "StaticArrays", "Test", "WriteVTK"]
-git-tree-sha1 = "0a9b67c06cc31154a7880ecc3265d1bf4e762e95"
-repo-rev = "master"
-repo-url = "https://github.com/gridap/Gridap.jl.git"
+git-tree-sha1 = "34f12aa14d5f5770a92c39f9c771bfa548737fa3"
 uuid = "56d4f2e9-7ea1-5844-9cf6-b9c51ca7ce8e"
 version = "0.9.0"
 
