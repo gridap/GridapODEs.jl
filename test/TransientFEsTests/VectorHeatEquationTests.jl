@@ -106,10 +106,16 @@ dt = 0.1
 U0 = U(0.0)
 uh0 = interpolate_everywhere(U0,u(0.0))
 
-X0 = X(0.0)
-uh0 = interpolate_everywhere(X0,u(0.0))
 
-MultiFi
+# @santiagobadia : There are things that I do not know how to do with these spaces
+# I cannot see a constructor for MultiFieldFEFunction that takes Dirichlet values
+# and interpolates everywhere, which I need for xh0
+X0 = X(0.0)
+# uh0 = interpolate_everywhere(X0,u(0.0))
+
+# fv = Gridap.MultiField.zero_free_values(X0)
+# xh0 = Gridap.MultiField.MultiFieldFEFunction(fv,X0,[uh0,uh0])
+xh0 = Gridap.MultiField.MultiFieldFEFunction(X0,[uh0,uh0])
 
 ls = LUSolver()
 using Gridap.Algebra: NewtonRaphsonSolver
@@ -117,7 +123,7 @@ nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 
-sol_t = solve(solver,op,uh0,t0,tF)
+sol_t = solve(solver,op,xh0,t0,tF)
 
 l2(w) = w*w
 
@@ -125,9 +131,13 @@ l2(w) = w*w
 tol = 1.0e-6
 _t_n = t0
 
-for (uh_tn, tn) in sol_t
+result = Base.iterate(sol_t)
+
+
+for (xh_tn, tn) in sol_t
   global _t_n
   _t_n += dt
+  uh_tn = xh_tn.blocks[1]
   e = u(tn) - uh_tn
   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
   @test el2 < tol
