@@ -128,6 +128,10 @@ function evaluate(U::TransientMultiFieldTrialFESpace,t::Real)
   Ut
 end
 
+function evaluate(U::TransientMultiFieldTrialFESpace,t::Nothing)
+  MultiFieldFESpace([fesp.Ud0 for fesp in U.spaces])
+end
+
 (U::TransientMultiFieldTrialFESpace)(t) = evaluate(U,t)
 
 function ∂t(U::TransientMultiFieldTrialFESpace)
