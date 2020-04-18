@@ -8,10 +8,12 @@ using GridapODEs.ODETools
 using GridapODEs.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
 
+# using GridapODEs.ODETools: ThetaMethodLinear
+
 import Gridap: ∇
 import GridapODEs.TransientFETools: ∂t
 
-θ = 0.5
+θ = 1.0
 
 # Analytical functions
 # u(x,t) = (x[1]+x[2])*t
@@ -137,7 +139,9 @@ uh0 = interpolate_everywhere(U0,u(0.0))
 ls = LUSolver()
 using Gridap.Algebra: NewtonRaphsonSolver
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
-odes = ThetaMethod(nls,dt,θ)
+# @santiagobadia : Check why it does not work
+# odes = ThetaMethod(nls,dt,θ)
+odes = ThetaMethod(ls,dt,θ)
 # odes = BackwardEuler(nls,dt)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 #

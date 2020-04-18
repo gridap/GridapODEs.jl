@@ -33,3 +33,5 @@ end
 # Specialization
 
 include("ThetaMethod.jl")
+
+include("LinearSolvers.jl")

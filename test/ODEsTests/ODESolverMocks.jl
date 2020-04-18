@@ -57,7 +57,7 @@ end
 struct NLSolverMock <: NonlinearSolver
 end
 
-function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonlinearOperator)
+function solve!(x::AbstractVector,nls::NLSolverMock,nlop::NonlinearOperator,cache::Nothing)
   r = residual(nlop,x)
   J = jacobian(nlop,x)
   dx = inv(J)*(-r)

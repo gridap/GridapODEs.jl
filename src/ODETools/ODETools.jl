@@ -5,9 +5,16 @@ using Test
 using Gridap: GridapType
 using Gridap.Helpers
 using Gridap.Algebra: NonlinearSolver
+using Gridap.Algebra: LinearSolver
 using Gridap.Algebra: NonlinearOperator
+using Gridap.Algebra: AffineOperator
 
 export ODEOperator
+using Gridap.Algebra: residual
+using Gridap.Algebra: jacobian
+using Gridap.Algebra: symbolic_setup
+using Gridap.Algebra: numerical_setup
+using Gridap.Algebra: numerical_setup!
 import Gridap.Algebra: residual!
 import Gridap.Algebra: jacobian!
 import Gridap.Algebra: allocate_residual
