@@ -234,9 +234,9 @@ _t_n = 0.0
 for (u_n, t_n) in sol_t
   global _t_n
   _t_n += dt
-  @show t_n
-  @show _t_n
-  @show u_n.dirichlet_values
+  # @show t_n
+  # @show _t_n
+  # @show u_n.dirichlet_values
   @test t_n≈_t_n
   @test all(u_n.free_values .≈ t_n)
 end

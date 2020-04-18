@@ -192,9 +192,9 @@ for (uh_tn, tn) in sol_t
   _t_n += dt
   # @test tn≈_t_n
   e = u(tn) - uh_tn
-  @show tn
-  @show get_free_values(uh_tn)
-  @show get_dirichlet_values(uh_tn)
+  # @show tn
+  # @show get_free_values(uh_tn)
+  # @show get_dirichlet_values(uh_tn)
   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
   @test el2 < tol
 end
