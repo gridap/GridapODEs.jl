@@ -49,6 +49,8 @@ function evaluate(U::TransientTrialFESpace,t::Nothing)
   U.Ud0
 end
 
+evaluate(U::TrialFESpace,t::Nothing) = U
+
 """
 Functor-like evaluation. It allocates Dirichlet vals in general.
 """
@@ -59,6 +61,10 @@ Time derivative of the Dirichlet functions
 """
 ∂t(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
 
+# ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
+∂t(U::TrialFESpace) = HomogeneousTrialFESpace(U)
+
+∂t(t::T) where T<:Number = zero(T)
 
 # Testing the interface
 
@@ -100,8 +106,6 @@ end
   (U::FESpace)(t) = U
 end
 
-∂t(U::FESpace) = HomogeneousTrialFESpace(U)
-
 # Define the interface for MultiField
 
 struct TransientMultiFieldTrialFESpace
@@ -129,7 +133,7 @@ function evaluate(U::TransientMultiFieldTrialFESpace,t::Real)
 end
 
 function evaluate(U::TransientMultiFieldTrialFESpace,t::Nothing)
-  MultiFieldFESpace([fesp.Ud0 for fesp in U.spaces])
+  MultiFieldFESpace([evaluate(fesp,nothing) for fesp in U.spaces])
 end
 
 (U::TransientMultiFieldTrialFESpace)(t) = evaluate(U,t)

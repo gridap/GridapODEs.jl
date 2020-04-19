@@ -8,10 +8,6 @@ function solve!(x::AbstractVector,nls::NonlinearSolver,op::NonlinearOperator,cac
   solve!(x,nls,op)
 end
 
-function solve!(x::AbstractVector,nls::NonlinearSolver,op::NonlinearOperator,cache)
-  solve!(x,nls,op,cache)
-end
-
 function solve!(x::AbstractVector,
                 ls::LinearSolver,
                 op::NonlinearOperator,

@@ -60,8 +60,6 @@ U = TransientTrialFESpace(V0,u)
 X = MultiFieldFESpace([U,U])
 Y = MultiFieldFESpace([V0,V0])
 
-U.Ud0
-
 MultiFieldFESpace([fesp.Ud0 for fesp in X.spaces])
 
 trian = Triangulation(model)

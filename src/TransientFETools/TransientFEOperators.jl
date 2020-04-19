@@ -88,7 +88,15 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
   test::FESpace
   assem_t::Assembler
   terms
+  # function TransientFEOperatorFromTerms(trial,trial_t,test::FESpace,assem::Assembler,terms...)
+  #   new(trial,trial_t,test,assem,terms)
+  # end
 end
+
+# @santiagobadia : Trying to mimic what we have in Gridap
+# function TransientFEOperator(trial,trial_t,test,assem,terms...)
+#   TransientFEOperatorFromTerms(trial,trial_t,test,assem_t,terms...)
+# end
 
 function TransientFEOperator(trial,test,terms...)
   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
