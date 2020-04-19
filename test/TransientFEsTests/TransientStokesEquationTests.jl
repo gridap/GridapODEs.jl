@@ -139,12 +139,6 @@ t_Ω = FETerm(res,jac,jac_t,trian,quad)
 t_Γb = FESource(l_Γb,btrian,bquad)
 op = TransientFEOperator(X,Y,t_Ω,t_Γb)
 
-
-# using GridapODEs.TransientFETools: ∂t
-# ∂t(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
-# P_t = ∂t(P)
-# Gridap.FESpaces.HomogeneousTrialFESpace(P.space)
-
 t0 = 0.0
 tF = 1.0
 dt = 0.1
