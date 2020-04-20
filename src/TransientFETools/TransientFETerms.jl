@@ -1,12 +1,23 @@
 function get_cell_residual(fet::FETerm,t,uh,uh_t,v)
+  @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
+  @assert is_a_fe_cell_basis(v)
   get_cell_residual(fet,uh,v)
 end
 
 function get_cell_jacobian(fet::FETerm,t,uh,uh_t,du,v)
+  @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
+  @assert is_a_fe_cell_basis(v)
+  @assert is_a_fe_cell_basis(du)
   get_cell_jacobian(fet,uh,du,v)
 end
 
-function get_cell_jacobian_t(fet::FETerm,t,uh,uh_t,du_t,v)
+function get_cell_jacobian_t(fet::FETerm,t,uh,uh_t,du_t,v,duht_du)
+  @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
+  @assert is_a_fe_cell_basis(v)
+  @assert is_a_fe_cell_basis(du_t)
   nothing
 end
 
@@ -14,7 +25,7 @@ abstract type TransientFETerm end
 
 get_cell_residual(::TransientFETerm,t,uh,uh_t,v) = @notimplemented
 get_cell_jacobian(::TransientFETerm,t,uh,uh_t,du_t,v) = @notimplemented
-get_cell_jacobian_t(::TransientFETerm,t,uh,uh_t,du_t,v) = @notimplemented
+get_cell_jacobian_t(::TransientFETerm,t,uh,uh_t,du_t,v,duht_du) = @notimplemented
 get_cell_values(tr::TransientFETerm,uhd) = @notimplemented
 get_cell_id(tr::TransientFETerm) = @notimplemented
 

@@ -22,7 +22,9 @@ using Gridap.FESpaces: HomogeneousTrialFESpace
 
 export TransientFETerm
 import Gridap.FESpaces: FETerm
+import Gridap.FESpaces: get_cell_residual
 import Gridap.FESpaces: get_cell_jacobian
+import Gridap.FESpaces: get_cell_values
 import Gridap.Geometry: Triangulation
 import Gridap.Geometry: CellQuadrature
 using Gridap.FESpaces: restrict
