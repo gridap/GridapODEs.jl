@@ -13,8 +13,8 @@ u(x) = VectorValue( x[1]^2 + 2*x[2]^2, -x[1]^2 )
 ∇u(x) = TensorValue( 2*x[1], 4*x[2], -2*x[1], zero(x[1]) )
 Δu(x) = VectorValue( 6, -2 )
 
-p(x) = x[1] + 3*x[2]
-∇p(x) = VectorValue(1,3)
+p(x) = x[1]-x[2]
+∇p(x) = VectorValue(1,-1)
 
 f(x) = -Δu(x) + ∇p(x)
 g(x) = tr(∇u(x))
@@ -40,7 +40,8 @@ order=order,
 reffe=:Lagrangian,
 labels=labels,
 valuetype=VectorValue{2,Float64},
-dirichlet_tags="dirichlet",
+dirichlet_tags="boundary",
+# dirichlet_tags="dirichlet",
 # dof_space=ref_st,
 conformity=:H1)
 
@@ -50,7 +51,8 @@ order=order-1,
 reffe=:Lagrangian,
 valuetype=Float64,
 # dof_space=ref_st,
-conformity=:H1)
+conformity=:H1,
+constraint=:zeromean)
 
 U = TrialFESpace(V,u)
 P = TrialFESpace(Q)
@@ -59,7 +61,7 @@ Y = MultiFieldFESpace([V,Q])
 X = MultiFieldFESpace([U,P])
 
 trian = get_triangulation(model)
-degree = order
+degree = order*2
 quad = CellQuadrature(trian,degree)
 
 btrian = BoundaryTriangulation(model,labels,"neumann")
@@ -84,9 +86,10 @@ function l_Γb(y)
 end
 
 t_Ω = AffineFETerm(a,l,trian,quad)
-t_Γb = FESource(l_Γb,btrian,bquad)
+# t_Γb = FESource(l_Γb,btrian,bquad)
 
-op = AffineFEOperator(X,Y,t_Ω,t_Γb)
+# op = AffineFEOperator(X,Y,t_Ω,t_Γb)
+op = AffineFEOperator(X,Y,t_Ω)
 
 uh, ph = solve(op)
 
@@ -108,6 +111,7 @@ tol = 1.0e-9
 θ = 0.5
 #u(t::Real) = x -> u(x,t)
 
+u(x,t) = u(x)
 ∂tu(t) = 0.0
 ∂tu(x,t) = ∂tu(t)(x)
 
@@ -120,7 +124,7 @@ X = MultiFieldFESpace([U,P])
 
 function res(t,x,xt,y)
   u,p = x
-  ut,_ = xt
+  ut,pt = xt
   v,q = y
   a(x,y) + ut*v - l(y)
 end
@@ -130,14 +134,15 @@ function jac(t,x,xt,dx,y)
 end
 
 function jac_t(t,x,xt,dxt,y)
-  dut,_=dxt
+  dut,dpt=dxt
   v,q = y
   dut*v
 end
 
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 t_Γb = FESource(l_Γb,btrian,bquad)
-op = TransientFEOperator(X,Y,t_Ω,t_Γb)
+# op = TransientFEOperator(X,Y,t_Ω,t_Γb)
+op = TransientFEOperator(X,Y,t_Ω)
 
 t0 = 0.0
 tF = 1.0
