@@ -10,6 +10,7 @@ This package provides time integration tools for `Gridap`. As an example, the fo
 
 ```julia
 using Gridap
+using ForwardDiff
 using GridapODEs.ODETools
 using GridapODEs.TransientFETools
 
@@ -20,6 +21,8 @@ import GridapODEs.TransientFETools: ∂t
 
 u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
 u(t::Real) = x -> u(x,t)
+∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
+∂tu(x,t) = ∂tu(t)(x)
 
 f(t) = x -> 1.0
 
