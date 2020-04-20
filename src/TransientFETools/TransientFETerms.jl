@@ -80,8 +80,7 @@ function collect_cell_residual(t::Real,uh,uh_t,v,terms)
   @assert is_a_fe_cell_basis(v)
   w = []
   r = []
-  # @santiagobadia : I am not sure what is going on?????
-  for term in [terms]
+  for term in terms
     cellvals = get_cell_residual(term,t,uh,uh_t,v)
     cellids = get_cell_id(term)
     _push_vector_contribution!(w,r,cellvals,cellids)
@@ -97,8 +96,7 @@ function collect_cell_jacobian(t::Real,uh,uh_t,du,v,terms)
   w = []
   r = []
   c = []
-  # @santiagobadia : Error to be checked, hack
-  for term in [terms]
+  for term in terms
     cellvals = get_cell_jacobian(term,t,uh,uh_t,du,v)
     cellids = get_cell_id(term)
     _push_matrix_contribution!(w,r,c,cellvals,cellids)
@@ -114,8 +112,7 @@ function collect_cell_jacobian_t(t::Real,uh,uh_t,du,v,duht_du::Real,terms)
   w = []
   r = []
   c = []
-  # @santiagobadia : Error to be checked, hack
-  for term in [terms]
+  for term in terms
     cellvals = get_cell_jacobian_t(term,t,uh,uh_t,du,v,duht_du)
     cellids = get_cell_id(term)
     _push_matrix_contribution!(w,r,c,cellvals,cellids)
