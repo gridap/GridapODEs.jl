@@ -106,7 +106,7 @@ tol = 1.0e-9
 @test ep_l2 < tol
 
 θ = 0.5
-u(t::Real) = x -> u(x,t)
+#u(t::Real) = x -> u(x,t)
 
 ∂tu(t) = 0.0
 ∂tu(x,t) = ∂tu(t)(x)
