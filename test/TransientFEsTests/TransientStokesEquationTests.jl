@@ -109,11 +109,12 @@ tol = 1.0e-9
 @test ep_l2 < tol
 
 θ = 0.5
-#u(t::Real) = x -> u(x,t)
+
 
 u(x,t) = u(x)
 ∂tu(t) = 0.0
 ∂tu(x,t) = ∂tu(t)(x)
+u(t::Real) = x -> u(x,t)
 
 ∂t(::typeof(u)) = ∂tu
 ∇(::typeof(u)) = ∇u
@@ -126,7 +127,7 @@ function res(t,x,xt,y)
   u,p = x
   ut,pt = xt
   v,q = y
-  a(x,y) + ut*v - l(y)
+  a(x,y) + 0.0*ut*v - l(y)
 end
 
 function jac(t,x,xt,dx,y)
@@ -156,8 +157,8 @@ X0 = X(0.0)
 xh0 = Gridap.MultiField.MultiFieldFEFunction(X0,[uh0,ph0])
 
 ls = LUSolver()
-using Gridap.Algebra: NewtonRaphsonSolver
-nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
+# using Gridap.Algebra: NewtonRaphsonSolver
+# nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 

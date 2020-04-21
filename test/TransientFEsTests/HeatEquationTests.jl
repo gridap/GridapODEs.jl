@@ -1,5 +1,4 @@
 # module QuadraticTests
-
 using Gridap
 using ForwardDiff
 using LinearAlgebra

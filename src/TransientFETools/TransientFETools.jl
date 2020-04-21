@@ -65,6 +65,7 @@ export test_transient_fe_solver
 
 export TransientFEFunction
 import Gridap.FESpaces: FEFunction
+import Gridap.FESpaces: EvaluationFunction
 
 export TransientFESolution
 import Gridap: solve
