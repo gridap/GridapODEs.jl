@@ -2,6 +2,10 @@ module ODETools
 
 using Test
 
+using ForwardDiff #: derivative
+
+export ∂t
+
 using Gridap: GridapType
 using Gridap.Helpers
 using Gridap.Algebra: NonlinearSolver
@@ -41,6 +45,8 @@ import Gridap.Algebra: fill_entries!
 export ODESolution
 export test_ode_solution
 import Base: iterate
+
+include("DiffOperators.jl")
 
 include("ODEOperators.jl")
 

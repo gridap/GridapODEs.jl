@@ -4,8 +4,10 @@ using Test
 
 using Gridap.Helpers
 
-export time_derivative
-export ∂t
+# export ∂t
+
+import GridapODEs.ODETools: ∂t
+import GridapODEs.ODETools: time_derivative
 
 export TransientTrialFESpace
 export test_transient_trial_fe_space

@@ -25,25 +25,36 @@ u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
 # etc
 u(t::Real) = x -> u(x,t)
 
-∇u(x,t) = VectorValue(ForwardDiff.gradient(u(t),x)...)
-∇u(x::Gridap.TensorValues.MultiValue,t) = ∇u(x.array,t)
-∇u(t::Real) = x -> ∇u(x,t)
-
-_∇u(x,t) = ForwardDiff.gradient(u(t),x)
-_∇u(t::Real) = x -> ForwardDiff.gradient(u(t),x)
-Δu(x,t) = tr(ForwardDiff.jacobian(_∇u(t),x))
-Δu(x::Gridap.TensorValues.MultiValue,t) = Δu(x.array,t)
-Δu(t::Real) = x -> Δu(x,t)
-
-v(x) = t -> u(x,t)
-∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
-∂tu(x,t) = ∂tu(t)(x)
-
-∂t(::typeof(u)) = ∂tu
-∇(::typeof(u)) = ∇u
+# ∇u(x,t) = VectorValue(ForwardDiff.gradient(u(t),x)...)
+# ∇u(x::Gridap.TensorValues.MultiValue,t) = ∇u(x.array,t)
+# ∇u(t::Real) = x -> ∇u(x,t)
+#
+# _∇u(x,t) = ForwardDiff.gradient(u(t),x)
+# _∇u(t::Real) = x -> ForwardDiff.gradient(u(t),x)
+# Δu(x,t) = tr(ForwardDiff.jacobian(_∇u(t),x))
+# Δu(x::Gridap.TensorValues.MultiValue,t) = Δu(x.array,t)
+# Δu(t::Real) = x -> Δu(x,t)
+#
+# v(x) = t -> u(x,t)
+# ∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
+# ∂tu(x,t) = ∂tu(t)(x)
+#
+# ∂t(::typeof(u)) = ∂tu
+# ∇(::typeof(u)) = ∇u
 #
 
+import Gridap: Δ
+
+Δ(u)
+
+f(x) = 1.0
+
+g(t) = x
+
+# f(t) = x -> ∂t(u)(x,t)-Δ(u(t))(x)
 f(t) = x -> ∂tu(x,t)-Δu(x,t)
+g(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
+# f(t) = x -> ∂tu(x,t)-Δu(x,t)
 
 domain = (0,1,0,1)
 partition = (2,2)
@@ -68,7 +79,7 @@ quad = CellQuadrature(trian,degree)
 
 #
 a(u,v) = ∇(v)*∇(u)
-b(v,t) = v*f(t)
+b(v,t) = v*g(t)
 
 _res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
 _jac(t,u,ut,du,v) = a(du,v)

@@ -10,14 +10,14 @@ import GridapODEs.TransientFETools: ∂t
 using LinearAlgebra: tr
 
 u(x) = VectorValue( x[1]^2 + 2*x[2]^2, -x[1]^2 )
-∇u(x) = TensorValue( 2*x[1], 4*x[2], -2*x[1], zero(x[1]) )
-Δu(x) = VectorValue( 6, -2 )
+# ∇u(x) = TensorValue( 2*x[1], 4*x[2], -2*x[1], zero(x[1]) )
+# Δu(x) = VectorValue( 6, -2 )
 
 p(x) = x[1]-x[2]
-∇p(x) = VectorValue(1,-1)
+# ∇p(x) = VectorValue(1,-1)
 
 f(x) = -Δu(x) + ∇p(x)
-g(x) = tr(∇u(x))
+g(x) = ∇*u(x)
 
 ∇(::typeof(u)) = ∇u
 ∇(::typeof(p)) = ∇p

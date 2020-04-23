@@ -18,12 +18,13 @@ import GridapODEs.TransientFETools: ∂t
 # u(x,t) = (x[1]+x[2])*t
 # u(x,t) = (2*x[1]+x[2])*t
 u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
+u(t::Real) = x -> u(x,t)
 
 # @santiagobadia : @fverdugo, take a look at this, we could probably start using
 # it in the tutorials, etc, creating functions that return gradients, laplacians,
 # etc
-u(t::Real) = x -> u(x,t)
-
+# ∇(u)
+#
 ∇u(x,t) = VectorValue(ForwardDiff.gradient(u(t),x)...)
 ∇u(x::Gridap.TensorValues.MultiValue,t) = ∇u(x.array,t)
 ∇u(t::Real) = x -> ∇u(x,t)
@@ -38,11 +39,45 @@ v(x) = t -> u(x,t)
 ∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
 ∂tu(x,t) = ∂tu(t)(x)
 
-∂t(::typeof(u)) = ∂tu
-∇(::typeof(u)) = ∇u
-#
+# ∂t(::typeof(u)) = ∂tu
+# ∇(::typeof(u)) = ∇u
+
+# const ∂t = time_derivative
+
+# function time_derivative(f::Function)
+#   _f(x) = t -> f(x,t)
+#   ∂tu(t) = x -> ForwardDiff.derivative(_f(x),t)
+#   ∂tu(x,t) = ∂tu(t)(x)
+#   ∂tu
+# end
+
+# ∂t(f) = f -> time_derivative(f)
+# ∂t(u) = time_derivative(u)
+
+# methods(p)
+
+# ∂t(u)(1.0)([1,1]) == time_derivative(u)(1.0)([1,1])
+# ∂t(u)(3.0)([1,5]) == time_derivative(u)(3.0)([1,5])
+
 
 f(t) = x -> ∂tu(x,t)-Δu(x,t)
+g(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
+
+x = Point(rand(2)...)
+t = rand(1)[1]
+@test g(t)(x) == f(t)(x)
+
+
+
+x = Point(1.0,2.0)
+# Δ(u(1.0))(x)
+
+# ∇(u(4.0))(x)
+# -Δ(u(2.0))(x)
+# g(t,x) = -Δ(u(t))(x)
+# g(t,x) = ∂t(u)(t)(x)
+# g(2.0,x)
+f(2.0)(x)
 
 domain = (0,1,0,1)
 partition = (2,2)
@@ -62,12 +97,7 @@ quad = CellQuadrature(trian,degree)
 
 #
 a(u,v) = ∇(v)*∇(u)
-b(v,t) = v*f(t)
-
-
-# g(x) = ∂tu(x,2.0)
-# g(x) = -Δu(x,1.0)
-# b(v,t) = v*g
+b(v,t) = v*g(t)
 
 # Steady version of the problem to extract the Laplacian and mass matrices
 
