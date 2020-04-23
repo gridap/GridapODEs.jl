@@ -12,6 +12,10 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 ForwardDiff = "0.10.10"
+<<<<<<< HEAD
+=======
+Gridap = "0.9.1"
+>>>>>>> a87fd2deb49031da430ebdd868cf7ec308aa8f40
 LineSearches = "7.0.1"
 julia = "1.0.5"
 
