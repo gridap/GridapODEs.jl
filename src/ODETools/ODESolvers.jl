@@ -32,6 +32,8 @@ end
 
 # Specialization
 
+include("ForwardEuler.jl")
+
 include("ThetaMethod.jl")
 
 include("LinearSolvers.jl")

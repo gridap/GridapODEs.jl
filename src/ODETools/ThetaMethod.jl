@@ -5,11 +5,17 @@ struct ThetaMethod <: ODESolver
   nls::NonlinearSolver
   dt::Float64
   θ::Float64
+  function ThetaMethod(nls,dt,θ)
+    if θ > 0.0
+      return new(nls,dt,θ)
+    else
+      return ForwardEuler(nls,dt)
+    end
+  end
 end
 
+
 BackwardEuler(nls,dt) = ThetaMethod(nls,dt,1.0)
-# @santiagobadia : The ForwardEuler implementation is wrong
-ForwardEuler(nls,dt) = ThetaMethod(nls,dt,0.0)
 MidPoint(nls,dt) = ThetaMethod(nls,dt,0.5)
 
 function solve_step!(uf::AbstractVector,
