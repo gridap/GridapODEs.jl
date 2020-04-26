@@ -21,23 +21,15 @@ u(t::Real) = x -> u(x,t)
 ∂tu(x,t) = ∂tu(t)(x)
 ∂t(::typeof(u)) = ∂tu
 
-f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
-
-# u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
-# u(t::Real) = x -> u(x,t)
-# v(x) = t -> u(x,t)
-# ∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
-# ∂tu(x,t) = ∂tu(t)(x)
-# ∂t(::typeof(u)) = ∂tu
-# f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
-
 p(x,t) = (x[1]-x[2])*t
 p(t::Real) = x -> p(x,t)
 q(x) = t -> p(x,t)
 ∂tp(t) = x -> ForwardDiff.derivative(q(x),t)
 ∂tp(x,t) = ∂tp(t)(x)
 ∂t(::typeof(p)) = ∂tp
-g(t) = x -> ∂t(p)(t)(x)-Δ(p(t))(x)
+
+f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)+ ∇(p(t))(x)
+g(t) = x -> (∇*u(t))(x)
 
 domain = (0,1,0,1)
 partition = (2,2)
@@ -72,7 +64,7 @@ degree = 2*order
 quad = CellQuadrature(trian,degree)
 
 #
-a(u,v) = inner(∇(v),∇(u))
+a(u,v) = inner(∇(u),∇(v))
 b(v,t) = inner(v,f(t))
 
 X = MultiFieldFESpace([U,P])
@@ -82,19 +74,19 @@ function res(t,x,xt,y)
   u,p = x
   ut,pt = xt
   v,q = y
-  a(u,v) + inner(ut,v) - inner(v,f(t)) + a(p,q) + pt*q - q*g(t)
+  a(u,v) + inner(ut,v) - (∇*v)*p + q*(∇*u) - inner(v,f(t)) - q*g(t)
 end
 
 function jac(t,x,xt,dx,y)
-  du1,du2 = dx
-  v1,v2 = y
-  a(du1,v1)+a(du2,v2)
+  du,dp = dx
+  v,q = y
+  a(du,v)- (∇*v)*dp + q*(∇*du)
 end
 
 function jac_t(t,x,xt,dxt,y)
-  du1t,du2t = dxt
-  v1,v2 = y
-  inner(du1t,v1)+inner(du2t,v2)
+  dut,dpt = dxt
+  v,q = y
+  inner(dut,v)
 end
 
 function b(y)
