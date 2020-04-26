@@ -13,7 +13,7 @@ using Gridap.FESpaces: get_algebraic_operator
 import Gridap: ∇
 import GridapODEs.TransientFETools: ∂t
 
-θ = 1.0
+θ = 0.5
 
 u(x,t) = VectorValue(x[1],x[2])*t
 u(t::Real) = x -> u(x,t)
