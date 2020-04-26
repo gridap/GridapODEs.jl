@@ -73,5 +73,3 @@ function test_transient_fe_solution(fesol::TransientFESolution)
   end
   true
 end
-
-
