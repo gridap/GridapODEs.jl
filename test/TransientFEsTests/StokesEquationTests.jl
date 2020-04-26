@@ -31,7 +31,7 @@ f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
 # ∂t(::typeof(u)) = ∂tu
 # f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
 
-p(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
+p(x,t) = (x[1]-x[2])*t
 p(t::Real) = x -> p(x,t)
 q(x) = t -> p(x,t)
 ∂tp(t) = x -> ForwardDiff.derivative(q(x),t)
@@ -48,13 +48,22 @@ order = 2
 V0 = FESpace(
   reffe=:Lagrangian, order=order, valuetype=VectorValue{2,Float64},
   conformity=:H1, model=model, dirichlet_tags="boundary")
+Q = TestFESpace(
+  model=model,
+  order=order-1,
+  reffe=:Lagrangian,
+  valuetype=Float64,
+  # dof_space=ref_st,
+  conformity=:H1,
+  constraint=:zeromean)
+
 # V0 = FESpace(
 #   reffe=:Lagrangian, order=order, valuetype=Float64,
 #   conformity=:H1, model=model, dirichlet_tags="boundary")
 U = TransientTrialFESpace(V0,u)
 
 Q = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
+  reffe=:Lagrangian, order=order-1, valuetype=Float64,
   conformity=:H1, model=model, dirichlet_tags="boundary")
 P = TransientTrialFESpace(Q,p)
 
