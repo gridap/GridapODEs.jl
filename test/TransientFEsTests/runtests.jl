@@ -6,6 +6,6 @@ using Test
 
 @testset "HeatEquationTests" begin include("HeatEquationTests.jl") end
 
-@testset "VectorHeatEquationTests" begin include("VectorHeatEquationTests.jl") end
+# @testset "VectorHeatEquationTests" begin include("VectorHeatEquationTests.jl") end
 
 end # module

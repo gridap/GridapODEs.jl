@@ -8,6 +8,7 @@ struct ThetaMethod <: ODESolver
 end
 
 BackwardEuler(nls,dt) = ThetaMethod(nls,dt,1.0)
+# @santiagobadia : The ForwardEuler implementation is wrong
 ForwardEuler(nls,dt) = ThetaMethod(nls,dt,0.0)
 MidPoint(nls,dt) = ThetaMethod(nls,dt,0.5)
 

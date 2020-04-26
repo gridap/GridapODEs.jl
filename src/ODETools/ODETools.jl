@@ -2,9 +2,13 @@ module ODETools
 
 using Test
 
-using ForwardDiff #: derivative
+using ForwardDiff
 
 export ∂t
+export time_derivative
+
+using Gridap.Fields: VectorValue
+using Gridap.Inference: return_type
 
 using Gridap: GridapType
 using Gridap.Helpers

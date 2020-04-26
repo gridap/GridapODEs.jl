@@ -4,7 +4,7 @@ using Test
 
 using Gridap.Helpers
 
-# export ∂t
+export ∂t
 
 import GridapODEs.ODETools: ∂t
 import GridapODEs.ODETools: time_derivative

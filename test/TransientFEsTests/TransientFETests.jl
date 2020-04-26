@@ -1,3 +1,5 @@
+module TransientFETests
+
 using Gridap
 using Test
 using GridapODEs.ODETools
@@ -62,7 +64,6 @@ quad = CellQuadrature(trian,degree)
 a(u,v) = ∇(v)*∇(u)
 b(v,t) = v*f(t)
 
-# Next, we create the transient and steady terms
 res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
@@ -81,7 +82,6 @@ using Gridap.FESpaces: residual!, jacobian!
 residual!(_r,_op,uh)
 jacobian!(_J,_op,uh)
 
-# TransientFETerm or FETerm, what do we prefer?
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(U,V0,t_Ω)
 odeop = get_algebraic_operator(op)
@@ -105,7 +105,6 @@ t0 = 0.0
 tF = 1.0
 dt = 0.1
 
-# u0 = zeros(V0)
 ls = LUSolver()
 # using LineSearches: BackTracking
 tol = 1.0
@@ -124,7 +123,6 @@ jacobian_t!(J,op,1.0,uh,uh10,10.0,cache)
 u0 = get_free_values(uh0)
 odes
 solver = odes
-# op = odeop
 t0 = 0.0
 ode_cache = allocate_cache(odeop)
 cache = nothing
@@ -135,11 +133,8 @@ update_cache!(ode_cache,odeop,tf)
 using GridapODEs.ODETools: ThetaMethodNonlinearOperator
 vf = copy(u0)
 nlop = ThetaMethodNonlinearOperator(odeop,tf,dt,u0,ode_cache,vf)
-# cache = solve!(uf,solver.nls,nlop)
 
 x = copy(nlop.u0)
-# r = copy(nlop.u0)
-# zeros(size(x))
 
 b1 = allocate_residual(nlop,x)
 residual!(b1,nlop,x)
@@ -187,8 +182,6 @@ cache = solve!(uf,solver.nls,nlop)
 solve!(uf,solver.nls,nlop,cache)
 @test all(uf .≈ x)
 
-#
-# Now we must test the
 uf .= 0.0
 x = copy(nlop.u0)
 cache = Gridap.Algebra._new_nlsolve_cache(x,nls,nlop)
@@ -206,7 +199,6 @@ sol_ode_t = solve(odes,odeop,u0,t0,tF)
 
 test_ode_solution(sol_ode_t)
 _t_n = t0
-# Base.iterate(sol_ode_t)
 for (u_n, t_n) in sol_ode_t
   global _t_n
   _t_n += dt
@@ -226,7 +218,7 @@ for (u_n, t_n) in sol_ode_t
   @test all(u_n .≈ t_n)
 end
 
-solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
+solver = TransientFESolver(odes)
 sol_t = solve(solver,op,uh0,t0,tF)
 @test test_transient_fe_solution(sol_t)
 
@@ -234,21 +226,16 @@ _t_n = 0.0
 for (u_n, t_n) in sol_t
   global _t_n
   _t_n += dt
-  # @show t_n
-  # @show _t_n
-  # @show u_n.dirichlet_values
   @test t_n≈_t_n
   @test all(u_n.free_values .≈ t_n)
 end
 
 l2(w) = w*w
-# h1(w) = a(w,w) + l2(w)
 
+# h1(w) = a(w,w) + l2(w)
 
 _t_n = t0
 for (uh_tn, tn) in sol_t
-  # u(x::Point) = u(x,tn)
-  # ∇u(x::Point) = ∇u(x,tn)
   global _t_n
   _t_n += dt
   @test tn≈_t_n
@@ -260,3 +247,5 @@ for (uh_tn, tn) in sol_t
   # @test eh1 < tol
 #   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
 end
+
+end #module
