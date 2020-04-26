@@ -1,4 +1,5 @@
-# module QuadraticTests
+module TransientFEOperatorsTests
+
 using Gridap
 using ForwardDiff
 using LinearAlgebra
@@ -42,6 +43,7 @@ degree = 2*order
 quad = CellQuadrature(trian,degree)
 
 a(u,v) = inner(∇(v),∇(u))
+m(u,v) = inner(v,u)
 b(v,t) = inner(v,f(t))
 
 res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t)
@@ -148,4 +150,4 @@ rhs
 h
 
 
-# end #module
+end #module

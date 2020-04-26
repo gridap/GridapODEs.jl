@@ -1,4 +1,4 @@
-# module QuadraticTests
+module VectorHeatEquationTests
 
 using Gridap
 using ForwardDiff
@@ -105,4 +105,4 @@ for (xh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-# end #module
+end #module
