@@ -116,20 +116,12 @@ xh0 = Gridap.MultiField.MultiFieldFEFunction(X0,[uh0,ph0])
 # algop = get_algebraic_operator(op)
 # uh = solve!(yh0.free_values,ls,algop,nothing)
 
-
-
-nl_cache = solve!(uf,solver.nls,nlop,nl_cache)
-
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(X,Y,t_Ω)
 
 t0 = 0.0
 tF = 1.0
 dt = 0.1
-
-
-
-xh0.free_values
 
 ls = LUSolver()
 # using Gridap.Algebra: NewtonRaphsonSolver
