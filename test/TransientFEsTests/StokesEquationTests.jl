@@ -40,6 +40,7 @@ order = 2
 V0 = FESpace(
   reffe=:Lagrangian, order=order, valuetype=VectorValue{2,Float64},
   conformity=:H1, model=model, dirichlet_tags="boundary")
+
 Q = TestFESpace(
   model=model,
   order=order-1,
@@ -54,10 +55,11 @@ Q = TestFESpace(
 #   conformity=:H1, model=model, dirichlet_tags="boundary")
 U = TransientTrialFESpace(V0,u)
 
-Q = FESpace(
-  reffe=:Lagrangian, order=order-1, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
-P = TransientTrialFESpace(Q,p)
+# Q = FESpace(
+#   reffe=:Lagrangian, order=order-1, valuetype=Float64,
+#   conformity=:H1, model=model, dirichlet_tags="boundary")
+
+P = TrialFESpace(Q)
 
 trian = Triangulation(model)
 degree = 2*order

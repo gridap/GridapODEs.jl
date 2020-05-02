@@ -13,6 +13,10 @@ struct TransientTrialFESpace
   end
 end
 
+function TransientTrialFESpace(space::SingleFieldFESpace)
+  HomogeneousTrialFESpace(space)
+end
+
 """
 Time evaluation without allocating Dirichlet vals
 """
