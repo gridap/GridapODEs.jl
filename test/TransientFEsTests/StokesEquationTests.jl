@@ -103,6 +103,7 @@ function mat(dx,y)
 end
 
 U0 = U(0.0)
+P0 = P(0.0)
 X0 = X(0.0)
 uh0 = interpolate_everywhere(U0,u(0.0))
 ph0 = interpolate_everywhere(P0,p(0.0))
