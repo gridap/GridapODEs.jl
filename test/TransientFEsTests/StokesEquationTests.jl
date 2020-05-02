@@ -1,4 +1,4 @@
-module StokesEquationTests
+# module StokesEquationTests
 
 using Gridap
 using ForwardDiff
@@ -9,7 +9,6 @@ using GridapODEs.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
 
 # using GridapODEs.ODETools: ThetaMethodLinear
-
 import Gridap: ∇
 import GridapODEs.TransientFETools: ∂t
 
@@ -110,15 +109,6 @@ uh0 = interpolate_everywhere(U0,u(0.0))
 ph0 = interpolate_everywhere(P0,p(0.0))
 xh0 = Gridap.MultiField.MultiFieldFEFunction(X0,[uh0,ph0])
 
-# t_Ω = AffineFETerm(mat,b,trian,quad)
-# op = AffineFEOperator(X(0.0),Y,t_Ω)
-# ls = LUSolver()
-# solver = LinearFESolver(ls)
-# uh = solve(solver,op)
-# yh0 = Gridap.MultiField.MultiFieldFEFunction(X0,[uh0,ph0])
-# algop = get_algebraic_operator(op)
-# uh = solve!(yh0.free_values,ls,algop,nothing)
-
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(X,Y,t_Ω)
 
@@ -127,8 +117,6 @@ tF = 1.0
 dt = 0.1
 
 ls = LUSolver()
-# using Gridap.Algebra: NewtonRaphsonSolver
-# nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes)
 
@@ -154,4 +142,4 @@ for (xh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-end #module
+# end #module
