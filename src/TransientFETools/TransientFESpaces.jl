@@ -60,7 +60,9 @@ Functor-like evaluation. It allocates Dirichlet vals in general.
 """
 (U::TransientTrialFESpace)(t) = evaluate(U,t)
 
-(U::FESpace)(t) = U
+(U::TrialFESpace)(t) = U
+(U::ZeroMeanFESpace)(t) = U
+# (U::Union{TrialFESpace,ZeroMeanFESpace})(t) = U
 
 """
 Time derivative of the Dirichlet functions
