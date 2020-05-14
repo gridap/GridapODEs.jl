@@ -107,9 +107,8 @@ get_trial(op::TransientFEOperatorFromTerms) = op.trial
 function allocate_residual(op::TransientFEOperatorFromTerms,uh,cache)
   @assert is_a_fe_function(uh)
   v = get_cell_basis(op.test)
-  _, cellids =
-  collect_cell_residual(0.0,uh,uh,v,op.terms)
-  allocate_vector(op.assem_t,cellids)
+  vecdata = collect_cell_residual(0.0,uh,uh,v,op.terms)
+  allocate_vector(op.assem_t,vecdata)
 end
 
 function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
@@ -117,8 +116,8 @@ function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
   @assert is_a_fe_function(uh)
   @assert is_a_fe_function(uh_t)
   v = get_cell_basis(op.test)
-  cellvecs, cellids = collect_cell_residual(t,uh,uh_t,v,op.terms)
-  assemble_vector!(b,op.assem_t,cellvecs,cellids)
+  vecdata = collect_cell_residual(t,uh,uh_t,v,op.terms)
+  assemble_vector!(b,op.assem_t,vecdata)
   b
 end
 
@@ -127,8 +126,8 @@ function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,cache)
   @assert is_a_fe_function(uh)
   du = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
-  _, cellidsrows, cellidscols = collect_cell_jacobian(0.0,uh,uh,du,v,op.terms)
-  allocate_matrix(op.assem_t, cellidsrows, cellidscols)
+  matdata = collect_cell_jacobian(0.0,uh,uh,du,v,op.terms)
+  allocate_matrix(op.assem_t,matdata)
 end
 
 function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
@@ -138,8 +137,8 @@ function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   @assert is_a_fe_function(uh_t)
   du = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
-  cellmats, cellidsrows, cellidscols = collect_cell_jacobian(t,uh,uh_t,du,v,op.terms)
-  assemble_matrix_add!(A,op.assem_t, cellmats, cellidsrows, cellidscols)
+  matdata = collect_cell_jacobian(t,uh,uh_t,du,v,op.terms)
+  assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
 
@@ -149,8 +148,8 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   @assert is_a_fe_function(uh_t)
   du_t = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
-  cellmats, cellidsrows, cellidscols = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,duht_du,op.terms)
-  assemble_matrix_add!(A,op.assem_t, cellmats, cellidsrows, cellidscols)
+  matdata = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,duht_du,op.terms)
+  assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
 
