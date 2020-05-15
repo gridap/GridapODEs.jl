@@ -30,7 +30,7 @@ isa(sop,NonlinearOperator)
 
 ode_cache = allocate_cache(op)
 
-x = zero_initial_guess(eltype(u0),sop)
+x = zero_initial_guess(sop)
 x .+= 1.0
 isa(sop,OperatorMock)
 isa(x,AbstractVector)
@@ -80,7 +80,7 @@ uf, tf = current
 tf = t0+dt
 vf = copy(u0)
 sop = ThetaMethodNonlinearOperator(op,tf,dt,u0,ode_cache,vf) # See below
-x = zero_initial_guess(eltype(u0),sop)
+x = zero_initial_guess(sop)
 x .+= 1.0
 r = allocate_residual(sop,x)
 J = allocate_jacobian(sop,x)

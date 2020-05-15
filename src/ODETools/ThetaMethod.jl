@@ -91,8 +91,8 @@ function allocate_jacobian(op::ThetaMethodNonlinearOperator,x::AbstractVector)
   allocate_jacobian(op.odeop,x,op.ode_cache)
 end
 
-function zero_initial_guess(::Type{T},op::ThetaMethodNonlinearOperator) where T
-  x0 = similar(op.u0,T)
-  fill!(x0,zero(T))
+function zero_initial_guess(op::ThetaMethodNonlinearOperator)
+  x0 = similar(op.u0)
+  fill!(x0,zero(eltype(x0)))
   x0
 end

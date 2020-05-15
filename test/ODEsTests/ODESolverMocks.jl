@@ -48,7 +48,7 @@ function allocate_jacobian(op::OperatorMock,x::AbstractVector)
   allocate_jacobian(op.odeop,x,op.cache)
 end
 
-function zero_initial_guess(::Type{T},op::OperatorMock) where T
+function zero_initial_guess(op::OperatorMock)
   x0 = similar(op.u0)
   fill!(x0,zero(eltype(x0)))
   x0
