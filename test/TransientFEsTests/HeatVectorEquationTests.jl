@@ -62,7 +62,7 @@ solver = TransientFESolver(odes)
 
 sol_t = solve(solver,op,uh0,t0,tF)
 
-l2(w) = w*w
+l2(w) = w⋅w
 
 tol = 1.0e-6
 _t_n = t0

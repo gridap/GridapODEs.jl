@@ -39,15 +39,15 @@ degree = 2*order
 quad = CellQuadrature(trian,degree)
 
 #
-a(u,v) = ∇(v)*∇(u)
-b(v,t) = v*f(t)
+a(u,v) = ∇(v)⊙∇(u)
+b(v,t) = v⋅f(t)
 
 X = MultiFieldFESpace([U,U])
 Y = MultiFieldFESpace([V0,V0])
 
-_res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
+_res(t,u,ut,v) = a(u,v) + ut⋅v - b(v,t)
 _jac(t,u,ut,du,v) = a(du,v)
-_jac_t(t,u,ut,dut,v) = dut*v
+_jac_t(t,u,ut,dut,v) = dut⋅v
 
 function res(t,x,xt,y)
   u1,u2 = x
@@ -65,7 +65,7 @@ end
 function jac_t(t,x,xt,dxt,y)
   du1t,du2t = dxt
   v1,v2 = y
-  du1t*v1+du2t*v2
+  du1t⋅v1+du2t⋅v2
 end
 
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
@@ -88,7 +88,7 @@ solver = TransientFESolver(odes)
 
 sol_t = solve(solver,op,xh0,t0,tF)
 
-l2(w) = w*w
+l2(w) = w⋅w
 
 
 tol = 1.0e-6
