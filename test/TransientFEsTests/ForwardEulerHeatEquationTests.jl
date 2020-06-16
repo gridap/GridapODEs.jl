@@ -40,7 +40,7 @@ degree = 2*order
 quad = CellQuadrature(trian,degree)
 
 #
-a(u,v) = ∇(v)*∇(u)
+a(u,v) = ∇(v)⋅∇(u)
 b(v,t) = v*f(t)
 
 res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)

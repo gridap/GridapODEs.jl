@@ -28,7 +28,7 @@ q(x) = t -> p(x,t)
 ∂t(::typeof(p)) = ∂tp
 
 f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)+ ∇(p(t))(x)
-g(t) = x -> (∇*u(t))(x)
+g(t) = x -> (∇⋅u(t))(x)
 
 domain = (0,1,0,1)
 partition = (2,2)
@@ -75,13 +75,13 @@ function res(t,x,xt,y)
   u,p = x
   ut,pt = xt
   v,q = y
-  a(u,v) + inner(ut,v) - (∇*v)*p + q*(∇*u) - inner(v,f(t)) - q*g(t)
+  a(u,v) + inner(ut,v) - (∇⋅v)*p + q*(∇⋅u) - inner(v,f(t)) - q*g(t)
 end
-
+⋅
 function jac(t,x,xt,dx,y)
   du,dp = dx
   v,q = y
-  a(du,v)- (∇*v)*dp + q*(∇*du)
+  a(du,v)- (∇⋅v)*dp + q*(∇⋅du)
 end
 
 function jac_t(t,x,xt,dxt,y)
@@ -93,7 +93,7 @@ end
 function b(y)
   v,q = y
   0.0
-  v*f(0.0) + q*g(0.0)
+  v⋅f(0.0) + q*g(0.0)
 end
 
 function mat(dx,y)
@@ -122,7 +122,7 @@ solver = TransientFESolver(odes)
 
 sol_t = solve(solver,op,xh0,t0,tF)
 
-l2(w) = w*w
+l2(w) = w⋅w
 
 
 tol = 1.0e-6
