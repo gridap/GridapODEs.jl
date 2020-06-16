@@ -1,7 +1,7 @@
 name = "GridapODEs"
 uuid = "55e38337-5b6e-4c7c-9cfc-e00dd49102e6"
 authors = ["Santiago Badia"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
