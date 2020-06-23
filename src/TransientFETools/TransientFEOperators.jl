@@ -1,3 +1,12 @@
+"""
+Trait for TransientFEOperator that tells us whether the operator depends on the solution
+(including its time derivatives), it is an affine operator that depends on time
+or it is a constant operator (affine and time-indepedendent)
+"""
+abstract type OperatorType end
+struct Nonlinear end
+struct Affine end
+struct Constant end
 
 """
 A transient version of the `Gridap` `FEOperator` that depends on time
@@ -88,14 +97,34 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
   test::FESpace
   assem_t::Assembler
   terms
+  type::OperatorType
   function TransientFEOperatorFromTerms(trial,trial_t,test::FESpace,assem::Assembler,terms...)
-    new(trial,trial_t,test,assem,terms)
+    new(trial,trial_t,test,assem,Nonlinear(),terms...)
   end
+end
+
+function TransientConstantFEOperator(trial,test,terms...)
+  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
+  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,Constant(),terms...)
+end
+
+function TransientAffineFEOperator(trial,test,terms...)
+  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
+  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,Affine(),terms...)
 end
 
 function TransientFEOperator(trial,test,terms...)
   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,terms...)
+  # if (type == "nonlinear")
+  #   optype = Nonlinear()
+  # elseif (type == "affine")
+  #   optype = Affine()
+  # elseif (type == "constant")
+  #   optype = Constant()
+  # else
+  #   error("Operator type not defined, it must be nonlinear, affine or constant")
+  # end
+  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,Nonlinear(),terms...)
 end
 
 get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t
@@ -152,6 +181,14 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
+
+function get_algebraic_operator(feop::TransientFEOperatorFromTerms)
+  _ode_operator(feop,feop.type)
+end
+
+_ode_operator(feop,::Nonlinear) = ODEOpFromFEOp(feop)
+_ode_operator(feop,::Affine) = AffineODEOpFromFEOp(feop)
+_ode_operator(feop,::Constant) = ConstantODEOpFromFEOp(feop)
 
 # Tester
 
