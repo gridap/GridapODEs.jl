@@ -1,4 +1,4 @@
-# module TransientFETests
+module TransientFETests
 
 using Gridap
 using Test
@@ -89,13 +89,6 @@ cache = allocate_cache(odeop)
 
 op.type
 op.terms
-
-# santiagobadia : @fverdugo I had this problem before related to terms...
-# but I still don't understand where is the error, can you take a look?
-i = 0
-for terms in op.terms
-  i += 1
-end
 
 r = allocate_residual(op,uh,cache)
 J = allocate_jacobian(op,uh,cache)
@@ -257,4 +250,4 @@ for (uh_tn, tn) in sol_t
 #   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
 end
 
-# end #module
+end #module
