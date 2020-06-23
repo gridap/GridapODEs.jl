@@ -18,6 +18,12 @@ using Gridap.Algebra: NonlinearOperator
 using Gridap.Algebra: AffineOperator
 
 export ODEOperator
+export AffineODEOperator
+export ConstantODEOperator
+export OperatorType
+export Nonlinear
+export Affine
+export Constant
 using Gridap.Algebra: residual
 using Gridap.Algebra: jacobian
 using Gridap.Algebra: symbolic_setup
