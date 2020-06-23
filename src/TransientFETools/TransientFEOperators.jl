@@ -1,14 +1,4 @@
 """
-Trait for TransientFEOperator that tells us whether the operator depends on the solution
-(including its time derivatives), it is an affine operator that depends on time
-or it is a constant operator (affine and time-indepedendent)
-"""
-abstract type OperatorType end
-struct Nonlinear end
-struct Affine end
-struct Constant end
-
-"""
 A transient version of the `Gridap` `FEOperator` that depends on time
 """
 abstract type TransientFEOperator <: GridapType end
@@ -72,9 +62,7 @@ get_assembler(feop::TransientFEOperator) = @abstractmethod
 Returns a `ODEOperator` wrapper of the `TransientFEOperator` that can be
 straightforwardly used with the `ODETools` module.
 """
-function get_algebraic_operator(feop::TransientFEOperator)
-  ODEOpFromFEOp(feop)
-end
+get_algebraic_operator(feop::TransientFEOperator) = @abstractmethod
 
 # @fverdugo This function is just in case we need to override it in the future for some specialization.
 # This default implementation is enough for the moment.
@@ -183,12 +171,8 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
 end
 
 function get_algebraic_operator(feop::TransientFEOperatorFromTerms)
-  _ode_operator(feop,feop.type)
+  ODEOpFromFEOp{typeof(feop.type)}(feop)
 end
-
-_ode_operator(feop,::Nonlinear) = ODEOpFromFEOp(feop)
-_ode_operator(feop,::Affine) = AffineODEOpFromFEOp(feop)
-_ode_operator(feop,::Constant) = ConstantODEOpFromFEOp(feop)
 
 # Tester
 
