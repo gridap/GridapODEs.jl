@@ -1,15 +1,15 @@
-
-"""
-It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
-the form A(t,u,∂tu) = M(t)∂tu + K(t)u + f(t)  where the
-implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u.
-The trait {C} stands for `is_constant`, if `true`, there is no dependency
-of M and K on time t.
-"""
-abstract type AffineODEOperator <: ODEOperator end
-
-abstract type ConstantODEOperator <: AffineODEOperator end
-
+#
+# """
+# It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
+# the form A(t,u,∂tu) = M(t)∂tu + K(t)u + f(t)  where the
+# implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u.
+# The trait {C} stands for `is_constant`, if `true`, there is no dependency
+# of M and K on time t.
+# """
+# abstract type AffineODEOperator <: ODEOperator end
+#
+# abstract type ConstantODEOperator <: AffineODEOperator end
+#
 # santiagobadia : These methods in a second step
 # get_matrix(op::AffineODEOperator) = @abstractmethod
 # get_matrix_t(op::AffineODEOperator) = @abstractmethod

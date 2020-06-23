@@ -4,6 +4,19 @@ implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u
 """
 abstract type ODEOperator <: GridapType end
 
+
+"""
+It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
+the form A(t,u,∂tu) = M(t)∂tu + K(t)u + f(t)
+"""
+abstract type AffineODEOperator <: ODEOperator end
+
+"""
+It represents a constant operator in an implicit ODE, i.e., an ODE operator of
+the form A(t,u,∂tu) = M∂tu + Ku + f
+"""
+abstract type ConstantODEOperator <: AffineODEOperator end
+
 # @santiagobadia : I would consider in a future a more general case, in which
 # the implicit ODE has an arbitrary order, i.e., A(t,u,u_t, u_nt) = 0.
 # get_order(op::ODEOperator) = @notimplemented
