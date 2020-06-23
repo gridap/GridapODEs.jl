@@ -86,7 +86,7 @@ struct TransientFEOperatorFromTerms <: TransientFEOperator
   assem_t::Assembler
   type::OperatorType
   terms
-  function TransientFEOperatorFromTerms(trial,trial_t,test::FESpace,assem::Assembler,optype,terms...)
+  function TransientFEOperatorFromTerms(trial,trial_t,test::FESpace,assem::Assembler,optype::OperatorType,terms...)
     new(trial,trial_t,test,assem,optype,terms...)
   end
 end
