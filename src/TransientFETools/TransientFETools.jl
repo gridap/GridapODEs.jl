@@ -24,6 +24,8 @@ using Gridap.FESpaces: TrialFESpace!
 using Gridap.FESpaces: HomogeneousTrialFESpace
 
 export TransientFETerm
+export TransientAffineFETerm
+export TransientConstantFETerm
 import Gridap.FESpaces: FETerm
 import Gridap.FESpaces: get_cell_residual
 import Gridap.FESpaces: get_cell_jacobian
@@ -35,6 +37,8 @@ using Gridap.FESpaces: integrate
 import Gridap.Geometry: get_cell_id
 
 export TransientFEOperator
+export TransientAffineFEOperator
+export TransientConstantFEOperator
 using Gridap.FESpaces: Assembler
 using Gridap.FESpaces: SparseMatrixAssembler
 import GridapODEs.ODETools: allocate_cache

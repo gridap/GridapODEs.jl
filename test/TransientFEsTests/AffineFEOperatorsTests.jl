@@ -1,4 +1,4 @@
-# module DiffEqsWrapperTests
+module AffineFEOperatorsTests
 
 using Gridap
 using ForwardDiff
@@ -36,9 +36,9 @@ degree = 2*order
 quad = CellQuadrature(trian,degree)
 
 #
-a(u,v) = ∇(v)⋅∇(u)
-b(v,t) = v*f(t)
-m(ut,v) = ut*v
+a(t,u,v) = ∇(v)⋅∇(u)
+b(t,v) = v*f(t)
+m(t,ut,v) = ut*v
 
 #res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
 #jac(t,u,ut,du,v) = a(du,v)
@@ -46,7 +46,7 @@ m(ut,v) = ut*v
 
 #t_Ω = FETerm(res,jac,jac_t,trian,quad)
 t_Ω = TransientAffineFETerm(m,a,b,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+op = TransientAffineFEOperator(U,V0,t_Ω)
 
 t0 = 0.0
 tF = 1.0
@@ -56,14 +56,7 @@ U0 = U(0.0)
 uh0 = interpolate_everywhere(U0,u(0.0))
 
 ls = LUSolver()
-using Gridap.Algebra: NewtonRaphsonSolver
-nls = NLSolver(
-        show_trace = true,
-        method = :newton,
-        linesearch = BackTracking(),
-    )
-# nls = NLSolver(ls;show_trace=true,method=:newton)
-odes = ThetaMethod(nls,dt,θ)
+odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes)
 sol_t = solve(solver,op,uh0,t0,tF)
 
@@ -80,4 +73,4 @@ for (uh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-# end #module
+end #module
