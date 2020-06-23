@@ -3,23 +3,23 @@ A wrapper of `TransientFEOperator` that transforms it to `ODEOperator`, i.e.,
 takes A(t,uh,∂tuh,vh) and returns A(t,uF,∂tuF) where uF and ∂tuF represent the
 free values of the `EvaluationFunction` uh and ∂tuh.
 """
-struct ODEOpFromFEOp <: ODEOperator
+struct ODEOpFromFEOp{C} <: ODEOperator{C}
   feop::TransientFEOperator
 end
 
-"""
-Affine `ODEOpFromFEOp`
-"""
-struct AffineODEOpFromFEOp <: AffineODEOperator
-  feop::TransientAffineFEOperator
-end
-
-"""
-Constant `ODEOpFromFEOp`
-"""
-struct ConstantODEOpFromFEOp <: ConstantODEOperator
-  feop::TransientConstantFEOperator
-end
+# """
+# Affine `ODEOpFromFEOp`
+# """
+# struct AffineODEOpFromFEOp <: AffineODEOperator
+#   feop::TransientFEOperator
+# end
+#
+# """
+# Constant `ODEOpFromFEOp`
+# """
+# struct ConstantODEOpFromFEOp <: ConstantODEOperator
+#   feop::TransientFEOperator
+# end
 
 function allocate_cache(op::ODEOpFromFEOp)
   Ut = get_trial(op.feop)
