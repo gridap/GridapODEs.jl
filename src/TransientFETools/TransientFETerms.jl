@@ -44,6 +44,7 @@ end
 
 function get_cell_residual(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,v)
   @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
   @assert is_a_fe_cell_basis(v)
   _v = restrict(v,tr.trian)
   _uh = restrict(uh,tr.trian)
