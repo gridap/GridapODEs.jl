@@ -1,9 +1,23 @@
 """
-It represents the operator in an implicit ODE, i.e., A(t,u,∂tu) where the
-implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u
+Trait for `ODEOperator` that tells us whether the operator depends on the solution
+(including its time derivatives), it is an affine operator that depends on time
+or it is a constant operator (affine and time-indepedendent)
 """
-abstract type ODEOperator <: GridapType end
+abstract type OperatorType end
+struct Nonlinear end
+struct Affine end
+struct Constant end
 
+"""
+It represents the operator in an implicit ODE, i.e., A(t,u,∂tu) where the
+implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u.
+The trait `{C}` determines whether the operator is fully nonlinear, affine
+or constant in time.
+"""
+abstract type ODEOperator{C<:OperatorType} <: GridapType end
+
+const AffineODEOperator = ODEOperator{Affine}
+const ConstantODEOperator = ODEOperator{Constant}
 
 """
 It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
