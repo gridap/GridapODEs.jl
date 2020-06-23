@@ -11,7 +11,7 @@ import GridapODEs.ODETools: jacobian_t!
 import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
 
-struct ODEOperatorMock{T<:Real} <: ODEOperator
+struct ODEOperatorMock{T<:Real} <: ConstantODEOperator
   a::T
   b::T
   c::T

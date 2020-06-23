@@ -1,4 +1,4 @@
-module TransientFETests
+# module TransientFETests
 
 using Gridap
 using Test
@@ -87,6 +87,16 @@ op = TransientFEOperator(U,V0,t_Ω)
 odeop = get_algebraic_operator(op)
 cache = allocate_cache(odeop)
 
+op.type
+op.terms
+
+# santiagobadia : @fverdugo I had this problem before related to terms...
+# but I still don't understand where is the error, can you take a look?
+i = 0
+for terms in op.terms
+  i += 1
+end
+
 r = allocate_residual(op,uh,cache)
 J = allocate_jacobian(op,uh,cache)
 uh10 = interpolate_everywhere(U0,0.0)#10.0)
@@ -110,7 +120,6 @@ ls = LUSolver()
 tol = 1.0
 maxiters = 20
 using Gridap.Algebra: NewtonRaphsonSolver
-# nls = NewtonRaphsonSolver(ls,tol,maxiters)
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(nls,dt,1.0)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
@@ -248,4 +257,4 @@ for (uh_tn, tn) in sol_t
 #   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
 end
 
-end #module
+# end #module
