@@ -4,9 +4,9 @@ Trait for `ODEOperator` that tells us whether the operator depends on the soluti
 or it is a constant operator (affine and time-indepedendent)
 """
 abstract type OperatorType end
-struct Nonlinear end
-struct Affine end
-struct Constant end
+struct Nonlinear <: OperatorType end
+struct Affine  <: OperatorType end
+struct Constant  <: OperatorType end
 
 """
 It represents the operator in an implicit ODE, i.e., A(t,u,∂tu) where the
@@ -16,20 +16,20 @@ or constant in time.
 """
 abstract type ODEOperator{C<:OperatorType} <: GridapType end
 
-const AffineODEOperator = ODEOperator{Affine}
-const ConstantODEOperator = ODEOperator{Constant}
 
 """
 It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
 the form A(t,u,∂tu) = M(t)∂tu + K(t)u + f(t)
 """
-abstract type AffineODEOperator <: ODEOperator end
+const AffineODEOperator = ODEOperator{Affine}
+# abstract type AffineODEOperator <: ODEOperator end
 
 """
 It represents a constant operator in an implicit ODE, i.e., an ODE operator of
 the form A(t,u,∂tu) = M∂tu + Ku + f
 """
-abstract type ConstantODEOperator <: AffineODEOperator end
+const ConstantODEOperator = ODEOperator{Constant}
+# abstract type ConstantODEOperator <: AffineODEOperator end
 
 # @santiagobadia : I would consider in a future a more general case, in which
 # the implicit ODE has an arbitrary order, i.e., A(t,u,u_t, u_nt) = 0.
