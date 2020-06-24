@@ -16,7 +16,6 @@ or constant in time.
 """
 abstract type ODEOperator{C<:OperatorType} <: GridapType end
 
-
 """
 It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
 the form A(t,u,∂tu) = M(t)∂tu + K(t)u + f(t)
@@ -37,6 +36,11 @@ const ConstantODEOperator = ODEOperator{Constant}
 # @santiagobadia :
 # We probably want to consider second order time derivatives too, i.e.,
 # A(t,u,u_t,u_tt) = 0 (wave propagation, elastodynamics) or even more...
+"""
+Returns the `OperatorType`, i.e., nonlinear, affine, or constant in time
+"""
+OperatorType(::ODEOperator{C}) where C = C
+# OperatorType(::Type{<:ODEOperator{C}}) where C = C
 
 """
 It provides A(t,u,∂tu) for a given (t,u,∂tu)

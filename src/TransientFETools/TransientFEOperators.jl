@@ -1,7 +1,7 @@
 """
 A transient version of the `Gridap` `FEOperator` that depends on time
 """
-abstract type TransientFEOperator <: GridapType end
+abstract type TransientFEOperator{C<:OperatorType} <: GridapType end
 
 """
 Returns the test space
@@ -62,7 +62,11 @@ get_assembler(feop::TransientFEOperator) = @abstractmethod
 Returns a `ODEOperator` wrapper of the `TransientFEOperator` that can be
 straightforwardly used with the `ODETools` module.
 """
-get_algebraic_operator(feop::TransientFEOperator) = @abstractmethod
+function get_algebraic_operator(feop::TransientFEOperator{C}) where C
+  ODEOpFromFEOp{C}(feop)
+end
+
+OperatorType(::Type{<:TransientFEOperator{C}}) where C = C
 
 # @fverdugo This function is just in case we need to override it in the future for some specialization.
 # This default implementation is enough for the moment.
@@ -79,40 +83,30 @@ end
 """
 Transient FE operator that is defined by a set of `TransientFETerm` (or `FETerm`)
 """
-struct TransientFEOperatorFromTerms <: TransientFEOperator
+struct TransientFEOperatorFromTerms{C} <: TransientFEOperator{C}
   trial
   trial_t
   test::FESpace
   assem_t::Assembler
-  type::OperatorType
   terms
-  function TransientFEOperatorFromTerms(trial,trial_t,test::FESpace,assem::Assembler,optype::OperatorType,terms...)
-    new(trial,trial_t,test,assem,optype,terms)
+  function TransientFEOperatorFromTerms{C}(trial,trial_t,test::FESpace,assem::Assembler,terms...) where C
+    new{C}(trial,trial_t,test,assem,terms)
   end
 end
 
 function TransientConstantFEOperator(trial,test,terms...)
   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,Constant(),terms...)
+  TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
 end
 
 function TransientAffineFEOperator(trial,test,terms...)
   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,Affine(),terms...)
+  TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
 end
 
 function TransientFEOperator(trial,test,terms...)
   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  # if (type == "nonlinear")
-  #   optype = Nonlinear()
-  # elseif (type == "affine")
-  #   optype = Affine()
-  # elseif (type == "constant")
-  #   optype = Constant()
-  # else
-  #   error("Operator type not defined, it must be nonlinear, affine or constant")
-  # end
-  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,Nonlinear(),terms...)
+  TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
 end
 
 get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t
@@ -168,10 +162,6 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   matdata = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,duht_du,op.terms)
   assemble_matrix_add!(A,op.assem_t, matdata)
   A
-end
-
-function get_algebraic_operator(feop::TransientFEOperatorFromTerms)
-  ODEOpFromFEOp{typeof(feop.type)}(feop)
 end
 
 # Tester

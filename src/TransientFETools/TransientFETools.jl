@@ -51,7 +51,7 @@ import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
 import GridapODEs.ODETools: jacobian!
 import GridapODEs.ODETools: jacobian_t!
-using GridapODEs.ODETools: OperatorType
+import GridapODEs.ODETools: OperatorType
 using GridapODEs.ODETools: Nonlinear
 using GridapODEs.ODETools: Affine
 using GridapODEs.ODETools: Constant

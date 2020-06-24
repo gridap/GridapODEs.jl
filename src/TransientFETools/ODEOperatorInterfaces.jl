@@ -4,7 +4,7 @@ takes A(t,uh,∂tuh,vh) and returns A(t,uF,∂tuF) where uF and ∂tuF represent
 free values of the `EvaluationFunction` uh and ∂tuh.
 """
 struct ODEOpFromFEOp{C} <: ODEOperator{C}
-  feop::TransientFEOperator
+  feop::TransientFEOperator{C}
 end
 
 # """

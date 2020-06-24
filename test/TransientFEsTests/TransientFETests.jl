@@ -87,9 +87,6 @@ op = TransientFEOperator(U,V0,t_Ω)
 odeop = get_algebraic_operator(op)
 cache = allocate_cache(odeop)
 
-op.type
-op.terms
-
 r = allocate_residual(op,uh,cache)
 J = allocate_jacobian(op,uh,cache)
 uh10 = interpolate_everywhere(U0,0.0)#10.0)
