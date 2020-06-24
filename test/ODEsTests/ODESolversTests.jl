@@ -1,4 +1,4 @@
-module ODESolversTests
+# module ODESolversTests
 
 using GridapODEs
 using GridapODEs.ODETools: GenericODESolution
@@ -14,7 +14,7 @@ using Test
 
 include("ODEOperatorMocks.jl")
 
-op = ODEOperatorMock(1.0,0.0,1.0)
+op = ODEOperatorMock{Float64,Constant}(1.0,0.0,1.0)
 
 include("ODESolverMocks.jl")
 
@@ -95,16 +95,32 @@ _J = jacobian(sop,x)
 
 # BackwardEuler tests
 
-odesol = BackwardEuler(nls,dt)
+ls = LUSolver()
+odesol = BackwardEuler(ls,dt)
 uf = copy(u0)
 uf.=1.0
 cache = nothing
+# Juno.@enter solve_step!(uf,odesol,op,u0,t0,cache)
 uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
-uf
 @test tf==t0+dt
 @test all(uf.≈1+11/9)
 
 @test test_ode_solver(odesol,op,u0,t0,tf)
 test_ode_solver(odesol,op,u0,t0,tf)
 
-end #module
+# Affine and nonlinear solvers
+
+op = ODEOperatorMock{Float64,Nonlinear}(1.0,0.0,1.0)
+cache = nothing
+uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
+@test tf==t0+dt
+@test all(uf.≈1+11/9)
+
+op = ODEOperatorMock{Float64,Affine}(1.0,0.0,1.0)
+cache = nothing
+uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
+@test tf==t0+dt
+@test all(uf.≈1+11/9)
+
+
+# end #module
