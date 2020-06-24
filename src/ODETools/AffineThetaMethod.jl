@@ -56,6 +56,7 @@ function solve_step!(uf::AbstractVector,
     vθ .= 0.0
     A, b = _allocate_matrix_and_vector(op,u0,ode_cache)
     A = _matrix!(A,op,tθ,dtθ,u0,ode_cache,vθ)
+    b = _vector!(b,op,tθ,dtθ,vθ,ode_cache,vθ)
     M = _allocate_matrix(op,u0,ode_cache)
     M = _mass_matrix!(M,op,tθ,dtθ,u0,ode_cache,vθ)
     l_cache = nothing
@@ -67,9 +68,8 @@ function solve_step!(uf::AbstractVector,
 
   ode_cache = update_cache!(ode_cache,op,tθ)
 
-  _vector!(b,op,tθ,dtθ,vθ,ode_cache,vθ)
-  b = b + M*u0
-  afop = AffineOperator(A,b)
+  vθ = b + M*u0
+  afop = AffineOperator(A,vθ)
 
   l_cache = solve!(uf,solver.nls,afop,l_cache,newmatrix)
 
