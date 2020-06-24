@@ -11,23 +11,28 @@ function solve_step!(uf::AbstractVector,
 
   if cache === nothing
     ode_cache = allocate_cache(op)
+    vθ = similar(u0)
+    vθ .= 0.0
     l_cache = nothing
+    A, b = _allocate_matrix_and_vector(op,u0,ode_cache)
   else
-    ode_cache, l_cache = cache
+    ode_cache, vθ, A, b, l_cache = cache
   end
 
   ode_cache = update_cache!(ode_cache,op,tθ)
 
-  afop = ThetaMethodAffineOperator(op,tθ,dtθ,u0,ode_cache)
+  _matrix_and_vector!(A,b,op,tθ,dtθ,u0,ode_cache,vθ)
+  afop = AffineOperator(A,b)
 
   newmatrix = true
-  l_cache = solve!(uf,solver.ls,afop,l_cache,newmatrix)
+  l_cache = solve!(uf,solver.nls,afop,l_cache,newmatrix)
 
+  uf = uf + u0
   if 0.0 < solver.θ < 1.0
     uf = uf*(1.0/solver.θ)-u0*((1-solver.θ)/solver.θ)
   end
 
-  cache = (ode_cache, l_cache)
+  cache = (ode_cache, vθ, A, b, l_cache)
 
   tf = t0+dt
   return (uf,tf,cache)
@@ -47,24 +52,33 @@ function solve_step!(uf::AbstractVector,
 
   if cache === nothing
     ode_cache = allocate_cache(op)
-    afop = ThetaMethodAffineOperator(op,tθ,dtθ,u0,ode_cache)
+    vθ = similar(u0)
+    vθ .= 0.0
+    A, b = _allocate_matrix_and_vector(op,u0,ode_cache)
+    A = _matrix!(A,op,tθ,dtθ,u0,ode_cache,vθ)
+    M = _allocate_matrix(op,u0,ode_cache)
+    M = _mass_matrix!(M,op,tθ,dtθ,u0,ode_cache,vθ)
     l_cache = nothing
+    newmatrix = true
   else
-    ode_cache, vθ, afop, l_cache = cache
+    ode_cache, vθ, A, b, M, l_cache = cache
+    newmatrix = false
   end
 
   ode_cache = update_cache!(ode_cache,op,tθ)
 
-  residual!(afop.vector,odeop,tθ,u0,u0,ode_cache)
+  _vector!(b,op,tθ,dtθ,vθ,ode_cache,vθ)
+  b = b + M*u0
+  afop = AffineOperator(A,b)
 
-  newmatrix = false
-  l_cache = solve!(uf,solver.ls,afop,l_cache,newmatrix)
+  l_cache = solve!(uf,solver.nls,afop,l_cache,newmatrix)
 
+  # uf = uf + u0
   if 0.0 < solver.θ < 1.0
     uf = uf*(1.0/solver.θ)-u0*((1-solver.θ)/solver.θ)
   end
 
-  cache = (ode_cache, afop, l_cache)
+  cache = (ode_cache, vθ, A, b, M, l_cache)
 
   tf = t0+dt
   return (uf,tf,cache)
@@ -75,19 +89,69 @@ end
 Affine operator that represents the θ-method affine operator at a
 given time step, i.e., M(t)(u_n+θ-u_n)/dt + K(t)u_n+θ + b(t)
 """
-function ThetaMethodAffineOperator(op::AffineODEOperator,tθ::Float64,dtθ::Float64,
-                                   u0::AbstractVector,ode_cache)
-  b = allocate_residual(odeop,u0)
-  A = allocate_jacobian(odeop,u0)
-  residual!(b,odeop,tθ,u0,v0,ode_cache)
-  z = zero(eltype(A))
-  fill_entries!(A,z)
-  jacobian!(A,odeop,tθ,u0,u0,ode_cache)
-  jacobian_t!(A,odeop,tθ,u0,u0,(1/op.dtθ),ode_cache)
-  # santiagobadia : Not sure about the sign
+function ThetaMethodAffineOperator(odeop::AffineODEOperator,tθ::Float64,dtθ::Float64,
+                                   u0::AbstractVector,ode_cache,vθ::AbstractVector)
+  # vθ .= 0.0
+  A, b = _allocate_matrix_and_vector(odeop,u0,ode_cache)
+  _matrix_and_vector!(A,b,odeop,tθ,dtθ,u0,ode_cache,vθ)
   afop = AffineOperator(A,b)
 end
 
-function update_rhs!(b,op,tθ,ode_cache)
-  residual!(b,odeop,tθ,u0,u0,ode_cache)
+function _matrix_and_vector!(A,b,odeop,tθ,dtθ,u0,ode_cache,vθ)
+  _matrix!(A,odeop,tθ,dtθ,u0,ode_cache,vθ)
+  _vector!(b,odeop,tθ,dtθ,u0,ode_cache,vθ)
 end
+
+function _matrix!(A,odeop,tθ,dtθ,u0,ode_cache,vθ)
+  z = zero(eltype(A))
+  fill_entries!(A,z)
+  jacobian!(A,odeop,tθ,vθ,vθ,ode_cache)
+  jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
+end
+
+function _mass_matrix!(A,odeop,tθ,dtθ,u0,ode_cache,vθ)
+  z = zero(eltype(A))
+  fill_entries!(A,z)
+  jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
+end
+
+function _vector!(b,odeop,tθ,dtθ,u0,ode_cache,vθ)
+  residual!(b,odeop,tθ,u0,vθ,ode_cache)
+  b .*= -1.0
+end
+
+function _allocate_matrix(odeop,u0,ode_cache)
+  A = allocate_jacobian(odeop,u0,ode_cache)
+  return A
+end
+
+function _allocate_matrix_and_vector(odeop,u0,ode_cache)
+  b = allocate_residual(odeop,u0,ode_cache)
+  A = allocate_jacobian(odeop,u0,ode_cache)
+  return A, b
+end
+
+"""
+Affine operator that represents the θ-method affine operator at a
+given time step, i.e., M(t)(u_n+θ-u_n)/dt + K(t)u_n+θ + b(t)
+"""
+function ThetaMethodConstantOperator(odeop::ConstantODEOperator,tθ::Float64,dtθ::Float64,
+                                   u0::AbstractVector,ode_cache,vθ::AbstractVector)
+  # vθ = -op.u0/op.dtθ
+  # vθ .= 0.0
+  b = allocate_residual(odeop,u0,ode_cache)
+  A = allocate_jacobian(odeop,u0,ode_cache)
+  residual!(b,odeop,tθ,u0,vθ,ode_cache)
+  b = -1*b
+  z = zero(eltype(A))
+  fill_entries!(A,z)
+  jacobian!(A,odeop,tθ,vθ,vθ,ode_cache)
+  jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
+  # santiagobadia : Not sure about the sign
+  # afop = AffineOperator(A,b)
+  return A, b
+end
+
+# function update_rhs!(b,op,tθ,ode_cache)
+#   residual!(b,odeop,tθ,u0,u0,ode_cache)
+# end
