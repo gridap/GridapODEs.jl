@@ -1,3 +1,9 @@
+function solve!(
+  x::AbstractVector,ls::LinearSolver,op::AffineOperator,cache::Nothing,newmatrix::Bool)
+  solve!(x,ls,op,cache)
+end
+
+
 # struct LinearSolverCache <: GridapType
 #   A::AbstractMatrix
 #   b::AbstractVector
