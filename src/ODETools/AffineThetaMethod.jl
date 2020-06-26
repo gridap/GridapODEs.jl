@@ -73,7 +73,6 @@ function solve_step!(uf::AbstractVector,
 
   l_cache = solve!(uf,solver.nls,afop,l_cache,newmatrix)
 
-  # uf = uf + u0
   if 0.0 < solver.θ < 1.0
     uf = uf*(1.0/solver.θ)-u0*((1-solver.θ)/solver.θ)
   end
@@ -137,8 +136,6 @@ given time step, i.e., M(t)(u_n+θ-u_n)/dt + K(t)u_n+θ + b(t)
 """
 function ThetaMethodConstantOperator(odeop::ConstantODEOperator,tθ::Float64,dtθ::Float64,
                                    u0::AbstractVector,ode_cache,vθ::AbstractVector)
-  # vθ = -op.u0/op.dtθ
-  # vθ .= 0.0
   b = allocate_residual(odeop,u0,ode_cache)
   A = allocate_jacobian(odeop,u0,ode_cache)
   residual!(b,odeop,tθ,u0,vθ,ode_cache)
@@ -147,11 +144,5 @@ function ThetaMethodConstantOperator(odeop::ConstantODEOperator,tθ::Float64,dt�
   fill_entries!(A,z)
   jacobian!(A,odeop,tθ,vθ,vθ,ode_cache)
   jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
-  # santiagobadia : Not sure about the sign
-  # afop = AffineOperator(A,b)
   return A, b
 end
-
-# function update_rhs!(b,op,tθ,ode_cache)
-#   residual!(b,odeop,tθ,u0,u0,ode_cache)
-# end
