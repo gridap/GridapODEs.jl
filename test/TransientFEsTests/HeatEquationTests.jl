@@ -60,9 +60,6 @@ uh0 = interpolate_everywhere(U0,u(0.0))
 ls = LUSolver()
 using Gridap.Algebra: NewtonRaphsonSolver
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
-# @santiagobadia : Check why it does not work
-
-# odes = ThetaMethod(nls,dt,θ)
 odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes)
 
