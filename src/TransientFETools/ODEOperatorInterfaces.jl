@@ -7,20 +7,6 @@ struct ODEOpFromFEOp{C} <: ODEOperator{C}
   feop::TransientFEOperator{C}
 end
 
-# """
-# Affine `ODEOpFromFEOp`
-# """
-# struct AffineODEOpFromFEOp <: AffineODEOperator
-#   feop::TransientFEOperator
-# end
-#
-# """
-# Constant `ODEOpFromFEOp`
-# """
-# struct ConstantODEOpFromFEOp <: ConstantODEOperator
-#   feop::TransientFEOperator
-# end
-
 function allocate_cache(op::ODEOpFromFEOp)
   Ut = get_trial(op.feop)
   Vt = ∂t(Ut)
