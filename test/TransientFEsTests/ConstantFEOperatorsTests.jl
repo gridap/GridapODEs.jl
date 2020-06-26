@@ -40,11 +40,6 @@ a(u,v) = ∇(v)⋅∇(u)
 b(v) = v*f(0.0)
 m(ut,v) = ut*v
 
-#res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
-#jac(t,u,ut,du,v) = a(du,v)
-#jac_t(t,u,ut,dut,v) = dut*v
-
-#t_Ω = FETerm(res,jac,jac_t,trian,quad)
 t_Ω = TransientConstantFETerm(m,a,b,trian,quad)
 op = TransientConstantFEOperator(U,V0,t_Ω)
 

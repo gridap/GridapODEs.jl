@@ -40,11 +40,6 @@ a(t,u,v) = ∇(v)⋅∇(u)
 b(t,v) = v*f(t)
 m(t,ut,v) = ut*v
 
-#res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
-#jac(t,u,ut,du,v) = a(du,v)
-#jac_t(t,u,ut,dut,v) = dut*v
-
-#t_Ω = FETerm(res,jac,jac_t,trian,quad)
 t_Ω = TransientAffineFETerm(m,a,b,trian,quad)
 op = TransientAffineFEOperator(U,V0,t_Ω)
 
