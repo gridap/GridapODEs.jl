@@ -97,5 +97,3 @@ function zero_initial_guess(op::ThetaMethodNonlinearOperator)
   fill!(x0,zero(eltype(x0)))
   x0
 end
-
-include("AffineThetaMethod.jl")
