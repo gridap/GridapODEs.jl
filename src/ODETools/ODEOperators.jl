@@ -28,7 +28,6 @@ It represents a constant operator in an implicit ODE, i.e., an ODE operator of
 the form A(t,u,∂tu) = M∂tu + Ku + f
 """
 const ConstantODEOperator = ODEOperator{Constant}
-# abstract type ConstantODEOperator <: AffineODEOperator end
 
 # @santiagobadia : I would consider in a future a more general case, in which
 # the implicit ODE has an arbitrary order, i.e., A(t,u,u_t, u_nt) = 0.
