@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-  - Added constant and affine version of operators via a new Trait `OperatorType` being used in `ODEOperator`, `ODEOpFromFEOp` and `TransientFEOperator`
+  - New constant and affine version of operators via a new Trait `OperatorType` being used in `ODEOperator`, `ODEOpFromFEOp` and `TransientFEOperator`
 
 ## [0.2.1] - 2020-06-16
 
