@@ -25,6 +25,10 @@ function solve_step!(uf::AbstractVector,
                      t0::Real,
                      cache) # -> (uF,tF)
 
+  dt = solver.dt
+  solver.θ == 0.0 ? dtθ = dt : dtθ = dt*solver.θ
+  tθ = t0+dtθ
+
   if cache === nothing
     ode_cache = allocate_cache(op)
     vθ = similar(u0)
@@ -33,9 +37,6 @@ function solve_step!(uf::AbstractVector,
     ode_cache, vθ, nl_cache = cache
   end
 
-  dt = solver.dt
-  solver.θ == 0.0 ? dtθ = dt : dtθ = dt*solver.θ
-  tθ = t0+dtθ
   ode_cache = update_cache!(ode_cache,op,tθ)
 
   nlop = ThetaMethodNonlinearOperator(op,tθ,dtθ,u0,ode_cache,vθ)

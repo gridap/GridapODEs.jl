@@ -1,8 +1,33 @@
 """
-It represents the operator in an implicit ODE, i.e., A(t,u,∂tu) where the
-implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u
+Trait for `ODEOperator` that tells us whether the operator depends on the solution
+(including its time derivatives), it is an affine operator that depends on time
+or it is a constant operator (affine and time-indepedendent)
 """
-abstract type ODEOperator <: GridapType end
+abstract type OperatorType end
+struct Nonlinear <: OperatorType end
+struct Affine  <: OperatorType end
+struct Constant  <: OperatorType end
+
+"""
+It represents the operator in an implicit ODE, i.e., A(t,u,∂tu) where the
+implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u.
+The trait `{C}` determines whether the operator is fully nonlinear, affine
+or constant in time.
+"""
+abstract type ODEOperator{C<:OperatorType} <: GridapType end
+
+"""
+It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
+the form A(t,u,∂tu) = M(t)∂tu + K(t)u + f(t)
+"""
+const AffineODEOperator = ODEOperator{Affine}
+# abstract type AffineODEOperator <: ODEOperator end
+
+"""
+It represents a constant operator in an implicit ODE, i.e., an ODE operator of
+the form A(t,u,∂tu) = M∂tu + Ku + f
+"""
+const ConstantODEOperator = ODEOperator{Constant}
 
 # @santiagobadia : I would consider in a future a more general case, in which
 # the implicit ODE has an arbitrary order, i.e., A(t,u,u_t, u_nt) = 0.
@@ -10,6 +35,11 @@ abstract type ODEOperator <: GridapType end
 # @santiagobadia :
 # We probably want to consider second order time derivatives too, i.e.,
 # A(t,u,u_t,u_tt) = 0 (wave propagation, elastodynamics) or even more...
+"""
+Returns the `OperatorType`, i.e., nonlinear, affine, or constant in time
+"""
+OperatorType(::ODEOperator{C}) where C = C
+# OperatorType(::Type{<:ODEOperator{C}}) where C = C
 
 """
 It provides A(t,u,∂tu) for a given (t,u,∂tu)

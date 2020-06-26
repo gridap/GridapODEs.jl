@@ -110,7 +110,6 @@ ls = LUSolver()
 tol = 1.0
 maxiters = 20
 using Gridap.Algebra: NewtonRaphsonSolver
-# nls = NewtonRaphsonSolver(ls,tol,maxiters)
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(nls,dt,1.0)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
@@ -241,11 +240,8 @@ for (uh_tn, tn) in sol_t
   @test tn≈_t_n
   e = u(tn) - uh_tn
   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
-  # @santiagobadia : Check errors...
-  # eh1 = sqrt(sum( integrate(h1(e),trian,quad) ))
   @test el2 < tol
-  # @test eh1 < tol
-#   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
+  # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
 end
 
 end #module

@@ -7,7 +7,7 @@ import GridapODEs.ODETools: test_ode_operator
 
 include("ODEOperatorMocks.jl")
 
-op = ODEOperatorMock(1.0,2.0,3.0)
+op = ODEOperatorMock{Float64,Constant}(1.0,2.0,3.0)
 
 u = ones(2)
 u_t = ones(2)*2.0

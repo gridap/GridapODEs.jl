@@ -1,4 +1,4 @@
-module HeatEquationTests
+module AffineFEOperatorsTests
 
 using Gridap
 using ForwardDiff
@@ -7,21 +7,17 @@ using Test
 using GridapODEs.ODETools
 using GridapODEs.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
+using LineSearches: BackTracking
 
 import Gridap: ∇
 import GridapODEs.TransientFETools: ∂t
 
-θ = 0.2
+θ = 1.0
 
-# Analytical functions
-# u(x,t) = (x[1]+x[2])*t
-# u(x,t) = (2*x[1]+x[2])*t
 u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
 u(t::Real) = x -> u(x,t)
-v(x) = t -> u(x,t)
-∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
-∂tu(x,t) = ∂tu(t)(x)
-∂t(::typeof(u)) = ∂tu
+∂tu = ∂t(u)
+
 f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
 
 domain = (0,1,0,1)
@@ -40,15 +36,12 @@ degree = 2*order
 quad = CellQuadrature(trian,degree)
 
 #
-a(u,v) = ∇(v)⋅∇(u)
-b(v,t) = v*f(t)
+a(t,u,v) = ∇(v)⋅∇(u)
+b(t,v) = v*f(t)
+m(t,ut,v) = ut*v
 
-res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
-jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = dut*v
-
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+t_Ω = TransientAffineFETerm(m,a,b,trian,quad)
+op = TransientAffineFEOperator(U,V0,t_Ω)
 
 t0 = 0.0
 tF = 1.0
@@ -58,11 +51,8 @@ U0 = U(0.0)
 uh0 = interpolate_everywhere(U0,u(0.0))
 
 ls = LUSolver()
-using Gridap.Algebra: NewtonRaphsonSolver
-nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes)
-
 sol_t = solve(solver,op,uh0,t0,tF)
 
 l2(w) = w*w

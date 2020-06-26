@@ -1,8 +1,7 @@
-
 """
 A transient version of the `Gridap` `FEOperator` that depends on time
 """
-abstract type TransientFEOperator <: GridapType end
+abstract type TransientFEOperator{C<:OperatorType} <: GridapType end
 
 """
 Returns the test space
@@ -63,9 +62,11 @@ get_assembler(feop::TransientFEOperator) = @abstractmethod
 Returns a `ODEOperator` wrapper of the `TransientFEOperator` that can be
 straightforwardly used with the `ODETools` module.
 """
-function get_algebraic_operator(feop::TransientFEOperator)
-  ODEOpFromFEOp(feop)
+function get_algebraic_operator(feop::TransientFEOperator{C}) where C
+  ODEOpFromFEOp{C}(feop)
 end
+
+OperatorType(::Type{<:TransientFEOperator{C}}) where C = C
 
 # @fverdugo This function is just in case we need to override it in the future for some specialization.
 # This default implementation is enough for the moment.
@@ -82,20 +83,30 @@ end
 """
 Transient FE operator that is defined by a set of `TransientFETerm` (or `FETerm`)
 """
-struct TransientFEOperatorFromTerms <: TransientFEOperator
+struct TransientFEOperatorFromTerms{C} <: TransientFEOperator{C}
   trial
   trial_t
   test::FESpace
   assem_t::Assembler
   terms
-  function TransientFEOperatorFromTerms(trial,trial_t,test::FESpace,assem::Assembler,terms...)
-    new(trial,trial_t,test,assem,terms)
+  function TransientFEOperatorFromTerms{C}(trial,trial_t,test::FESpace,assem::Assembler,terms...) where C
+    new{C}(trial,trial_t,test,assem,terms)
   end
+end
+
+function TransientConstantFEOperator(trial,test,terms...)
+  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
+  TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
+end
+
+function TransientAffineFEOperator(trial,test,terms...)
+  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
+  TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
 end
 
 function TransientFEOperator(trial,test,terms...)
   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms(trial,∂t(trial),test,assem_t,terms...)
+  TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
 end
 
 get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t

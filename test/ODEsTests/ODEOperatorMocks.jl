@@ -3,6 +3,8 @@
 # u_2_t - b * u_1 - c * u_2 = 0
 
 import GridapODEs.ODETools: ODEOperator
+import GridapODEs.ODETools: AffineODEOperator
+import GridapODEs.ODETools: ConstantODEOperator
 import GridapODEs.ODETools: allocate_cache
 import GridapODEs.ODETools: update_cache!
 import GridapODEs.ODETools: allocate_residual
@@ -11,7 +13,7 @@ import GridapODEs.ODETools: jacobian_t!
 import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
 
-struct ODEOperatorMock{T<:Real} <: ODEOperator
+struct ODEOperatorMock{T<:Real,C} <: ODEOperator{C}
   a::T
   b::T
   c::T

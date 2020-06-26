@@ -44,6 +44,7 @@ end
 
 function get_cell_residual(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,v)
   @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
   @assert is_a_fe_cell_basis(v)
   _v = restrict(v,tr.trian)
   _uh = restrict(uh,tr.trian)
@@ -153,4 +154,26 @@ end
 
 function _push_vector_contribution!(v,r,cellvals::Nothing,cellids)
   nothing
+end
+
+"""
+Alternative constructor for affine operators
+"""
+function TransientAffineFETerm(
+  m::Function,a::Function,b::Function,trian::Triangulation,quad::CellQuadrature)
+  res(t,u,ut,v) = m(t,ut,v) + a(t,u,v) - b(t,v)
+  jac(t,u,ut,du,v) = a(t,du,v)
+  jac_t(t,u,ut,dut,v) = m(t,dut,v)
+  FETerm(res,jac,jac_t,trian,quad)
+end
+
+"""
+Alternative constructor for constant operators
+"""
+function TransientConstantFETerm(
+  m::Function,a::Function,b::Function,trian::Triangulation,quad::CellQuadrature)
+  res(t,u,ut,v) = m(ut,v) + a(u,v) - b(v)
+  jac(t,u,ut,du,v) = a(du,v)
+  jac_t(t,u,ut,dut,v) = m(dut,v)
+  FETerm(res,jac,jac_t,trian,quad)
 end
