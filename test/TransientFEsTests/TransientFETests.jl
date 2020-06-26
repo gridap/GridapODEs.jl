@@ -240,11 +240,8 @@ for (uh_tn, tn) in sol_t
   @test tn≈_t_n
   e = u(tn) - uh_tn
   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
-  # @santiagobadia : Check errors...
-  # eh1 = sqrt(sum( integrate(h1(e),trian,quad) ))
   @test el2 < tol
-  # @test eh1 < tol
-#   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
+  # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
 end
 
 end #module
