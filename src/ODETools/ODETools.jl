@@ -7,8 +7,9 @@ using ForwardDiff
 export ∂t
 export time_derivative
 
-using Gridap.Fields: VectorValue
+using Gridap.Fields: VectorValue, TensorValue
 using Gridap.Inference: return_type
+using Gridap.Arrays: get_array
 
 using Gridap: GridapType
 using Gridap.Helpers
