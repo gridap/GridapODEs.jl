@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.0] - 2020-07-08
 
   - Support for computation of partial time derivatives since PR [#20](https://github.com/gridap/GridapODEs.jl/pull/20)
-  - Updated to Gridap v0.12
+  - Updated to Gridap v0.12.0
 
 ## [0.3.0] - 2020-06-29
 
