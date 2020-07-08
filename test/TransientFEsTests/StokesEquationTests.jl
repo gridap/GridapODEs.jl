@@ -16,16 +16,10 @@ import GridapODEs.TransientFETools: ∂t
 
 u(x,t) = VectorValue(x[1],x[2])*t
 u(t::Real) = x -> u(x,t)
-∂tu(t) = x -> VectorValue(x[1],x[2])
-∂tu(x,t) = ∂tu(t)(x)
-∂t(::typeof(u)) = ∂tu
 
 p(x,t) = (x[1]-x[2])*t
 p(t::Real) = x -> p(x,t)
 q(x) = t -> p(x,t)
-∂tp(t) = x -> ForwardDiff.derivative(q(x),t)
-∂tp(x,t) = ∂tp(t)(x)
-∂t(::typeof(p)) = ∂tp
 
 f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)+ ∇(p(t))(x)
 g(t) = x -> (∇⋅u(t))(x)
@@ -45,18 +39,10 @@ Q = TestFESpace(
   order=order-1,
   reffe=:Lagrangian,
   valuetype=Float64,
-  # dof_space=ref_st,
   conformity=:H1,
   constraint=:zeromean)
 
-# V0 = FESpace(
-#   reffe=:Lagrangian, order=order, valuetype=Float64,
-#   conformity=:H1, model=model, dirichlet_tags="boundary")
 U = TransientTrialFESpace(V0,u)
-
-# Q = FESpace(
-#   reffe=:Lagrangian, order=order-1, valuetype=Float64,
-#   conformity=:H1, model=model, dirichlet_tags="boundary")
 
 P = TrialFESpace(Q)
 

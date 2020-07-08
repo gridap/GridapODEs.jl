@@ -22,7 +22,7 @@ v(x) = t -> u(x,t)
 ∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
 ∂tu(x,t) = ∂tu(t)(x)
 ∂t(::typeof(u)) = ∂tu
-f(t) = x -> ∂t(u)(t)(x)-Δ(u(t))(x)
+f(t) = x -> ∂t(u)(x,t)-Δ(u(t))(x)
 
 domain = (0,1,0,1)
 partition = (2,2)
