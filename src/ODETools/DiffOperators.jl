@@ -1,30 +1,23 @@
 function time_derivative(f::Function)
-  fx(x) = t -> f(x,t)
-  ∂tf(t) = x -> ForwardDiff.derivative(fx(x),t)
-  ∂tf(x,t) = ∂tf(t)(x)
-  ∂tf
+  function time_derivative_f(x,t)
+    fxt = zero(return_type(f,typeof(x),typeof(t)))
+    _time_derivative_f(f,x,t,fxt)
+  end
+  time_derivative_f(x::VectorValue) = t -> time_derivative_f(x,t)
+  time_derivative_f(t) = x -> time_derivative_f(x,t)
 end
 
 const ∂t = time_derivative
 
-# @santiagobadia: Trying to create time derivatives for
-# MultiValue without success
-function array_time_derivative(f::Function)
-  function tdt_f(f,xv,tv)
-    ty = return_type(f(tv),typeof(xv))
-    _time_derivative(f,xv,tv,ty)
-  end
+function _time_derivative_f(f,x,t,fxt)
+  ForwardDiff.derivative(t->f(x,t),t)
 end
 
-function _time_derivative(f::Function,x,t,ty::Float64)
-  fx(t) = f(xv,t)
-  ∂tf = ForwardDiff.derivative(fx,t)
-  # ∂tf(x,t) = ∂tf(t)(x)
-  ∂tf
+function _time_derivative_f(f,x,t,fxt::VectorValue)
+  VectorValue(ForwardDiff.derivative(t->get_array(f(x,t)),t))
+  # VectorValue(ForwardDiff.derivative(t->f(x,t),t))
 end
 
-function _time_derivative(f::Function,::Type{Vector})
-  fx(x) = t -> f(x,t)
-  ∂tf(t) = x -> VectorValue(ForwardDiff.derivative(fx(x),t)...)
-  ∂tf(x,t) = ∂tf(t)(x)
+function _time_derivative_f(f,x,t,fxt::TensorValue)
+  TensorValue(ForwardDiff.derivative(t->get_array(f(x,t)),t))
 end
