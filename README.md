@@ -20,11 +20,9 @@ import GridapODEs.TransientFETools: ∂t
 θ = 0.5
 
 u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
-u(t::Real) = x -> u(x,t)
-∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
-∂tu(x,t) = ∂tu(t)(x)
+u(t) = x -> u(x,t)
 
-f(t) = x -> 1.0
+f(t) = x -> ∂t(u)(x,t)-Δ(u(t))(x) # or ∂t(u)(t)(x)-Δ(u(t))(x)
 
 domain = (0,1,0,1)
 partition = (4,4)
