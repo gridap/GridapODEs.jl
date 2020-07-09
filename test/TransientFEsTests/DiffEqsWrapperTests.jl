@@ -71,18 +71,20 @@ ode_op = get_algebraic_operator(op)
 ode_cache = allocate_cache(ode_op) # Not acceptable in terms of performance
 
 function residual(res,du,u,p,t)
-  # TO DO: Problem with closure if ode_c is named ode_cache
+  global ode_cache
   # TO DO: Improve update_cache! st do nothing if same time t as in the cache
-  ode_c = GridapODEs.ODETools.update_cache!(ode_cache,ode_op,tθ)
-  GridapODEs.ODETools.residual!(res,ode_op,t,u,du,ode_c)
+  # now it would be done twice (residual and jacobian)
+  ode_cache = GridapODEs.ODETools.update_cache!(ode_cache,ode_op,tθ)
+  GridapODEs.ODETools.residual!(res,ode_op,t,u,du,ode_cache)
 end
 
 function jacobian(jac,du,u,p,gamma,t)
-  ode_c = GridapODEs.ODETools.update_cache!(ode_cache,ode_op,tθ)
+  global ode_cache
+  ode_cache = GridapODEs.ODETools.update_cache!(ode_cache,ode_op,tθ)
   z = zero(eltype(jac))
   Gridap.Algebra.fill_entries!(jac,z)
-  GridapODEs.ODETools.jacobian_t!(jac,ode_op,t,u,du,gamma,ode_c)
-  GridapODEs.ODETools.jacobian!(jac,ode_op,t,u,du,ode_c)
+  GridapODEs.ODETools.jacobian_t!(jac,ode_op,t,u,du,gamma,ode_cache)
+  GridapODEs.ODETools.jacobian!(jac,ode_op,t,u,du,ode_cache)
 end
 #end wrapper
 
