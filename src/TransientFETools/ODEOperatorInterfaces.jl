@@ -57,3 +57,10 @@ function jacobian_t!(J::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVe
   uht = EvaluationFunction(Uht,uhtF)
   jacobian_t!(J,op.feop,t,uh,uht,dut_u,ode_cache)
 end
+
+function jacobian_and_jacobian_t!(J::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,dut_u::Real,ode_cache)
+  Uh,Uht, = ode_cache
+  uh = EvaluationFunction(Uh,uhF)
+  uht = EvaluationFunction(Uht,uhtF)
+  jacobian_and_jacobian_t!(J,op.feop,t,uh,uht,dut_u,ode_cache)
+end

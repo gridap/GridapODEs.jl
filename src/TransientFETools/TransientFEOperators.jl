@@ -47,6 +47,13 @@ function jacobian_t!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht,duht_du,
 end
 
 """
+Idem as `jacobian_and_jacobian_t!` of `ODEOperator`
+"""
+function jacobian_and_jacobian_t!(A::AbstractMatrix,op::TransientFEOperator,t,uh,uht,duht_du,cache)
+  @abstractmethod
+end
+
+"""
 Returns the assembler, which is constant for all time steps for a given FE
 operator.
 
@@ -143,25 +150,54 @@ end
 
 function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,cache)
-  Uh = evaluate(op.trial,nothing)
-  @assert is_a_fe_function(uh)
-  @assert is_a_fe_function(uh_t)
-  du = get_cell_basis(Uh)
-  v = get_cell_basis(op.test)
-  matdata = collect_cell_jacobian(t,uh,uh_t,du,v,op.terms)
+  matdata = matdata_jacobian(op,t,uh,uh_t)
   assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
 
 function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
   t::Real,uh,uh_t,duht_du::Real,cache)
+  matdata = matdata_jacobian_t(op,t,uh,uh_t,duht_du)
+  assemble_matrix_add!(A,op.assem_t, matdata)
+  A
+end
+
+function jacobian_and_jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
+  t::Real,uh,uh_t,duht_du::Real,cache)
+  matdata_j = matdata_jacobian(op,t,uh,uh_t)
+  matdata_jt = matdata_jacobian_t(op,t,uh,uh_t,duht_du)
+  matdata = vcat_matdata(matdata_j,matdata_jt)
+  assemble_matrix_add!(A,op.assem_t, matdata)
+  A
+end
+
+function vcat_matdata(matdata_j,matdata_jt)
+  term_to_cellmat_j, term_to_cellidsrows_j, term_to_cellidscols_j = matdata_j
+  term_to_cellmat_jt, term_to_cellidsrows_jt, term_to_cellidscols_jt = matdata_jt
+
+  term_to_cellmat = vcat(term_to_cellmat_j,term_to_cellmat_jt)
+  term_to_cellidsrows = vcat(term_to_cellidsrows_j,term_to_cellidsrows_jt)
+  term_to_cellidscols = vcat(term_to_cellidscols_j,term_to_cellidscols_jt)
+
+  matdata = (term_to_cellmat,term_to_cellidsrows, term_to_cellidscols)
+end
+
+
+function matdata_jacobian(op::TransientFEOperatorFromTerms,t::Real,uh,uh_t)
+  Uh = evaluate(op.trial,nothing)
+  @assert is_a_fe_function(uh)
+  @assert is_a_fe_function(uh_t)
+  du = get_cell_basis(Uh)
+  v = get_cell_basis(op.test)
+  matdata = collect_cell_jacobian(t,uh,uh_t,du,v,op.terms)
+end
+
+function matdata_jacobian_t(op::TransientFEOperatorFromTerms,t::Real,uh,uh_t,duht_du::Real)
   Uh = evaluate(op.trial,nothing)
   @assert is_a_fe_function(uh_t)
   du_t = get_cell_basis(Uh)
   v = get_cell_basis(op.test)
   matdata = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,duht_du,op.terms)
-  assemble_matrix_add!(A,op.assem_t, matdata)
-  A
 end
 
 # Tester
@@ -184,6 +220,8 @@ function test_transient_fe_operator(op::TransientFEOperator,uh)
   jacobian!(J,op,0.0,uh,uh,cache)
   @test isa(J,AbstractMatrix)
   jacobian_t!(J,op,0.0,uh,uh,1.0,cache)
+  @test isa(J,AbstractMatrix)
+  jacobian_and_jacobian_t!(J,op,0.0,uh,uh,1.0,cache)
   @test isa(J,AbstractMatrix)
   cache = update_cache!(cache,op,0.0)
   true

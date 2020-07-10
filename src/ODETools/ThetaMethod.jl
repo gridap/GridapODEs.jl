@@ -80,8 +80,7 @@ function jacobian!(A::AbstractMatrix,op::ThetaMethodNonlinearOperator,x::Abstrac
   vθ = (x-op.u0)/op.dtθ
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian!(A,op.odeop,op.tθ,uF,vθ,op.ode_cache)
-  jacobian_t!(A,op.odeop,op.tθ,uF,vθ,(1/op.dtθ),op.ode_cache)
+  jacobian_and_jacobian_t!(A,op.odeop,op.tθ,uF,vθ,(1/op.dtθ),op.ode_cache)
 end
 
 function allocate_residual(op::ThetaMethodNonlinearOperator,x::AbstractVector)

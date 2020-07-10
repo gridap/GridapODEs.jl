@@ -14,10 +14,6 @@ function get_cell_jacobian(fet::FETerm,t,uh,uh_t,du,v)
 end
 
 function get_cell_jacobian_t(fet::FETerm,t,uh,uh_t,du_t,v,duht_du)
-  @assert is_a_fe_function(uh)
-  @assert is_a_fe_function(uh_t)
-  @assert is_a_fe_cell_basis(v)
-  @assert is_a_fe_cell_basis(du_t)
   nothing
 end
 

@@ -18,4 +18,8 @@ using Test
 
 @testset "StokesEquationTests" begin include("StokesEquationTests.jl") end
 
+@testset "BoundaryEquationTests" begin include("BoundaryHeatEquationTests.jl") end
+
+@testset "DGHeatEquationTests" begin include("DGHeatEquationTests.jl") end
+
 end # module

@@ -1,4 +1,4 @@
-# module HeatEquationTests
+module DGHeatEquationTests
 
 using Gridap
 using ForwardDiff
@@ -24,16 +24,18 @@ v(x) = t -> u(x,t)
 ∂t(::typeof(u)) = ∂tu
 f(t) = x -> ∂t(u)(x,t)-Δ(u(t))(x)
 
-domain = (0,1,0,1)
-partition = (2,2)
+L= 1.0
+n = 2
+domain = (0,L,0,L)
+partition = (n,n)
 model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
 V0 = FESpace(
   reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
-U = TransientTrialFESpace(V0,u)
+  conformity=:L2, model=model)
+U = TransientTrialFESpace(V0)
 
 trian = Triangulation(model)
 degree = 2*order
@@ -48,7 +50,40 @@ jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
 
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+
+# neumanntags = [7,8]
+btrian = BoundaryTriangulation(model)
+# btrian = BoundaryTriangulation(model,neumanntags)
+bquad = CellQuadrature(btrian,degree)
+nb = get_normal_vector(btrian)
+
+h = 1.0 / n
+γ = order*(order+1)
+a_∂Ω(u,v) = (γ/h)*v*u - v*(∇(u)⋅nb) - (∇(v)⋅nb)*u
+b_∂Ω(v,t) = (γ/h)*v*u(t) - (∇(v)⋅nb)*u(t)
+# b_∂Ω(v,t) = v*(∇(u(t))⋅nb)
+
+res_∂Ω(t,u,ut,v) = a_∂Ω(u,v) - b_∂Ω(v,t)
+jac_∂Ω(t,u,ut,du,v) = a_∂Ω(du,v)
+jac_t_∂Ω(t,u,ut,dut,v) = dut*v*0.0
+
+# t_∂Ω = AffineFETerm(a_∂Ω,b_∂Ω,btrian,bquad)
+t_∂Ω = FETerm(res_∂Ω,jac_∂Ω,jac_t_∂Ω,btrian,bquad)
+
+
+strian = SkeletonTriangulation(model)
+squad = CellQuadrature(strian,degree)
+ns = get_normal_vector(strian)
+
+a_Γ(u,v) = (γ/h)*jump(v*ns)⊙jump(u*ns) - jump(v*ns)⊙mean(∇(u)) - mean(∇(v))⊙jump(u*ns)
+
+res_Γ(t,u,ut,v) = a_Γ(u,v)
+jac_Γ(t,u,ut,du,v) = a_Γ(du,v)
+jac_t_Γ(t,u,ut,dut,v) = dut*v*0.0
+
+t_Γ = FETerm(res_Γ,jac_Γ,jac_t_Γ,strian,squad)
+
+op = TransientFEOperator(U,V0,t_Ω,t_∂Ω)
 
 t0 = 0.0
 tF = 1.0
@@ -59,7 +94,7 @@ uh0 = interpolate_everywhere(U0,u(0.0))
 
 ls = LUSolver()
 using Gridap.Algebra: NewtonRaphsonSolver
-nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
+# nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes)
 
@@ -80,4 +115,4 @@ for (uh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-# end #module
+end #module

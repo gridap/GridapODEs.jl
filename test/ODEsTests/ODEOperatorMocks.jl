@@ -10,6 +10,7 @@ import GridapODEs.ODETools: update_cache!
 import GridapODEs.ODETools: allocate_residual
 import GridapODEs.ODETools: jacobian!
 import GridapODEs.ODETools: jacobian_t!
+import GridapODEs.ODETools: jacobian_and_jacobian_t!
 import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
 
@@ -42,6 +43,14 @@ function jacobian_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVe
   J[2,2] += 1.0*du_t_u
   J
 end
+
+function jacobian_and_jacobian_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,du_t_u::Real,ode_cache)
+  jacobian!(J,op,t,u,u_t,ode_cache)
+  jacobian_t!(J,op,t,u,u_t,du_t_u,ode_cache)
+  J
+end
+
+
 
 function allocate_jacobian(op::ODEOperatorMock,u::AbstractVector,cache)
   zeros(2,2)

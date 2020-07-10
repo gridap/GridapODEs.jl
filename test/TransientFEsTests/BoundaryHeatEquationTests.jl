@@ -1,4 +1,4 @@
-# module HeatEquationTests
+module BoundaryHeatEquationTests
 
 using Gridap
 using ForwardDiff
@@ -32,7 +32,7 @@ order = 2
 
 V0 = FESpace(
   reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
+  conformity=:H1, model=model, dirichlet_tags=[1,2,3,4,5,6])
 U = TransientTrialFESpace(V0,u)
 
 trian = Triangulation(model)
@@ -48,7 +48,20 @@ jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = dut*v
 
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+
+neumanntags = [7,8]
+btrian = BoundaryTriangulation(model,neumanntags)
+bquad = CellQuadrature(btrian,degree)
+nb = get_normal_vector(btrian)
+b_∂Ω(v,t) = v*(∇(u(t))⋅nb)
+
+res_∂Ω(t,u,ut,v) = - b_∂Ω(v,t)
+jac_∂Ω(t,u,ut,du,v) = du*v*0.0
+jac_t_∂Ω(t,u,ut,dut,v) = dut*v*0.0
+
+t_∂Ω = FETerm(res_∂Ω,jac_∂Ω,jac_t_∂Ω,btrian,bquad)
+
+op = TransientFEOperator(U,V0,t_Ω,t_∂Ω)
 
 t0 = 0.0
 tF = 1.0
@@ -59,7 +72,7 @@ uh0 = interpolate_everywhere(U0,u(0.0))
 
 ls = LUSolver()
 using Gridap.Algebra: NewtonRaphsonSolver
-nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
+# nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(ls,dt,θ)
 solver = TransientFESolver(odes)
 
@@ -80,4 +93,4 @@ for (uh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-# end #module
+end #module
