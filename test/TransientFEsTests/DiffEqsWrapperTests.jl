@@ -83,8 +83,7 @@ function jacobian(jac,du,u,p,gamma,t)
   ode_cache = GridapODEs.ODETools.update_cache!(ode_cache,ode_op,tθ)
   z = zero(eltype(jac))
   Gridap.Algebra.fill_entries!(jac,z)
-  GridapODEs.ODETools.jacobian_t!(jac,ode_op,t,u,du,gamma,ode_cache)
-  GridapODEs.ODETools.jacobian!(jac,ode_op,t,u,du,ode_cache)
+  GridapODEs.ODETools.jacobian_and_jacobian_t!(jac,ode_op,t,u,du,gamma,ode_cache)
 end
 #end wrapper
 
