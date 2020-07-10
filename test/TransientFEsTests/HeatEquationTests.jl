@@ -1,4 +1,4 @@
-module HeatEquationTests
+# module HeatEquationTests
 
 using Gridap
 using ForwardDiff
@@ -65,6 +65,8 @@ solver = TransientFESolver(odes)
 
 sol_t = solve(solver,op,uh0,t0,tF)
 
+# Juno.@enter Base.iterate(sol_t)
+
 l2(w) = w*w
 
 tol = 1.0e-6
@@ -78,4 +80,4 @@ for (uh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-end #module
+# end #module

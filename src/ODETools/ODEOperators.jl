@@ -74,6 +74,15 @@ function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector
 end
 
 """
+Add the contribution of both `jacobian!` and `jacobian_t!`,i.e.,
+[∂A/∂u](t,u,∂tu)+γ*[∂A/∂(∂tu)](u,∂tu)
+"""
+function jacobian_and_jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,ode_cache)
+  @abstractmethod
+  # Add values to J
+end
+
+"""
 """
 function allocate_jacobian(op::ODEOperator,u::AbstractVector,ode_cache)
   @abstractmethod
@@ -98,5 +107,6 @@ function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::Abstra
   J = allocate_jacobian(op,u,cache)
   jacobian!(J,op,t,u,u_t,cache)
   jacobian_t!(J,op,t,u,u_t,1.0,cache)
+  jacobian_and_jacobian_t!(J,op,t,u,u_t,1.0,cache)
   true
 end
