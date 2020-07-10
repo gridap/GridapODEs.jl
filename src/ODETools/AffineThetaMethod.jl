@@ -104,7 +104,6 @@ end
 function _matrix!(A,odeop,tθ,dtθ,u0,ode_cache,vθ)
   z = zero(eltype(A))
   fill_entries!(A,z)
-  # jacobian!(A,odeop,tθ,vθ,vθ,ode_cache)
   jacobian_and_jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
 end
 
@@ -142,7 +141,6 @@ function ThetaMethodConstantOperator(odeop::ConstantODEOperator,tθ::Float64,dt�
   b = -1*b
   z = zero(eltype(A))
   fill_entries!(A,z)
-  # jacobian!(A,odeop,tθ,vθ,vθ,ode_cache)
   jacobian_and_jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
   return A, b
 end
