@@ -38,6 +38,7 @@ export allocate_cache
 export update_cache!
 export jacobian!
 export jacobian_t!
+export jacobian_and_jacobian_t!
 export test_ode_operator
 
 export ODESolver

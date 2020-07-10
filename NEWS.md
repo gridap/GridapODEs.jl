@@ -4,10 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+  - Append `matdata` from `jacobian` and `jacobian_t` to get the right sparsity pattern. Since PR [#21](https://github.com/gridap/GridapODEs.jl/pull/21)
+
 ## [0.4.0] - 2020-07-08
 
+### Added
+
   - Support for computation of partial time derivatives since PR [#20](https://github.com/gridap/GridapODEs.jl/pull/20)
-  - Updated to Gridap v0.12
+  - Updated to Gridap v0.12.0
 
 ## [0.3.0] - 2020-06-29
 
