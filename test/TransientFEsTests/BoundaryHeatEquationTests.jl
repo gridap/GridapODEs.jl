@@ -1,4 +1,4 @@
-# module HeatEquationTests
+module BoundaryHeatEquationTests
 
 using Gridap
 using ForwardDiff
@@ -59,7 +59,7 @@ res_∂Ω(t,u,ut,v) = - b_∂Ω(v,t)
 jac_∂Ω(t,u,ut,du,v) = du*v*0.0
 jac_t_∂Ω(t,u,ut,dut,v) = dut*v*0.0
 
-# t_∂Ω = FETerm(res_∂Ω,jac_∂Ω,jac_t_∂Ω,btrian,bquad)
+t_∂Ω = FETerm(res_∂Ω,jac_∂Ω,jac_t_∂Ω,btrian,bquad)
 
 op = TransientFEOperator(U,V0,t_Ω,t_∂Ω)
 
@@ -93,4 +93,4 @@ for (uh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-# end #module
+end #module

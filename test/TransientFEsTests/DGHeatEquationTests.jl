@@ -1,4 +1,4 @@
-# module HeatEquationTests
+module DGHeatEquationTests
 
 using Gridap
 using ForwardDiff
@@ -115,4 +115,4 @@ for (uh_tn, tn) in sol_t
   @test el2 < tol
 end
 
-# end #module
+end #module
