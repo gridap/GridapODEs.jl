@@ -83,7 +83,7 @@ jac_t_Γ(t,u,ut,dut,v) = dut*v*0.0
 
 t_Γ = FETerm(res_Γ,jac_Γ,jac_t_Γ,strian,squad)
 
-op = TransientFEOperator(U,V0,t_Ω,t_∂Ω)
+op = TransientFEOperator(U,V0,t_Ω,t_∂Ω,t_Γ)
 
 t0 = 0.0
 tF = 1.0
