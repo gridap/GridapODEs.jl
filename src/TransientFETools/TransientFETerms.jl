@@ -131,26 +131,46 @@ end
 # We need _push_vector and _push_matrix contribution
 # internal methods from Gridap
 
-function _push_matrix_contribution!(w,r,c,cellvals,cellids)
-  push!(w,cellvals)
-  push!(r,cellids)
-  push!(c,cellids)
-  nothing
-end
-
-function _push_matrix_contribution!(w,r,c,cellvals::Nothing,cellids)
-  nothing
-end
-
-function _push_vector_contribution!(v,r,cellvals,cellids)
-  push!(v,cellvals)
-  push!(r,cellids)
-  nothing
-end
-
-function _push_vector_contribution!(v,r,cellvals::Nothing,cellids)
-  nothing
-end
+# function _push_matrix_contribution!(w,r,c,cellvals,cellids)
+#   push!(w,cellvals)
+#   push!(r,cellids)
+#   push!(c,cellids)
+#   nothing
+# end
+#
+# function _push_matrix_contribution!(w,r,c,cellvals::Nothing,cellids)
+#   nothing
+# end
+#
+# function _push_matrix_contribution!(w,r,c,cellvals::SkeletonCellMatrix,cellids::SkeletonPair)
+#   push!(w,cellvals.ll)
+#   push!(w,cellvals.lr)
+#   push!(w,cellvals.rl)
+#   push!(w,cellvals.rr)
+#   push!(r,cellids.left); push!(c,cellids.left)
+#   push!(r,cellids.left); push!(c,cellids.right)
+#   push!(r,cellids.right); push!(c,cellids.left)
+#   push!(r,cellids.right); push!(c,cellids.right)
+#   nothing
+# end
+#
+# function _push_vector_contribution!(v,r,cellvals,cellids)
+#   push!(v,cellvals)
+#   push!(r,cellids)
+#   nothing
+# end
+#
+# function _push_vector_contribution!(v,r,cellvals::Nothing,cellids)
+#   nothing
+# end
+#
+# function _push_vector_contribution!(v,r,cellvals::SkeletonCellVector,cellids::SkeletonPair)
+#   push!(v,cellvals.left)
+#   push!(v,cellvals.right)
+#   push!(r,cellids.left)
+#   push!(r,cellids.right)
+#   nothing
+# end
 
 """
 Alternative constructor for affine operators
