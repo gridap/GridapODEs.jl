@@ -13,15 +13,8 @@ import GridapODEs.TransientFETools: ∂t
 
 θ = 0.2
 
-# Analytical functions
-# u(x,t) = (x[1]+x[2])*t
-# u(x,t) = (2*x[1]+x[2])*t
 u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
 u(t::Real) = x -> u(x,t)
-v(x) = t -> u(x,t)
-∂tu(t) = x -> ForwardDiff.derivative(v(x),t)
-∂tu(x,t) = ∂tu(t)(x)
-∂t(::typeof(u)) = ∂tu
 f(t) = x -> ∂t(u)(x,t)-Δ(u(t))(x)
 
 domain = (0,1,0,1)
