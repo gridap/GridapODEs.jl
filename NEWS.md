@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
   - Append `matdata` from `jacobian` and `jacobian_t` to get the right sparsity pattern. Since PR [#21](https://github.com/gridap/GridapODEs.jl/pull/21)
+  - Bug-fixed skeleton terms. Since PR [#24](https://github.com/gridap/GridapODEs.jl/pull/24)
 
 ## [0.4.0] - 2020-07-08
 
