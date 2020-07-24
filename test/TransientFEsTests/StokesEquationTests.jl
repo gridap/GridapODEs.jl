@@ -54,7 +54,7 @@ quad = CellQuadrature(trian,degree)
 a(u,v) = inner(∇(u),∇(v))
 b(v,t) = inner(v,f(t))
 
-X = MultiFieldFESpace([U,P])
+X = TransientMultiFieldFESpace([U,P])
 Y = MultiFieldFESpace([V0,Q])
 
 function res(t,x,xt,y)

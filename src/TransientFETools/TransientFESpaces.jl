@@ -120,8 +120,12 @@ struct TransientMultiFieldTrialFESpace
   spaces::Vector
 end
 
-function MultiFieldFESpace(spaces::Vector)
+function TransientMultiFieldFESpace(spaces::Vector)
   TransientMultiFieldTrialFESpace(spaces)
+end
+
+function TransientMultiFieldFESpace(spaces::Vector{<:SingleFieldFESpace})
+  MultiFieldFESpace(spaces)
 end
 
 function evaluate!(Ut::MultiFieldFESpace,U::TransientMultiFieldTrialFESpace,t::Real)
@@ -148,5 +152,5 @@ end
 
 function ∂t(U::TransientMultiFieldTrialFESpace)
   spaces = ∂t.(U.spaces)
-  MultiFieldFESpace(spaces)
+  TransientMultiFieldFESpace(spaces)
 end

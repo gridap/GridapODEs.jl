@@ -10,6 +10,7 @@ import GridapODEs.ODETools: ∂t
 import GridapODEs.ODETools: time_derivative
 
 export TransientTrialFESpace
+export TransientMultiFieldFESpace
 export test_transient_trial_fe_space
 import Gridap.Fields: evaluate
 import Gridap.Fields: evaluate!
