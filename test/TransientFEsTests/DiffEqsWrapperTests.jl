@@ -97,6 +97,13 @@ r = GridapODEs.ODETools.allocate_residual(ode_op,u0,ode_cache)
 J = GridapODEs.ODETools.allocate_jacobian(ode_op,u0,ode_cache)
 residual(r,u0,u0,nothing,tθ)
 jacobian(J,u0,u0,nothing,(1/dtθ),tθ)
+
+
+ls = LUSolver()
+
+ls_cache = nothing
+x = copy(u0)
+solve!(x,J,r,ls_cache)
 #
 
 using Sundials
@@ -104,7 +111,7 @@ tspan = (0.0,1.0)
 
 # To explore the Sundials solver options, e.g., BE with fixed time step dt
 # for comparison
-f_iip = DAEFunction{true}(residual;jac=jacobian)
+f_iip = DAEFunction{true}(residual;jac=jacobian,jac_prototype=J)
 prob_iip = DAEProblem{true}(f_iip,u0,u0,tspan,differential_vars=[true])
 sol_iip = Sundials.solve(prob_iip, IDA(), reltol=1e-8, abstol=1e-8)
 @show sol_iip.u
