@@ -3,6 +3,7 @@
 using GridapODEs
 using GridapODEs.ODETools: GenericODESolution
 using GridapODEs.ODETools: BackwardEuler
+using GridapODEs.ODETools: RKMethod
 using GridapODEs.ODETools: ThetaMethodNonlinearOperator
 using GridapODEs.ODETools: solve!
 using GridapODEs
@@ -122,5 +123,34 @@ uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
 @test tf==t0+dt
 @test all(uf.≈1+11/9)
 
+# RK tests
+
+ls = LUSolver()
+# BE equivalent
+odesol = RKMethod(ls,dt,:BE_1_0_1)
+uf = copy(u0)
+uf.=1.0
+cache = nothing
+uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
+@test tf==t0+dt
+@test all(uf.≈1+11/9)
+# SDIRK 2nd order
+odesol = RKMethod(ls,dt,:SDIRK_2_1_2)
+uf = copy(u0)
+uf.=1.0
+cache = nothing
+uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
+@test tf==t0+dt
+@test all(uf.≈u0*(1.0+dt/(2*(1-dt))+dt*(1-2*dt)/(2*(1-dt)^2)))
+# TRBDF (2nd order with some 0 on the diagonal)
+odesol = RKMethod(ls,dt,:TRBDF2_3_3_2)
+uf.=1.0
+cache = nothing
+uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
+@test tf==t0+dt
+@test all(uf.≈u0*1.105215241)
+
+@test test_ode_solver(odesol,op,u0,t0,tf)
+test_ode_solver(odesol,op,u0,t0,tf)
 
 # end #module
