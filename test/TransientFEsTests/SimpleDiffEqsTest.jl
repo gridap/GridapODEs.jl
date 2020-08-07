@@ -11,6 +11,7 @@ export fe_problem
 export solve_ode_gridap
 export diffeq_wrappers
 
+# FE problem (heat eq) using Gridap
 function fe_problem(u, n)
 
   f(t) = x -> ∂t(u)(x, t) - Δ(u(t))(x)
@@ -73,7 +74,21 @@ function diffeq_wrappers(op)
     GridapODEs.ODETools.jacobian_and_jacobian_t!(jac, ode_op, t, u, du, gamma, ode_cache)
   end
 
-  return residual, jacobian
+  function mass(mass, du, u, p, t)
+    ode_cache = GridapODEs.ODETools.update_cache!(ode_cache, ode_op, t)
+    z = zero(eltype(mass))
+    Gridap.Algebra.fill_entries!(mass, z)
+    GridapODEs.ODETools.jacobian_t!(mass, ode_op, t, u, du, 1.0, ode_cache)
+  end
+
+  function stiffness(stif, du, u, p, t)
+    ode_cache = GridapODEs.ODETools.update_cache!(ode_cache, ode_op, t)
+    z = zero(eltype(stif))
+    Gridap.Algebra.fill_entries!(stif, z)
+    GridapODEs.ODETools.jacobian!(stif, ode_op, t, u, du, ode_cache)
+  end
+
+  return residual, jacobian, mass, stiffness
 
 end
 
@@ -113,12 +128,26 @@ u(t) = x -> u(x, t)
 # solver (?). Ut returns errors
 # [IDAS ERROR]  IDACalcIC Newton/Linesearch algorithm failed to converge.
 # ISSUE 2: When I pass `jac_prototype` the code gets stuck
-S = GridapFESolver
+S = Main.GridapFESolver
 
-n = 9
+n = 3 # cells per dim (2D)
 op, u0 = S.fe_problem(u,n)
-residual, jacobian = S.diffeq_wrappers(op)
+
+# Some checks
+residual, jacobian, mass, stiffness = S.diffeq_wrappers(op)
 J = S.allocate_jac(op,u0)
+r = copy(u0)
+θ = 1.0; t0 = 0.0; tF = 1.0; dt = 0.1; tθ = 1.0; dtθ = dt*θ
+residual(r, u0, u0, nothing, tθ)
+jacobian(J, u0, u0, nothing, (1 / dtθ), tθ)
+
+K = S.allocate_jac(op,u0)
+M = S.allocate_jac(op,u0)
+stiffness(K, u0, u0, nothing, tθ)
+mass(M, u0, u0, nothing, tθ)
+# Here you have the mass matrix M
+
+@test (1/dtθ)*M+K ≈ J
 
 # To explore the Sundials solver options, e.g., BE with fixed time step dtd
 f_iip = DAEFunction{true}(residual; jac = jacobian)#, jac_prototype=J)
