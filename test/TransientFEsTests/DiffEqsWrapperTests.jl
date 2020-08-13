@@ -171,7 +171,7 @@ u0 = get_free_values(uh0)
 f_iip = DAEFunction{true}(residual; jac = jacobian) #,jac_prototype=J)
 # jac_prototype is the way to pass my pre-allocated jacobian matrix
 prob_iip = DAEProblem{true}(f_iip, u0, u0, tspan, differential_vars = [true])
-sol_iip = Sundials.solve(prob_iip, IDA(), reltol = 1e-8, abstol = 1e-8)
+sol_iip = Sundials.solve(prob_iip, IDA(linear_solver=:KLU), reltol = 1e-8, abstol = 1e-8)
 @show sol_iip.u
 
 # or iterator version
