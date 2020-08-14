@@ -1,9 +1,13 @@
-struct ButcherTableType{Kind} end
+abstract type ButcherTableauType end
+
+struct BE_1_0_1 <: ButcherTableauType end
+struct SDIRK_2_1_2 <: ButcherTableauType end
+struct TRBDF2_3_3_2 <: ButcherTableauType end
 
 """
 Butcher table
 """
-struct ButcherTable
+struct ButcherTableau{T <: ButcherTableauType}
   s::Int # stages
   p::Int # embedded order
   q::Int # order
@@ -11,31 +15,12 @@ struct ButcherTable
   b::Vector # b_j
   c::Vector # c_i
   d::Vector # d_j (embedded)
-  type::ButcherTableType # identifier
 end
 
 """
-ButhcerTable constructor
+ButcherTableau constructor
 """
-function ButcherTable(type::Symbol)
-  btType = ButcherTableType{type}()
-  createButcherTable(btType)
-end
-
-"""
-Runge-Kutta ODE solver
-"""
-struct RKMethod <: ODESolver
-  nls::NonlinearSolver
-  dt::Float64
-  bt::ButcherTable
-  function RKMethod(nls,dt,type::Symbol)
-    bt = ButcherTable(type)
-    new(nls,dt,bt)
-  end
-end
-
-function createButcherTable(type::ButcherTableType{:BE_1_0_1})
+function ButcherTableau(type::BE_1_0_1)
   s = 1
   p = 0
   q = 1
@@ -43,9 +28,10 @@ function createButcherTable(type::ButcherTableType{:BE_1_0_1})
   b = [1.0]
   c = [1.0]
   d = [0.0]
-  ButcherTable(s,p,q,a,b,c,d,type)
+  ButcherTableau{typeof(type)}(s,p,q,a,b,c,d)
 end
-function createButcherTable(type::ButcherTableType{:SDIRK_2_1_2})
+
+function ButcherTableau(type::SDIRK_2_1_2)
 s = 2
 p = 1
 q = 2
@@ -53,9 +39,9 @@ a = [1.0 0.0; -1.0 1.0]
 b = [0.5, 0.5]
 c = [1.0, 0.0]
 d = [1.0, 0.0]
-ButcherTable(s,p,q,a,b,c,d,type)
+ButcherTableau{typeof(type)}(s,p,q,a,b,c,d)
 end
-function createButcherTable(type::ButcherTableType{:TRBDF2_3_3_2})
+function ButcherTableau(type::TRBDF2_3_3_2)
   s = 3
   p = 3
   q = 2
@@ -64,8 +50,22 @@ function createButcherTable(type::ButcherTableType{:TRBDF2_3_3_2})
   b = [√2/4, √2/4, aux/2]
   c = [0.0, aux, 1.0]
   d = [(1.0-(√2/4))/3, ((3*√2)/4+1.0)/3, aux/6]
-  ButcherTable(s,p,q,a,b,c,d,type)
+  ButcherTableau{typeof{type}}(s,p,q,a,b,c,d)
 end
+
+"""
+Runge-Kutta ODE solver
+"""
+struct RKMethod <: ODESolver
+  nls::NonlinearSolver
+  dt::Float64
+  bt::ButcherTableau
+  function RKMethod(nls,dt,type::Symbol)
+    bt = ButcherTableau(type)
+    new(nls,dt,bt)
+  end
+end
+
 
 function solve_step!(uf::AbstractVector,
   solver::RKMethod,
