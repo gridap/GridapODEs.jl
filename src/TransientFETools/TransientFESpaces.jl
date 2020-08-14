@@ -72,6 +72,8 @@ Time derivative of the Dirichlet functions
 # ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
 ∂t(U::SingleFieldFESpace) = HomogeneousTrialFESpace(U)
 
+∂t(U::MultiFieldFESpace) = MultiFieldFESpace(∂t.(U.spaces))
+
 ∂t(t::T) where T<:Number = zero(T)
 
 # Testing the interface
@@ -120,8 +122,12 @@ struct TransientMultiFieldTrialFESpace
   spaces::Vector
 end
 
-function MultiFieldFESpace(spaces::Vector)
+function TransientMultiFieldFESpace(spaces::Vector)
   TransientMultiFieldTrialFESpace(spaces)
+end
+
+function TransientMultiFieldFESpace(spaces::Vector{<:SingleFieldFESpace})
+  MultiFieldFESpace(spaces)
 end
 
 function evaluate!(Ut::MultiFieldFESpace,U::TransientMultiFieldTrialFESpace,t::Real)
@@ -148,5 +154,5 @@ end
 
 function ∂t(U::TransientMultiFieldTrialFESpace)
   spaces = ∂t.(U.spaces)
-  MultiFieldFESpace(spaces)
+  TransientMultiFieldFESpace(spaces)
 end

@@ -39,7 +39,7 @@ quad = CellQuadrature(trian,degree)
 a(u,v) = ∇(v)⊙∇(u)
 b(v,t) = v⋅f(t)
 
-X = MultiFieldFESpace([U,U])
+X = TransientMultiFieldFESpace([U,U])
 Y = MultiFieldFESpace([V0,V0])
 
 _res(t,u,ut,v) = a(u,v) + ut⋅v - b(v,t)

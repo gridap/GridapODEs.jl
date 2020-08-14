@@ -10,6 +10,7 @@ import GridapODEs.ODETools: ∂t
 import GridapODEs.ODETools: time_derivative
 
 export TransientTrialFESpace
+export TransientMultiFieldFESpace
 export test_transient_trial_fe_space
 import Gridap.Fields: evaluate
 import Gridap.Fields: evaluate!
@@ -35,6 +36,8 @@ import Gridap.Geometry: CellQuadrature
 using Gridap.FESpaces: restrict
 using Gridap.FESpaces: integrate
 import Gridap.Geometry: get_cell_id
+using Gridap.FESpaces: _push_matrix_contribution!
+using Gridap.FESpaces: _push_vector_contribution!
 
 export TransientFEOperator
 export TransientAffineFEOperator
