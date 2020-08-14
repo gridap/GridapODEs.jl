@@ -52,6 +52,7 @@ export BackwardEuler
 export ForwardEuler
 export MidPoint
 export ThetaMethod
+export RungeKutta
 import Gridap.Algebra: fill_entries!
 
 export ODESolution

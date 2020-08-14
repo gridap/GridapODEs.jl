@@ -37,3 +37,5 @@ include("ForwardEuler.jl")
 include("ThetaMethod.jl")
 
 include("AffineThetaMethod.jl")
+
+include("RungeKutta.jl")
