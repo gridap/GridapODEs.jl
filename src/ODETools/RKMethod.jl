@@ -5,7 +5,7 @@ struct SDIRK_2_1_2 <: ButcherTableauType end
 struct TRBDF2_3_3_2 <: ButcherTableauType end
 
 """
-Butcher table
+Butcher tableau
 """
 struct ButcherTableau{T <: ButcherTableauType}
   s::Int # stages
@@ -61,11 +61,11 @@ end
 """
 Runge-Kutta ODE solver
 """
-struct RKMethod <: ODESolver
+struct RungeKuttaMethod <: ODESolver
   nls::NonlinearSolver
   dt::Float64
   bt::ButcherTableau
-  function RKMethod(nls,dt,type::Symbol)
+  function RungeKuttaMethod(nls,dt,type::Symbol)
     bt = ButcherTableau(type)
     new(nls,dt,bt)
   end
@@ -73,7 +73,7 @@ end
 
 
 function solve_step!(uf::AbstractVector,
-  solver::RKMethod,
+  solver::RungeKuttaMethod,
   op::ODEOperator,
   u0::AbstractVector,
   t0::Real,
@@ -98,7 +98,7 @@ function solve_step!(uf::AbstractVector,
   end
 
   # Create RKNL operator
-  nlop = RKMethodNonlinearOperator(op,t0,dt,u0,ode_cache,vi,fi,0,a)
+  nlop = RungeKuttaNonlinearOperator(op,t0,dt,u0,ode_cache,vi,fi,0,a)
 
   # Compute intermediate stages
   for i in 1:s
@@ -140,9 +140,9 @@ end
 
 """
 Nonlinear operator that represents the Runge-Kutta nonlinear operator at a
-given time step, i.e., A(t,u_i,(u_i-u_n)/dt)
+given time step and stage, i.e., A(t,u_i,(u_i-u_n)/dt)
 """
-mutable struct RKMethodNonlinearOperator <: NonlinearOperator
+mutable struct RungeKuttaNonlinearOperator <: NonlinearOperator
   odeop::ODEOperator
   ti::Float64
   dt::Float64
@@ -154,7 +154,7 @@ mutable struct RKMethodNonlinearOperator <: NonlinearOperator
   a::Matrix
 end
 
-function residual!(b::AbstractVector,op::RKMethodNonlinearOperator,x::AbstractVector)
+function residual!(b::AbstractVector,op::RungeKuttaNonlinearOperator,x::AbstractVector)
   # A(t,ui,∂ui/∂t) = ∂ui/∂t - a_ii * f(ui,ti) - ∑_{j<i} a_ij * f(uj,tj) = 0
   # b = [1/a_ii * ∂u/∂t - f(ui,ti)]
   # Res_ij = - a_ij/a_ii * f(uj,ti)
@@ -170,7 +170,7 @@ function residual!(b::AbstractVector,op::RKMethodNonlinearOperator,x::AbstractVe
   b
 end
 
-function jacobian!(A::AbstractMatrix,op::RKMethodNonlinearOperator,x::AbstractVector)
+function jacobian!(A::AbstractMatrix,op::RungeKuttaNonlinearOperator,x::AbstractVector)
   @assert (abs(op.a[op.i,op.i]) > 0.0)
   ui = x
   vi = op.vi
@@ -180,21 +180,21 @@ function jacobian!(A::AbstractMatrix,op::RKMethodNonlinearOperator,x::AbstractVe
   jacobian_and_jacobian_t!(A,op.odeop,op.ti,ui,vi,(1/(op.a[op.i,op.i]*op.dt)),op.ode_cache)
 end
 
-function allocate_residual(op::RKMethodNonlinearOperator,x::AbstractVector)
+function allocate_residual(op::RungeKuttaNonlinearOperator,x::AbstractVector)
   allocate_residual(op.odeop,x,op.ode_cache)
 end
 
-function allocate_jacobian(op::RKMethodNonlinearOperator,x::AbstractVector)
+function allocate_jacobian(op::RungeKuttaNonlinearOperator,x::AbstractVector)
   allocate_jacobian(op.odeop,x,op.ode_cache)
 end
 
-function zero_initial_guess(op::RKMethodNonlinearOperator)
+function zero_initial_guess(op::RungeKuttaNonlinearOperator)
   x0 = similar(op.u0)
   fill!(x0,zero(eltype(x0)))
   x0
 end
 
-function get_fi(x::AbstractVector, op::RKMethodNonlinearOperator, cache::Nothing)
+function get_fi(x::AbstractVector, op::RungeKuttaNonlinearOperator, cache::Nothing)
   ui = x
   vi = op.vi
   if(op.a[op.i,op.i]==0.0)
@@ -206,7 +206,7 @@ function get_fi(x::AbstractVector, op::RKMethodNonlinearOperator, cache::Nothing
   residual!(b,op.odeop,op.ti,ui,vi,op.ode_cache)
   (vi-b) # store fi for future stages
 end
-function get_fi(x::AbstractVector, op::RKMethodNonlinearOperator, cache)
+function get_fi(x::AbstractVector, op::RungeKuttaNonlinearOperator, cache)
   ui = x
   vi = op.vi
   if(op.a[op.i,op.i]==0.0)
@@ -218,7 +218,7 @@ function get_fi(x::AbstractVector, op::RKMethodNonlinearOperator, cache)
   (vi-cache.b) # store fi for future stages
 end
 
-function update!(op::RKMethodNonlinearOperator,ti::Float64,fi::AbstractVector,i::Int)
+function update!(op::RungeKuttaNonlinearOperator,ti::Float64,fi::AbstractVector,i::Int)
   op.ti = ti
   op.fi = fi
   op.i = i
