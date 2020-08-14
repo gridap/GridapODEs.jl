@@ -38,4 +38,4 @@ include("ThetaMethod.jl")
 
 include("AffineThetaMethod.jl")
 
-include("RKMethod.jl")
+include("RungeKutta.jl")

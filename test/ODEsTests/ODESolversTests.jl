@@ -127,7 +127,7 @@ uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
 
 ls = LUSolver()
 # BE equivalent
-odesol = RKMethod(ls,dt,:BE_1_0_1)
+odesol = RungeKutta(ls,dt,:BE_1_0_1)
 uf = copy(u0)
 uf.=1.0
 cache = nothing
@@ -135,7 +135,7 @@ uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
 @test tf==t0+dt
 @test all(uf.≈1+11/9)
 # SDIRK 2nd order
-odesol = RKMethod(ls,dt,:SDIRK_2_1_2)
+odesol = RungeKutta(ls,dt,:SDIRK_2_1_2)
 uf = copy(u0)
 uf.=1.0
 cache = nothing
@@ -143,7 +143,7 @@ uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
 @test tf==t0+dt
 @test all(uf.≈u0*(1.0+dt/(2*(1-dt))+dt*(1-2*dt)/(2*(1-dt)^2)))
 # TRBDF (2nd order with some 0 on the diagonal)
-odesol = RKMethod(ls,dt,:TRBDF2_3_3_2)
+odesol = RungeKutta(ls,dt,:TRBDF2_3_3_2)
 uf.=1.0
 cache = nothing
 uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)

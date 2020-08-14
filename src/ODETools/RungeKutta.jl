@@ -61,19 +61,18 @@ end
 """
 Runge-Kutta ODE solver
 """
-struct RungeKuttaMethod <: ODESolver
+struct RungeKutta <: ODESolver
   nls::NonlinearSolver
   dt::Float64
   bt::ButcherTableau
-  function RungeKuttaMethod(nls,dt,type::Symbol)
+  function RungeKutta(nls,dt,type::Symbol)
     bt = ButcherTableau(type)
     new(nls,dt,bt)
   end
 end
 
-
 function solve_step!(uf::AbstractVector,
-  solver::RungeKuttaMethod,
+  solver::RungeKutta,
   op::ODEOperator,
   u0::AbstractVector,
   t0::Real,
