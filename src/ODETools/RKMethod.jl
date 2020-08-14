@@ -20,7 +20,7 @@ end
 """
 ButcherTableau constructor
 """
-function ButcherTableau(type::BE_1_0_1)
+function ButcherTableau(::BE_1_0_1)
   s = 1
   p = 0
   q = 1
@@ -28,7 +28,7 @@ function ButcherTableau(type::BE_1_0_1)
   b = [1.0]
   c = [1.0]
   d = [0.0]
-  ButcherTableau{typeof(type)}(s,p,q,a,b,c,d)
+  ButcherTableau{BE_1_0_1()}(s,p,q,a,b,c,d)
 end
 
 function ButcherTableau(type::SDIRK_2_1_2)
@@ -39,8 +39,9 @@ a = [1.0 0.0; -1.0 1.0]
 b = [0.5, 0.5]
 c = [1.0, 0.0]
 d = [1.0, 0.0]
-ButcherTableau{typeof(type)}(s,p,q,a,b,c,d)
+ButcherTableau{SDIRK_2_1_2}(s,p,q,a,b,c,d)
 end
+
 function ButcherTableau(type::TRBDF2_3_3_2)
   s = 3
   p = 3
@@ -50,7 +51,11 @@ function ButcherTableau(type::TRBDF2_3_3_2)
   b = [√2/4, √2/4, aux/2]
   c = [0.0, aux, 1.0]
   d = [(1.0-(√2/4))/3, ((3*√2)/4+1.0)/3, aux/6]
-  ButcherTableau{typeof{type}}(s,p,q,a,b,c,d)
+  ButcherTableau{TRBDF2_3_3_2}(s,p,q,a,b,c,d)
+end
+
+function ButcherTableau(type::Symbol)
+  eval(:(ButcherTableau($type())))
 end
 
 """
