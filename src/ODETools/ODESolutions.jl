@@ -57,7 +57,7 @@ function Base.iterate(sol::GenericODESolution, state)
 
   uf,u0,t0,cache = state
 
-  if t0 >= sol.tF
+  if t0 >= sol.tF - 100*eps()
     return nothing
   end
 
