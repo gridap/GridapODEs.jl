@@ -119,8 +119,8 @@ result = Base.iterate(sol_t)
 for (xh_tn, tn) in sol_t
   global _t_n
   _t_n += dt
-  uh_tn = xh_tn.blocks[1]
-  ph_tn = xh_tn.blocks[2]
+  uh_tn = xh_tn[1]
+  ph_tn = xh_tn[2]
   e = u(tn) - uh_tn
   el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
   e = p(tn) - ph_tn
