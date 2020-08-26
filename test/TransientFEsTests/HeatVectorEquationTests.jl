@@ -51,7 +51,7 @@ dt = 0.1
 
 
 U0 = U(0.0)
-uh0 = interpolate_everywhere(U0,u(0.0))
+uh0 = interpolate_everywhere(u(0.0),U0)
 
 ls = LUSolver()
 odes = ThetaMethod(ls,dt,θ)
