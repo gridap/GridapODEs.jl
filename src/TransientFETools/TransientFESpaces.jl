@@ -71,6 +71,7 @@ Time derivative of the Dirichlet functions
 
 # ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
 ∂t(U::SingleFieldFESpace) = HomogeneousTrialFESpace(U)
+∂t(U::TrialFESpace) = HomogeneousTrialFESpace(U.space)
 
 ∂t(U::MultiFieldFESpace) = MultiFieldFESpace(∂t.(U.spaces))
 
