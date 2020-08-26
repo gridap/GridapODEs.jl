@@ -91,9 +91,9 @@ end
 U0 = U(0.0)
 P0 = P(0.0)
 X0 = X(0.0)
-uh0 = interpolate_everywhere(U0,u(0.0))
-ph0 = interpolate_everywhere(P0,p(0.0))
-xh0 = Gridap.MultiField.MultiFieldFEFunction(X0,[uh0,ph0])
+uh0 = interpolate_everywhere(u(0.0),U0)
+ph0 = interpolate_everywhere(p(0.0),P0)
+xh0 = interpolate_everywhere([uh0,ph0],X0)
 
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(X,Y,t_Ω)
