@@ -74,7 +74,7 @@ _jac(u,du,v) = a(du,v) + 10.0*du*v
 _t_Ω = FETerm(_res,_jac,trian,quad)
 _op = FEOperator(U0,V0,_t_Ω)
 
-uh = interpolate_everywhere(U0,0.0)#1.0)
+uh = interpolate_everywhere(0.0,U0)#1.0)
 using Gridap.FESpaces: allocate_residual, allocate_jacobian
 _r = allocate_residual(_op,uh)
 _J = allocate_jacobian(_op,uh)
@@ -89,7 +89,7 @@ cache = allocate_cache(odeop)
 
 r = allocate_residual(op,uh,cache)
 J = allocate_jacobian(op,uh,cache)
-uh10 = interpolate_everywhere(U0,0.0)#10.0)
+uh10 = interpolate_everywhere(0.0,U0)#10.0)
 residual!(r,op,0.0,uh,uh10,cache)
 jacobian!(J,op,1.0,uh,uh10,cache)
 jacobian_t!(J,op,1.0,uh,uh10,10.0,cache)
@@ -97,7 +97,7 @@ jacobian_t!(J,op,1.0,uh,uh10,10.0,cache)
 @test all(J.≈_J)
 
 U0 = U(0.0)
-uh0 = interpolate_everywhere(U0,0.0)
+uh0 = interpolate_everywhere(0.0,U0)
 @test test_transient_fe_operator(op,uh0)
 
 u0 = u(0.0)

@@ -48,7 +48,7 @@ function fe_problem(u, n)
   op = TransientFEOperator(U, V0, t_Ω)
 
   U0 = U(0.0)
-  uh0 = interpolate_everywhere(U0, u(0.0))
+  uh0 = interpolate_everywhere(u(0.0), U0)
   u0 = get_free_values(uh0)
 
   return op, u0
