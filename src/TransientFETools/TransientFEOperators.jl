@@ -116,6 +116,21 @@ function TransientFEOperator(trial,test,terms...)
   TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
 end
 
+function TransientConstantFEOperator(mat::Type,trial,test,terms...)
+  assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
+  TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
+end
+
+function TransientAffineFEOperator(mat::Type,trial,test,terms...)
+  assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
+  TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
+end
+
+function TransientFEOperator(mat::Type,trial,test,terms...)
+  assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
+  TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
+end
+
 get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t
 
 get_test(op::TransientFEOperatorFromTerms) = op.test
