@@ -37,6 +37,9 @@ U = TransientTrialFESpace(V0,u)
 U0 = TrialFESpace(V0,u(0.0))
 @test test_transient_trial_fe_space(U)
 
+U_noBC = TransientTrialFESpace(V0)
+@test test_transient_trial_fe_space(U_noBC)
+
 U0 = U(1.0)
 ud0 = copy(get_dirichlet_values(U0))
 _ud0 = get_dirichlet_values(U0)

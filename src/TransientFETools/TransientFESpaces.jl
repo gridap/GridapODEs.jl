@@ -1,32 +1,56 @@
+abstract type TransientTrialFESpace end
+
+"""
+A single field FE space without transient Dirichlet data.
+"""
+struct TransientTrialFreeFESpace <: TransientTrialFESpace
+  space::SingleFieldFESpace
+  Ud0::TrialFESpace
+
+  function TransientTrialFreeFESpace(space::SingleFieldFESpace)
+    Ud0 = HomogeneousTrialFESpace(space)
+    new(space,Ud0)
+  end
+end
+
+TransientTrialFESpace(space::SingleFieldFESpace) = TransientTrialFreeFESpace(space)
+
 
 """
 A single field FE space with transient Dirichlet data (see Multifield below).
 """
-struct TransientTrialFESpace
+struct TransientTrialDirichletFESpace <: TransientTrialFESpace
   space::SingleFieldFESpace
   dirichlet_t::Union{Function,Vector{<:Function}}
   Ud0::TrialFESpace
 
-  function TransientTrialFESpace(space::SingleFieldFESpace,dirichlet_t::Union{Function,Vector{<:Function}})
+  function TransientTrialDirichletFESpace(space::SingleFieldFESpace,dirichlet_t::Union{Function,Vector{<:Function}})
     Ud0 = HomogeneousTrialFESpace(space)
     new(space,dirichlet_t,Ud0)
   end
 end
 
-function TransientTrialFESpace(space::SingleFieldFESpace)
-  HomogeneousTrialFESpace(space)
+function TransientTrialFESpace(space::SingleFieldFESpace,dirichlet_t::Union{Function,Vector{<:Function}})
+  TransientTrialDirichletFESpace(space::SingleFieldFESpace,dirichlet_t::Union{Function,Vector{<:Function}})
 end
 
 """
 Time evaluation without allocating Dirichlet vals
 """
-function evaluate!(Ut::TrialFESpace,U::TransientTrialFESpace,t::Real)
+function evaluate!(Ut::TrialFESpace,U::TransientTrialDirichletFESpace,t::Real)
   if isa(U.dirichlet_t,Vector)
     objects_at_t = map( o->o(t), U.dirichlet_t)
   else
     objects_at_t = U.dirichlet_t(t)
   end
   TrialFESpace!(Ut,objects_at_t)
+  Ut
+end
+
+"""
+Time evaluation without allocating Dirichlet vals
+"""
+function evaluate!(Ut::TrialFESpace,U::TransientTrialFESpace,t::Real)
   Ut
 end
 
@@ -67,7 +91,8 @@ Functor-like evaluation. It allocates Dirichlet vals in general.
 """
 Time derivative of the Dirichlet functions
 """
-∂t(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
+∂t(U::TransientTrialDirichletFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
+∂t(U::TransientTrialFESpace) = TransientTrialFESpace(U.space)
 
 # ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
 ∂t(U::SingleFieldFESpace) = HomogeneousTrialFESpace(U)
@@ -79,6 +104,7 @@ Time derivative of the Dirichlet functions
 # Testing the interface
 
 function test_transient_trial_fe_space(Uh)
+  @test isa(Uh,TransientTrialFESpace)
   UhX = evaluate(Uh,nothing)
   @test isa(UhX,FESpace)
   Uh0 = allocate_trial_space(Uh)
