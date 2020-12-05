@@ -33,11 +33,11 @@ import Gridap.FESpaces: get_cell_jacobian
 import Gridap.FESpaces: get_cell_values
 import Gridap.Geometry: Triangulation
 import Gridap.Geometry: CellQuadrature
-using Gridap.FESpaces: restrict
+#using Gridap.FESpaces: restrict
 using Gridap.FESpaces: integrate
 import Gridap.Geometry: get_cell_id
-using Gridap.FESpaces: _push_matrix_contribution!
-using Gridap.FESpaces: _push_vector_contribution!
+#using Gridap.FESpaces: _push_matrix_contribution!
+#using Gridap.FESpaces: _push_vector_contribution!
 
 export TransientFEOperator
 export TransientAffineFEOperator
@@ -66,9 +66,16 @@ import Gridap.FESpaces: assemble_vector!
 import Gridap.FESpaces: assemble_matrix_add!
 import Gridap.FESpaces: allocate_vector
 import Gridap.FESpaces: allocate_matrix
-using Gridap.FESpaces: is_a_fe_function
-using Gridap.FESpaces: is_a_fe_cell_basis
-using Gridap.FESpaces: get_cell_basis
+#using Gridap.FESpaces: is_a_fe_function
+#using Gridap.FESpaces: is_a_fe_cell_basis
+using Gridap.FESpaces: get_cell_shapefuns
+using Gridap.FESpaces: get_cell_shapefuns_trial
+using Gridap.FESpaces: collect_cell_vector
+using Gridap.FESpaces: collect_cell_matrix
+using Gridap.FESpaces: return_type
+import Gridap.FESpaces: SparseMatrixAssembler
+import Gridap.FESpaces: get_trial
+import Gridap.FESpaces: get_test
 using GridapODEs.ODETools: test_ode_operator
 export test_transient_fe_operator
 
@@ -93,7 +100,7 @@ export test_transient_fe_solution
 
 include("TransientFESpaces.jl")
 
-include("TransientFETerms.jl")
+#include("TransientFETerms.jl")
 
 include("TransientFEOperators.jl")
 

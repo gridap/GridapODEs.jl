@@ -34,8 +34,13 @@ struct TransientFETermFromIntegration <: TransientFETerm
 end
 
 function FETerm(
-  res::Function, jac::Function, jac_t::Function, trian::Triangulation, quad::CellQuadrature)
-  TransientFETermFromIntegration(res,jac,jac_t,trian,quad)
+  Helpers.@unreachable """\n
+  Function FETerm has been removed. The API for specifying the weak form has changed significantly.
+  See the gridap/Tutorials repo for some examples of how to use the new API.
+  This error message will be deleted in future versions.
+  """
+  # res::Function, jac::Function, jac_t::Function, trian::Triangulation, quad::CellQuadrature)
+  # TransientFETermFromIntegration(res,jac,jac_t,trian,quad)
 end
 
 function get_cell_residual(tr::TransientFETermFromIntegration,t::Real,uh,uh_t,v)
