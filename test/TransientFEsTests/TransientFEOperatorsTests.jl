@@ -16,12 +16,13 @@ import GridapODEs.TransientFETools: ∂t
 θ = 0.4
 
 # Analytical functions
-u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*(t+3.0)
+#u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*(t+3.0)
+u(x,t) = t#(1.0-x[1])*x[1]*(1.0-x[2])*x[2]*(3.0)
 u(t::Real) = x -> u(x,t)
 v(x) = t -> u(x,t)
 
 #f(t) = x -> ∂t(u)(x,t)-Δ(u(t))(x)
-f(t) = x -> -Δ(u(t))(x) + (1.0-x[1])*(1.0-x[2])*x[2]
+f(t) = x -> -Δ(u(t))(x) + 1.0#(1.0-x[1])*(1.0-x[2])*x[2]
 
 domain = (0,1,0,1)
 partition = (2,2)
