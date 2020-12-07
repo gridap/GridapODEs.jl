@@ -1,6 +1,6 @@
 function time_derivative(f::Function)
   function time_derivative_f(x,t)
-    fxt = zero(return_type(f,typeof(x),typeof(t)))
+    fxt = zero(return_type(f,x,t))
     _time_derivative_f(f,x,t,fxt)
   end
   time_derivative_f(x::VectorValue) = t -> time_derivative_f(x,t)
