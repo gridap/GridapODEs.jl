@@ -110,20 +110,19 @@ tf = tθ
 Utf = U(tf)
 # fst(x) = -Δ(u(tf))(x)
 fst(x) = f(tf)(x)
-a(u,v) = inner(∇(v),∇(u))
+a(u,v) = ∫(∇(v)⊙∇(u))dΩ
 
 function extract_matrix_vector(a,fst)
-  btf(v) = inner(v,fst)
-  t_Ω = AffineFETerm(a,btf,trian,quad)
-  op = AffineFEOperator(Utf,V0,t_Ω)
+  btf(v) = ∫(v*fst)dΩ
+  op = AffineFEOperator(a,btf,Utf,V0)
   ls = LUSolver()
   solver = LinearFESolver(ls)
   uh = solve(solver,op)
 
   tol = 1.0e-6
   e = uh-u(tf)
-  l2(e) = inner(e,e)
-  l2e = sqrt(sum( integrate(l2(e),trian,quad) ))
+  l2(e) = e*e
+  l2e = sqrt(sum( ∫(l2(e))dΩ ))
   # @test l2e < tol
 
   Ast = op.op.matrix
@@ -137,7 +136,7 @@ end
 A,rhs = extract_matrix_vector(a,fst)
 
 gst(x) = u(tf)(x)
-m(u,v) = inner(u,v)
+m(u,v) = ∫(u*v)dΩ
 
 M,_ = extract_matrix_vector(m,gst)
 
