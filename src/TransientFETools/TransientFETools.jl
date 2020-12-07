@@ -24,20 +24,9 @@ using Gridap.FESpaces: get_dirichlet_values
 using Gridap.FESpaces: TrialFESpace!
 using Gridap.FESpaces: HomogeneousTrialFESpace
 
-export TransientFETerm
-export TransientAffineFETerm
-export TransientConstantFETerm
-import Gridap.FESpaces: FETerm
-import Gridap.FESpaces: get_cell_residual
-import Gridap.FESpaces: get_cell_jacobian
-import Gridap.FESpaces: get_cell_values
 import Gridap.Geometry: Triangulation
-import Gridap.Geometry: CellQuadrature
-#using Gridap.FESpaces: restrict
-using Gridap.FESpaces: integrate
-import Gridap.Geometry: get_cell_id
-#using Gridap.FESpaces: _push_matrix_contribution!
-#using Gridap.FESpaces: _push_vector_contribution!
+import Gridap.Geometry: LebesgueMeasure
+using Gridap.FESpaces: ∫
 
 export TransientFEOperator
 export TransientAffineFEOperator
@@ -66,8 +55,6 @@ import Gridap.FESpaces: assemble_vector!
 import Gridap.FESpaces: assemble_matrix_add!
 import Gridap.FESpaces: allocate_vector
 import Gridap.FESpaces: allocate_matrix
-#using Gridap.FESpaces: is_a_fe_function
-#using Gridap.FESpaces: is_a_fe_cell_basis
 using Gridap.FESpaces: get_cell_shapefuns
 using Gridap.FESpaces: get_cell_shapefuns_trial
 using Gridap.FESpaces: collect_cell_vector
@@ -100,8 +87,6 @@ export test_transient_fe_solution
 
 include("TransientFESpaces.jl")
 
-#include("TransientFETerms.jl")
-
 include("TransientFEOperators.jl")
 
 include("ODEOperatorInterfaces.jl")
@@ -109,5 +94,14 @@ include("ODEOperatorInterfaces.jl")
 include("TransientFESolvers.jl")
 
 include("TransientFESolutions.jl")
+
+export FETerm
+function FETerm(args...)
+  Helpers.@unreachable """\n
+  Function FETerm has been removed. The API for specifying the weak form has changed significantly.
+  See the gridap/Tutorials repo for some examples of how to use the new API.
+  This error message will be deleted in future versions.
+  """
+end
 
 end #module
