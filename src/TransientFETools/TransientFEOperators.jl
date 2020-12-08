@@ -104,8 +104,11 @@ end
 #   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
 #   TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
 # end
-function TransientConstantFEOperator(res::Function,jac::Function,
-  jac_t::Function,trial,test)
+function TransientConstantFEOperator(m::Function,a::Function,b::Function,
+  trial,test)
+  res(t,u,ut,v) = m(ut,v) + a(u,v) - b(v)
+  jac(t,u,ut,du,v) = a(du,v)
+  jac_t(t,u,ut,dut,v) = m(dut,v)
   assem_t = SparseMatrixAssembler(trial,test)
   TransientFEOperatorFromWeakForm{Constant}(res,jac,jac_t,assem_t,trial,∂t(trial),test)
 end
@@ -118,8 +121,11 @@ end
 #   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
 #   TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
 # end
-function TransientAffineFEOperator(res::Function,jac::Function,jac_t::Function,
+function TransientAffineFEOperator(m::Function,a::Function,b::Function,
   trial,test)
+  res(t,u,ut,v) = m(t,ut,v) + a(t,u,v) - b(t,v)
+  jac(t,u,ut,du,v) = a(t,du,v)
+  jac_t(t,u,ut,dut,v) = m(t,dut,v)
   assem_t = SparseMatrixAssembler(trial,test)
   TransientFEOperatorFromWeakForm{Affine}(res,jac,jac_t,assem_t,trial,∂t(trial),test)
 end
