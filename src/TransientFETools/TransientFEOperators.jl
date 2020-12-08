@@ -100,10 +100,6 @@ struct TransientFEOperatorFromWeakForm{C} <: TransientFEOperator{C}
   test::FESpace
 end
 
-# function TransientConstantFEOperator(trial,test,terms...)
-#   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-#   TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
-# end
 function TransientConstantFEOperator(m::Function,a::Function,b::Function,
   trial,test)
   res(t,u,ut,v) = m(ut,v) + a(u,v) - b(v)
@@ -117,10 +113,6 @@ function TransientConstantFEOperator(res::Function,trial,test)
   @notimplemented()
 end
 
-# function TransientAffineFEOperator(trial,test,terms...)
-#   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-#   TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
-# end
 function TransientAffineFEOperator(m::Function,a::Function,b::Function,
   trial,test)
   res(t,u,ut,v) = m(t,ut,v) + a(t,u,v) - b(t,v)
@@ -134,10 +126,6 @@ function TransientAffineFEOperator(res::Function,trial,test)
   @notimplemented()
 end
 
-# function TransientFEOperator(trial,test,terms...)
-#   assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-#   TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
-# end
 function TransientFEOperator(res::Function,jac::Function,jac_t::Function,
   trial,test)
   assem_t = SparseMatrixAssembler(trial,test)
@@ -147,21 +135,6 @@ function TransientFEOperator(res::Function,trial,test)
   # function with autodiff not implemented
   @notimplemented()
 end
-
-# function TransientConstantFEOperator(mat::Type,trial,test,terms...)
-#   assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
-#   TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
-# end
-
-# function TransientAffineFEOperator(mat::Type,trial,test,terms...)
-#   assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
-#   TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
-# end
-
-# function TransientFEOperator(mat::Type,trial,test,terms...)
-#   assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
-#   TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
-# end
 
 function SparseMatrixAssembler(
   trial::Union{TransientTrialFESpace,TransientMultiFieldTrialFESpace},
