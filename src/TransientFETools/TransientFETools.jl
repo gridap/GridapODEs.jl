@@ -25,7 +25,7 @@ using Gridap.FESpaces: TrialFESpace!
 using Gridap.FESpaces: HomogeneousTrialFESpace
 
 import Gridap.Geometry: Triangulation
-import Gridap.Geometry: LebesgueMeasure
+import Gridap.Geometry: Measure
 using Gridap.FESpaces: ∫
 
 export TransientFEOperator
@@ -49,8 +49,6 @@ using GridapODEs.ODETools: Nonlinear
 using GridapODEs.ODETools: Affine
 using GridapODEs.ODETools: Constant
 import Gridap.FESpaces: get_algebraic_operator
-import Gridap.FESpaces: collect_cell_residual
-import Gridap.FESpaces: collect_cell_jacobian
 import Gridap.FESpaces: assemble_vector!
 import Gridap.FESpaces: assemble_matrix_add!
 import Gridap.FESpaces: allocate_vector

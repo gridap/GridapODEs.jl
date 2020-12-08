@@ -39,7 +39,7 @@ U = TransientTrialFESpace(V0,u)
 
 Ω = Triangulation(model)
 degree = 2*order
-dΩ = LebesgueMeasure(Ω,degree)
+dΩ = Measure(Ω,degree)
 
 a(u,v) = ∫(∇(v)⊙∇(u))dΩ
 m(u,v) = ∫(v*u)dΩ
