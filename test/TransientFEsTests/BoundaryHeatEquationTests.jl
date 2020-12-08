@@ -30,38 +30,35 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffe = ReferenceFE(:Lagrangian,Float64,order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags=[1,2,3,4,5,6])
+  model,
+  reffe,
+  conformity=:H1,
+  dirichlet_tags=[1,2,3,4,5,6]
+)
 U = TransientTrialFESpace(V0,u)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
-
-#
-a(u,v) = ∇(v)⋅∇(u)
-b(v,t) = v*f(t)
-
-res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
-jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = dut*v
-
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
+dΩ = Measure(Ω,degree)
 
 neumanntags = [7,8]
-btrian = BoundaryTriangulation(model,neumanntags)
-bquad = CellQuadrature(btrian,degree)
-nb = get_normal_vector(btrian)
-b_∂Ω(v,t) = v*(∇(u(t))⋅nb)
+Γ = BoundaryTriangulation(model,tags=neumanntags)
+dΓ = Measure(Γ,degree)
+nb = get_normal_vector(Γ)
 
-res_∂Ω(t,u,ut,v) = - b_∂Ω(v,t)
-jac_∂Ω(t,u,ut,du,v) = du*v*0.0
-jac_t_∂Ω(t,u,ut,dut,v) = dut*v*0.0
+#
+a(u,v) = ∫(∇(v)⋅∇(u))dΩ
+b(v,t) = ∫(v*f(t))dΩ
+m(ut,v) = ∫(ut*v)dΩ
+b_Γ(v,t) = ∫(v*(∇(u(t))⋅nb))dΓ
 
-t_∂Ω = FETerm(res_∂Ω,jac_∂Ω,jac_t_∂Ω,btrian,bquad)
+res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t) - b_Γ(v,t)
+jac(t,u,ut,du,v) = a(du,v)
+jac_t(t,u,ut,dut,v) = m(dut,v)
 
-op = TransientFEOperator(U,V0,t_Ω,t_∂Ω)
+op = TransientFEOperator(res,jac,jac_t,U,V0)
 
 t0 = 0.0
 tF = 1.0
@@ -89,7 +86,7 @@ for (uh_tn, tn) in sol_t
   global _t_n
   _t_n += dt
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 

@@ -26,22 +26,25 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffe = ReferenceFE(:Lagrangian,Float64,order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
+  model,
+  reffe,
+  conformity=:H1,
+  dirichlet_tags="boundary"
+)
 U = TransientTrialFESpace(V0,u)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
 #
-a(u,v) = ∇(v)⋅∇(u)
-b(v) = v*f(0.0)
-m(ut,v) = ut*v
+a(u,v) = ∫(∇(v)⋅∇(u))dΩ
+b(v) = ∫(v*f(0.0))dΩ
+m(ut,v) = ∫(ut*v)dΩ
 
-t_Ω = TransientConstantFETerm(m,a,b,trian,quad)
-op = TransientConstantFEOperator(U,V0,t_Ω)
+op = TransientConstantFEOperator(m,a,b,U,V0)
 
 t0 = 0.0
 tF = 1.0
@@ -64,7 +67,7 @@ for (uh_tn, tn) in sol_t
   global _t_n
   _t_n += dt
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 
