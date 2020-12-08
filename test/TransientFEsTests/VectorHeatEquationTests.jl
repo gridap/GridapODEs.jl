@@ -26,47 +26,34 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffe = ReferenceFE(:Lagrangian,Float64,order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
+  model,
+  reffe,
+  conformity=:H1,
+  dirichlet_tags="boundary"
+)
 U = TransientTrialFESpace(V0,u)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
 #
-a(u,v) = ∇(v)⊙∇(u)
-b(v,t) = v⋅f(t)
+a(u,v) = ∫(∇(v)⊙∇(u))dΩ
+b(v,t) = ∫(v⋅f(t))dΩ
+m(ut,v) = ∫(ut⋅v)dΩ
 
 X = TransientMultiFieldFESpace([U,U])
 Y = MultiFieldFESpace([V0,V0])
 
-_res(t,u,ut,v) = a(u,v) + ut⋅v - b(v,t)
-_jac(t,u,ut,du,v) = a(du,v)
-_jac_t(t,u,ut,dut,v) = dut⋅v
+_res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t)
 
-function res(t,x,xt,y)
-  u1,u2 = x
-  u1t,u2t = xt
-  v1,v2 = y
-  _res(t,u1,u1t,v1) + _res(t,u2,u2t,v2)
-end
+res(t,(u1,u2),(u1t,u2t),(v1,v2)) = _res(t,u1,u1t,v1) + _res(t,u2,u2t,v2)
+jac(t,x,xt,(du1,du2),(v1,v2)) = a(du1,v1) + a(du2,v2)
+jac_t(t,x,xt,(du1t,du2t),(v1,v2)) = m(du1t,v1) + m(du2t,v2)
 
-function jac(t,x,xt,dx,y)
-  du1,du2 = dx
-  v1,v2 = y
-  a(du1,v1)+a(du2,v2)
-end
-
-function jac_t(t,x,xt,dxt,y)
-  du1t,du2t = dxt
-  v1,v2 = y
-  du1t⋅v1+du2t⋅v2
-end
-
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(X,Y,t_Ω)
+op = TransientFEOperator(res,jac,jac_t,X,Y)
 
 t0 = 0.0
 tF = 1.0
@@ -98,7 +85,7 @@ for (xh_tn, tn) in sol_t
   _t_n += dt
   uh_tn = xh_tn[1]
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 

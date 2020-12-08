@@ -163,7 +163,9 @@ end
 #   TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
 # end
 
-function SparseMatrixAssembler(trial::TransientTrialFESpace,test::FESpace)
+function SparseMatrixAssembler(
+  trial::Union{TransientTrialFESpace,TransientMultiFieldTrialFESpace},
+  test::FESpace)
   SparseMatrixAssembler(evaluate(trial,nothing),test)
 end
 
