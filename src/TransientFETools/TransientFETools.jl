@@ -25,7 +25,7 @@ using Gridap.FESpaces: TrialFESpace!
 using Gridap.FESpaces: HomogeneousTrialFESpace
 
 import Gridap.Geometry: Triangulation
-import Gridap.Geometry: Measure
+import Gridap.CellData: Measure
 using Gridap.FESpaces: ∫
 
 export TransientFEOperator

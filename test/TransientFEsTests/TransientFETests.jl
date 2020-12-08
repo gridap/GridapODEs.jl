@@ -28,10 +28,13 @@ partition = (2,2)
 model = CartesianDiscreteModel(domain,partition)
 
 order = 1
+reffe = ReferenceFE(:Lagrangian,Float64,order)
 V0 = TestFESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
-
+  model,
+  reffe,
+  conformity=:H1,
+  dirichlet_tags="boundary"
+)
 
 U = TransientTrialFESpace(V0,u)
 U0 = TrialFESpace(V0,u(0.0))
@@ -57,22 +60,21 @@ utd1 = copy(get_dirichlet_values(Ut1))
 @test all(utd0 .== utd1)
 @test all(utd1 .== ud0)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
-a(u,v) = ∇(v)⋅∇(u)
-b(v,t) = v*f(t)
+a(u,v) = ∫(∇(v)⋅∇(u))dΩ
+b(v,t) = ∫(v*f(t))dΩ
 
-res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
+res(t,u,ut,v) = a(u,v) + ∫(ut*v)dΩ - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = dut*v
+jac_t(t,u,ut,dut,v) = ∫(dut*v)dΩ
 
 U0 = U(0.0)
-_res(u,v) = a(u,v) + 10.0*u*v - b(v,0.0)
-_jac(u,du,v) = a(du,v) + 10.0*du*v
-_t_Ω = FETerm(_res,_jac,trian,quad)
-_op = FEOperator(U0,V0,_t_Ω)
+_res(u,v) = a(u,v) + 10.0*∫(u*v)dΩ - b(v,0.0)
+_jac(u,du,v) = a(du,v) + 10.0*∫(du*v)dΩ
+_op = FEOperator(_res,_jac,U0,V0)
 
 uh = interpolate_everywhere(0.0,U0)#1.0)
 using Gridap.FESpaces: allocate_residual, allocate_jacobian
@@ -82,8 +84,7 @@ using Gridap.FESpaces: residual!, jacobian!
 residual!(_r,_op,uh)
 jacobian!(_J,_op,uh)
 
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+op = TransientFEOperator(res,jac,jac_t,U,V0)
 odeop = get_algebraic_operator(op)
 cache = allocate_cache(odeop)
 
@@ -239,7 +240,7 @@ for (uh_tn, tn) in sol_t
   _t_n += dt
   @test tn≈_t_n
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
   # writevtk(trian,"sol at time: $tn",cellfields=["u" => uh_tn])
 end
