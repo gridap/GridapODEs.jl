@@ -24,7 +24,7 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
-reffe = ReferenceFE(:Lagrangian,VectorValue{2,Float64},order)
+reffe = ReferenceFE(lagrangian,VectorValue{2,Float64},order)
 V0 = FESpace(
   model,
   reffe,

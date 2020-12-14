@@ -30,7 +30,7 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
-reffeᵤ = ReferenceFE(:Lagrangian,VectorValue{2,Float64},order)
+reffeᵤ = ReferenceFE(lagrangian,VectorValue{2,Float64},order)
 V0 = FESpace(
   model,
   reffeᵤ,
@@ -38,7 +38,7 @@ V0 = FESpace(
   dirichlet_tags="boundary"
 )
 
-reffeₚ = ReferenceFE(:Lagrangian,Float64,order-1)
+reffeₚ = ReferenceFE(lagrangian,Float64,order-1)
 Q = TestFESpace(
   model,
   reffeₚ,

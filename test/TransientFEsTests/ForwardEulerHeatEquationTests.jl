@@ -31,7 +31,7 @@ model = CartesianDiscreteModel(domain,partition)
 order = 2
 
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
+  reffe=lagrangian, order=order, valuetype=Float64,
   conformity=:H1, model=model, dirichlet_tags="boundary")
 U = TransientTrialFESpace(V0,u)
 

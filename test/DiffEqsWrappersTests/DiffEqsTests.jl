@@ -23,7 +23,7 @@ function fe_problem(u, n)
 
   order = 1
 
-  reffe = ReferenceFE(:Lagrangian,Float64,order)
+  reffe = ReferenceFE(lagrangian,Float64,order)
   V0 = FESpace(
     model,
     reffe,
