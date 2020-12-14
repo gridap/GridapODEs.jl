@@ -88,7 +88,7 @@ mass!(M, u0, u0, nothing, tθ)
 # To explore the Sundials solver options, e.g., BE with fixed time step dtd
 f_iip = DAEFunction{true}(res!; jac = jac!)#, jac_prototype=J)
 # jac_prototype is the way to pass my pre-allocated jacobian matrix
-prob_iip = DAEProblem{true}(f_iip, u0, u0, tspan, differential_vars = [true])
+prob_iip = DAEProblem{true}(f_iip, u0, u0, tspan, differential_vars = [true,true,true,true])
 # When I pass `jac_prototype` the code get stuck here:
 sol_iip = Sundials.solve(prob_iip, IDA(), reltol = 1e-8, abstol = 1e-8)
 # @show sol_iip.u
