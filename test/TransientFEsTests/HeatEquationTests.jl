@@ -23,25 +23,28 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffe = ReferenceFE(lagrangian,Float64,order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
+  model,
+  reffe,
+  conformity=:H1,
+  dirichlet_tags="boundary"
+)
 U = TransientTrialFESpace(V0,u)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
 #
-a(u,v) = ∇(v)⋅∇(u)
-b(v,t) = v*f(t)
+a(u,v) = ∫(∇(v)⋅∇(u))dΩ
+b(v,t) = ∫(v*f(t))dΩ
 
-res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
+res(t,u,ut,v) = a(u,v) + ∫(ut*v)dΩ - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = dut*v
+jac_t(t,u,ut,dut,v) = ∫(dut*v)dΩ
 
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+op = TransientFEOperator(res,jac,jac_t,U,V0)
 
 t0 = 0.0
 tF = 1.0
@@ -69,7 +72,7 @@ for (uh_tn, tn) in sol_t
   global _t_n
   _t_n += dt
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 

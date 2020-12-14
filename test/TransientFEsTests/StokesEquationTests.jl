@@ -30,63 +30,45 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffeᵤ = ReferenceFE(lagrangian,VectorValue{2,Float64},order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=VectorValue{2,Float64},
-  conformity=:H1, model=model, dirichlet_tags="boundary")
-
-Q = TestFESpace(
-  model=model,
-  order=order-1,
-  reffe=:Lagrangian,
-  valuetype=Float64,
+  model,
+  reffeᵤ,
   conformity=:H1,
-  constraint=:zeromean)
+  dirichlet_tags="boundary"
+)
+
+reffeₚ = ReferenceFE(lagrangian,Float64,order-1)
+Q = TestFESpace(
+  model,
+  reffeₚ,
+  conformity=:H1,
+  constraint=:zeromean
+)
 
 U = TransientTrialFESpace(V0,u)
 
 P = TrialFESpace(Q)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
 #
-a(u,v) = inner(∇(u),∇(v))
-b(v,t) = inner(v,f(t))
+a(u,v) = ∫(∇(u)⊙∇(v))dΩ
+b((v,q),t) = ∫(v⋅f(t))dΩ + ∫(q*g(t))dΩ
+m(ut,v) = ∫(ut⋅v)dΩ
 
 X = TransientMultiFieldFESpace([U,P])
 Y = MultiFieldFESpace([V0,Q])
 
-function res(t,x,xt,y)
-  u,p = x
-  ut,pt = xt
-  v,q = y
-  a(u,v) + inner(ut,v) - (∇⋅v)*p + q*(∇⋅u) - inner(v,f(t)) - q*g(t)
-end
-⋅
-function jac(t,x,xt,dx,y)
-  du,dp = dx
-  v,q = y
-  a(du,v)- (∇⋅v)*dp + q*(∇⋅du)
-end
+res(t,(u,p),(ut,pt),(v,q)) = a(u,v) + m(ut,v) - ∫((∇⋅v)*p)dΩ + ∫(q*(∇⋅u))dΩ - b((v,q),t)
+jac(t,(u,p),(ut,pt),(du,dp),(v,q)) = a(du,v) - ∫((∇⋅v)*dp)dΩ + ∫(q*(∇⋅du))dΩ
+jac_t(t,(u,p),(ut,pt),(dut,dpt),(v,q)) = m(dut,v)
 
-function jac_t(t,x,xt,dxt,y)
-  dut,dpt = dxt
-  v,q = y
-  inner(dut,v)
-end
+b((v,q)) = b((v,q),0.0)
 
-function b(y)
-  v,q = y
-  0.0
-  v⋅f(0.0) + q*g(0.0)
-end
-
-function mat(dx,y)
-  du1,du2 = dx
-  v1,v2 = y
-  a(du1,v1)+a(du2,v2)
-end
+mat((du1,du2),(v1,v2)) = a(du1,v1)+a(du2,v2)
 
 U0 = U(0.0)
 P0 = P(0.0)
@@ -95,8 +77,7 @@ uh0 = interpolate_everywhere(u(0.0),U0)
 ph0 = interpolate_everywhere(p(0.0),P0)
 xh0 = interpolate_everywhere([uh0,ph0],X0)
 
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(X,Y,t_Ω)
+op = TransientFEOperator(res,jac,jac_t,X,Y)
 
 t0 = 0.0
 tF = 1.0
@@ -122,9 +103,9 @@ for (xh_tn, tn) in sol_t
   uh_tn = xh_tn[1]
   ph_tn = xh_tn[2]
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   e = p(tn) - ph_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 

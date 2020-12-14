@@ -28,26 +28,28 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffe = ReferenceFE(lagrangian,Float64,order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
+  model,
+  reffe,
+  conformity=:H1,
+  dirichlet_tags="boundary")
 
 U = TransientTrialFESpace(V0,u)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
-a(u,v) = inner(∇(v),∇(u))
-m(u,v) = inner(v,u)
-b(v,t) = inner(v,f(t))
+a(u,v) = ∫(∇(v)⊙∇(u))dΩ
+m(u,v) = ∫(v*u)dΩ
+b(v,t) = ∫(v*f(t))dΩ
 
 res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
 jac_t(t,u,ut,dut,v) = m(dut,v)
 
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+op = TransientFEOperator(res,jac,jac_t,U,V0)
 
 t0 = 0.0
 tF = 1.0
@@ -73,7 +75,7 @@ for (uh_tn, tn) in sol_t
   _t_n += dt
   @test tn≈_t_n
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 
@@ -108,20 +110,19 @@ tf = tθ
 Utf = U(tf)
 # fst(x) = -Δ(u(tf))(x)
 fst(x) = f(tf)(x)
-a(u,v) = inner(∇(v),∇(u))
+a(u,v) = ∫(∇(v)⊙∇(u))dΩ
 
 function extract_matrix_vector(a,fst)
-  btf(v) = inner(v,fst)
-  t_Ω = AffineFETerm(a,btf,trian,quad)
-  op = AffineFEOperator(Utf,V0,t_Ω)
+  btf(v) = ∫(v*fst)dΩ
+  op = AffineFEOperator(a,btf,Utf,V0)
   ls = LUSolver()
   solver = LinearFESolver(ls)
   uh = solve(solver,op)
 
   tol = 1.0e-6
   e = uh-u(tf)
-  l2(e) = inner(e,e)
-  l2e = sqrt(sum( integrate(l2(e),trian,quad) ))
+  l2(e) = e*e
+  l2e = sqrt(sum( ∫(l2(e))dΩ ))
   # @test l2e < tol
 
   Ast = op.op.matrix
@@ -135,7 +136,7 @@ end
 A,rhs = extract_matrix_vector(a,fst)
 
 gst(x) = u(tf)(x)
-m(u,v) = inner(u,v)
+m(u,v) = ∫(u*v)dΩ
 
 M,_ = extract_matrix_vector(m,gst)
 

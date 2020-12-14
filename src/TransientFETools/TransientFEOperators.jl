@@ -88,96 +88,100 @@ end
 # Specializations
 
 """
-Transient FE operator that is defined by a set of `TransientFETerm` (or `FETerm`)
+Transient FE operator that is defined by a transient Weak form
 """
-struct TransientFEOperatorFromTerms{C} <: TransientFEOperator{C}
+struct TransientFEOperatorFromWeakForm{C} <: TransientFEOperator{C}
+  res::Function
+  jac::Function
+  jac_t::Function
+  assem_t::Assembler
   trial
   trial_t
   test::FESpace
-  assem_t::Assembler
-  terms
-  function TransientFEOperatorFromTerms{C}(trial,trial_t,test::FESpace,assem::Assembler,terms...) where C
-    new{C}(trial,trial_t,test,assem,terms)
-  end
 end
 
-function TransientConstantFEOperator(trial,test,terms...)
-  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
+function TransientConstantFEOperator(m::Function,a::Function,b::Function,
+  trial,test)
+  res(t,u,ut,v) = m(ut,v) + a(u,v) - b(v)
+  jac(t,u,ut,du,v) = a(du,v)
+  jac_t(t,u,ut,dut,v) = m(dut,v)
+  assem_t = SparseMatrixAssembler(trial,test)
+  TransientFEOperatorFromWeakForm{Constant}(res,jac,jac_t,assem_t,trial,∂t(trial),test)
+end
+function TransientConstantFEOperator(res::Function,trial,test)
+  # function with autodiff not implemented
+  @notimplemented()
 end
 
-function TransientAffineFEOperator(trial,test,terms...)
-  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
+function TransientAffineFEOperator(m::Function,a::Function,b::Function,
+  trial,test)
+  res(t,u,ut,v) = m(t,ut,v) + a(t,u,v) - b(t,v)
+  jac(t,u,ut,du,v) = a(t,du,v)
+  jac_t(t,u,ut,dut,v) = m(t,dut,v)
+  assem_t = SparseMatrixAssembler(trial,test)
+  TransientFEOperatorFromWeakForm{Affine}(res,jac,jac_t,assem_t,trial,∂t(trial),test)
+end
+function TransientAffineFEOperator(res::Function,trial,test)
+  # function with autodiff not implemented
+  @notimplemented()
 end
 
-function TransientFEOperator(trial,test,terms...)
-  assem_t = SparseMatrixAssembler(test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
+function TransientFEOperator(res::Function,jac::Function,jac_t::Function,
+  trial,test)
+  assem_t = SparseMatrixAssembler(trial,test)
+  TransientFEOperatorFromWeakForm{Nonlinear}(res,jac,jac_t,assem_t,trial,∂t(trial),test)
+end
+function TransientFEOperator(res::Function,trial,test)
+  # function with autodiff not implemented
+  @notimplemented()
 end
 
-function TransientConstantFEOperator(mat::Type,trial,test,terms...)
-  assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms{Constant}(trial,∂t(trial),test,assem_t,terms...)
+function SparseMatrixAssembler(
+  trial::Union{TransientTrialFESpace,TransientMultiFieldTrialFESpace},
+  test::FESpace)
+  SparseMatrixAssembler(evaluate(trial,nothing),test)
 end
 
-function TransientAffineFEOperator(mat::Type,trial,test,terms...)
-  assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms{Affine}(trial,∂t(trial),test,assem_t,terms...)
-end
+get_assembler(op::TransientFEOperatorFromWeakForm) = op.assem_t
 
-function TransientFEOperator(mat::Type,trial,test,terms...)
-  assem_t = SparseMatrixAssembler(mat,test,evaluate(trial,nothing))
-  TransientFEOperatorFromTerms{Nonlinear}(trial,∂t(trial),test,assem_t,terms...)
-end
+get_test(op::TransientFEOperatorFromWeakForm) = op.test
 
-get_assembler(feop::TransientFEOperatorFromTerms) = feop.assem_t
+get_trial(op::TransientFEOperatorFromWeakForm) = op.trial
 
-get_test(op::TransientFEOperatorFromTerms) = op.test
-
-get_trial(op::TransientFEOperatorFromTerms) = op.trial
-
-function allocate_residual(op::TransientFEOperatorFromTerms,uh,cache)
-  @assert is_a_fe_function(uh)
-  v = get_cell_basis(op.test)
-  vecdata = collect_cell_residual(0.0,uh,uh,v,op.terms)
+function allocate_residual(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
+  v = get_cell_shapefuns(get_test(op))
+  vecdata = collect_cell_vector(op.res(0.0,uh,uh,v))
   allocate_vector(op.assem_t,vecdata)
 end
 
-function residual!(b::AbstractVector,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t,cache)
-  @assert is_a_fe_function(uh)
-  @assert is_a_fe_function(uh_t)
-  v = get_cell_basis(op.test)
-  vecdata = collect_cell_residual(t,uh,uh_t,v,op.terms)
+function residual!(b::AbstractVector,op::TransientFEOperatorFromWeakForm,
+  t::Real,uh::FEFunction,uh_t::FEFunction,cache)
+  v = get_cell_shapefuns(get_test(op))
+  vecdata = collect_cell_vector(op.res(t,uh,uh_t,v))
   assemble_vector!(b,op.assem_t,vecdata)
   b
 end
 
-function allocate_jacobian(op::TransientFEOperatorFromTerms,uh,cache)
-  Uh = evaluate(op.trial,nothing)
-  @assert is_a_fe_function(uh)
-  du = get_cell_basis(Uh)
-  v = get_cell_basis(op.test)
-  matdata = collect_cell_jacobian(0.0,uh,uh,du,v,op.terms)
+function allocate_jacobian(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
+  matdata = matdata_jacobian(op,0.0,uh,uh)
   allocate_matrix(op.assem_t,matdata)
 end
 
-function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
-  t::Real,uh,uh_t,cache)
+function jacobian!(A::AbstractMatrix,op::TransientFEOperatorFromWeakForm,
+  t::Real,uh::FEFunction,uh_t::FEFunction,cache)
   matdata = matdata_jacobian(op,t,uh,uh_t)
   assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
 
-function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
+function jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromWeakForm,
   t::Real,uh,uh_t,duht_du::Real,cache)
   matdata = matdata_jacobian_t(op,t,uh,uh_t,duht_du)
   assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
 
-function jacobian_and_jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromTerms,
+function jacobian_and_jacobian_t!(A::AbstractMatrix,op::TransientFEOperatorFromWeakForm,
   t::Real,uh,uh_t,duht_du::Real,cache)
   matdata_j = matdata_jacobian(op,t,uh,uh_t)
   matdata_jt = matdata_jacobian_t(op,t,uh,uh_t,duht_du)
@@ -198,21 +202,18 @@ function vcat_matdata(matdata_j,matdata_jt)
 end
 
 
-function matdata_jacobian(op::TransientFEOperatorFromTerms,t::Real,uh,uh_t)
-  Uh = evaluate(op.trial,nothing)
-  @assert is_a_fe_function(uh)
-  @assert is_a_fe_function(uh_t)
-  du = get_cell_basis(Uh)
-  v = get_cell_basis(op.test)
-  matdata = collect_cell_jacobian(t,uh,uh_t,du,v,op.terms)
+function matdata_jacobian(op::TransientFEOperatorFromWeakForm,t::Real,uh::FEFunction,uh_t::FEFunction)
+  Uh = evaluate(get_trial(op),nothing)
+  du = get_cell_shapefuns_trial(Uh)
+  v = get_cell_shapefuns(get_test(op))
+  matdata = collect_cell_matrix(op.jac(t,uh,uh_t,du,v))
 end
 
-function matdata_jacobian_t(op::TransientFEOperatorFromTerms,t::Real,uh,uh_t,duht_du::Real)
-  Uh = evaluate(op.trial,nothing)
-  @assert is_a_fe_function(uh_t)
-  du_t = get_cell_basis(Uh)
-  v = get_cell_basis(op.test)
-  matdata = collect_cell_jacobian_t(t,uh,uh_t,du_t,v,duht_du,op.terms)
+function matdata_jacobian_t(op::TransientFEOperatorFromWeakForm,t::Real,uh::FEFunction,uh_t::FEFunction,duht_du::Real)
+  Uh = evaluate(get_trial(op),nothing)
+  du_t = get_cell_shapefuns_trial(Uh)
+  v = get_cell_shapefuns(get_test(op))
+  matdata = collect_cell_matrix(duht_du*op.jac_t(t,uh,uh_t,du_t,v))
 end
 
 # Tester

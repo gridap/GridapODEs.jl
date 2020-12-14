@@ -22,54 +22,43 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffe = ReferenceFE(lagrangian,Float64,order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:L2, model=model)
+  model,
+  reffe,
+  conformity=:L2
+)
 U = TransientTrialFESpace(V0)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
-a(u,v) = ∇(v)⋅∇(u)
-b(v,t) = v*f(t)
+Γ = BoundaryTriangulation(model)
+dΓ = Measure(Γ,degree)
+nb = get_normal_vector(Γ)
 
-res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
-jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = dut*v
+Λ = SkeletonTriangulation(model)
+dΛ = Measure(Λ,degree)
+ns = get_normal_vector(Λ)
 
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
+a(u,v) = ∫(∇(v)⋅∇(u))dΩ
+b(v,t) = ∫(v*f(t))dΩ
+m(u,v) = ∫(v*u)dΩ
 
-btrian = BoundaryTriangulation(model)
-bquad = CellQuadrature(btrian,degree)
-nb = get_normal_vector(btrian)
-#
 h = 1.0 / n
 γ = order*(order+1)
-a_∂Ω(u,v) = (γ/h)*v*u - v*(∇(u)⋅nb) - (∇(v)⋅nb)*u
-b_∂Ω(v,t) = (γ/h)*v*u(t) - (∇(v)⋅nb)*u(t)
+a_Γ(u,v) = ∫( (γ/h)*v*u - v*(∇(u)⋅nb) - (∇(v)⋅nb)*u )dΓ
+b_Γ(v,t) = ∫( (γ/h)*v*u(t) - (∇(v)⋅nb)*u(t) )dΓ
 
-res_∂Ω(t,u,ut,v) = a_∂Ω(u,v) - b_∂Ω(v,t)
-jac_∂Ω(t,u,ut,du,v) = a_∂Ω(du,v)
-jac_t_∂Ω(t,u,ut,dut,v) = dut*v*0.0
-
-t_∂Ω = FETerm(res_∂Ω,jac_∂Ω,jac_t_∂Ω,btrian,bquad)
+a_Λ(u,v) = ∫( (γ/h)*jump(v*ns)⊙jump(u*ns) - jump(v*ns)⊙mean(∇(u)) - mean(∇(v))⊙jump(u*ns) )dΛ
 
 
-degree = 2*order
-strian = SkeletonTriangulation(model)
-squad = CellQuadrature(strian,degree)
-ns = get_normal_vector(strian)
+res(t,u,ut,v) = a(u,v) + m(ut,v) + a_Γ(u,v) + a_Λ(u,v) - b(v,t) - b_Γ(v,t)
+jac(t,u,ut,du,v) = a(du,v) + a_Γ(du,v) + a_Λ(du,v)
+jac_t(t,u,ut,dut,v) = m(dut,v)
 
-a_Γ(u,v) = (γ/h)*jump(v*ns)⊙jump(u*ns) - jump(v*ns)⊙mean(∇(u)) - mean(∇(v))⊙jump(u*ns)
-
-res_Γ(t,u,ut,v) = a_Γ(u,v)
-jac_Γ(t,u,ut,du,v) = a_Γ(du,v)
-jac_t_Γ(t,u,ut,dut,v) = 0.0*a_Γ(dut,v)
-
-t_Γ = FETerm(res_Γ,jac_Γ,jac_t_Γ,strian,squad)
-
-op = TransientFEOperator(U,V0,t_Ω,t_∂Ω,t_Γ)
+op = TransientFEOperator(res,jac,jac_t,U,V0)
 
 t0 = 0.0
 tF = 1.0
@@ -94,7 +83,7 @@ for (uh_tn, tn) in sol_t
   global _t_n
   _t_n += dt
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 

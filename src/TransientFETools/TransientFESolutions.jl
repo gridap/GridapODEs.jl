@@ -68,7 +68,7 @@ end
 
 function test_transient_fe_solution(fesol::TransientFESolution)
   for (uhn,tn) in fesol
-    @test is_a_fe_function(uhn)
+    @test isa(uhn,FEFunction)
     @test isa(tn,Real)
   end
   true

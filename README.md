@@ -2,7 +2,7 @@
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gridap.github.io/GridapODEs.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gridap.github.io/GridapODEs.jl/dev)
-[![Build Status](https://travis-ci.com/gridap/GridapODEs.jl.svg?branch=master)](https://travis-ci.com/gridap/GridapODEs.jl)
+[![Build Status](https://github.com/gridap/GridapODEs.jl/workflows/CI/badge.svg?branch=master)](https://github.com/gridap/GridapODEs.jl/actions?query=workflow%3ACI)
 [![Codecov](https://codecov.io/gh/gridap/GridapODEs.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gridap/GridapODEs.jl)
 [![Coveralls](https://coveralls.io/repos/github/gridap/GridapODEs.jl/badge.svg?branch=master)](https://coveralls.io/github/gridap/GridapODEs.jl?branch=master)
 
@@ -30,25 +30,29 @@ model = CartesianDiscreteModel(domain,partition)
 
 order = 2
 
+reffe = ReferenceFE(lagrangian,Float64,order)
 V0 = FESpace(
-  reffe=:Lagrangian, order=order, valuetype=Float64,
-  conformity=:H1, model=model, dirichlet_tags="boundary")
+  model,
+  reffe,
+  conformity=:H1, 
+  dirichlet_tags="boundary"
+)
 
 U = TransientTrialFESpace(V0,u)
 
-trian = Triangulation(model)
+Ω = Triangulation(model)
 degree = 2*order
-quad = CellQuadrature(trian,degree)
+dΩ = Measure(Ω,degree)
 
-a(u,v) = ∇(v)*∇(u)
-b(v,t) = v*f(t)
+a(u,v) = ∫( ∇(v)⋅∇(u) )dΩ
+b(v,t) = ∫( v*f(t) )dΩ
+m(u,v) = ∫( v*u )dΩ
 
-res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
+res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t)
 jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = dut*v
+jac_t(t,u,ut,dut,v) = m(dut,v)
 
-t_Ω = FETerm(res,jac,jac_t,trian,quad)
-op = TransientFEOperator(U,V0,t_Ω)
+op = TransientFEOperator(res,jac,jac_t,U,V0)
 
 t0 = 0.0
 tF = 1.0

@@ -23,29 +23,28 @@ function fe_problem(u, n)
 
   order = 1
 
+  reffe = ReferenceFE(lagrangian,Float64,order)
   V0 = FESpace(
-    reffe = :Lagrangian,
-    order = order,
-    valuetype = Float64,
+    model,
+    reffe,
     conformity = :H1,
-    model = model,
     dirichlet_tags = "boundary",
   )
   U = TransientTrialFESpace(V0, u)
 
-  trian = Triangulation(model)
+  Ω = Triangulation(model)
   degree = 2 * order
-  quad = CellQuadrature(trian, degree)
+  dΩ = Measure(Ω, degree)
 
-  a(u, v) = ∇(v) ⋅ ∇(u)
-  b(v, t) = v * f(t)
+  a(u, v) = ∫( ∇(v) ⋅ ∇(u) )dΩ
+  b(v, t) = ∫( v * f(t) )dΩ
+  m(u, v) = ∫( v * u )dΩ
 
-  res(t, u, ut, v) = a(u, v) + ut * v - b(v, t)
+  res(t, u, ut, v) = a(u, v) + m(ut, v) - b(v, t)
   jac(t, u, ut, du, v) = a(du, v)
-  jac_t(t, u, ut, dut, v) = dut * v
+  jac_t(t, u, ut, dut, v) = m(dut, v)
 
-  t_Ω = FETerm(res, jac, jac_t, trian, quad)
-  op = TransientFEOperator(U, V0, t_Ω)
+  op = TransientFEOperator(res, jac, jac_t, U, V0)
 
   U0 = U(0.0)
   uh0 = interpolate_everywhere(u(0.0), U0)
@@ -89,7 +88,7 @@ mass!(M, u0, u0, nothing, tθ)
 # To explore the Sundials solver options, e.g., BE with fixed time step dtd
 f_iip = DAEFunction{true}(res!; jac = jac!)#, jac_prototype=J)
 # jac_prototype is the way to pass my pre-allocated jacobian matrix
-prob_iip = DAEProblem{true}(f_iip, u0, u0, tspan, differential_vars = [true])
+prob_iip = DAEProblem{true}(f_iip, u0, u0, tspan, differential_vars = [true,true,true,true])
 # When I pass `jac_prototype` the code get stuck here:
 sol_iip = Sundials.solve(prob_iip, IDA(), reltol = 1e-8, abstol = 1e-8)
 # @show sol_iip.u
