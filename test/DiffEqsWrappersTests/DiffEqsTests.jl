@@ -94,13 +94,13 @@ prob_iip = DAEProblem{true}(f_iip, u0, u0, tspan, differential_vars = [true,true
 # @show sol_iip.u
 
 # or iterator version
-integ = init(prob_iip, IDA(), reltol = 1e-8, abstol = 1e-8)
+# integ = init(prob_iip, IDA(), reltol = 1e-8, abstol = 1e-8)
 # step!(integ)
 
 # Show using integrators as iterators
-for i in take(integ, 100)
+# for i in take(integ, 100)
   # @show integ.u
-end
+# end
 
 end # module
 
