@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.0] - 2020-12-15
 
 ### Changed
-  - Updated to Gridap v0.15. Since PR [#43](https://github.com/gridap/GridapODEs.jl/pull/43)
+  - Updated to Gridap v0.15 in PR [#43](https://github.com/gridap/GridapODEs.jl/pull/43)
   
 ## [0.5.0] - 2020-08-24
 
