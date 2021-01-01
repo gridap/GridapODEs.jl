@@ -132,8 +132,9 @@ function TransientFEOperator(res::Function,jac::Function,jac_t::Function,
   TransientFEOperatorFromWeakForm{Nonlinear}(res,jac,jac_t,assem_t,trial,∂t(trial),test)
 end
 function TransientFEOperator(res::Function,trial,test)
-  # function with autodiff not implemented
-  @notimplemented()
+  jac(t,u,ut,du,dv) = jacobian(x->res(t,x,ut,dv),u)
+  jac_t(t,u,ut,dut,dv) = jacobian(xt->res(t,u,xt,dv),ut)
+  TransientFEOperator(res,jac,jac_t,trial,test)
 end
 
 function SparseMatrixAssembler(
