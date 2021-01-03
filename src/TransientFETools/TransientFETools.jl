@@ -23,6 +23,7 @@ using Gridap.FESpaces: get_free_values
 using Gridap.FESpaces: get_dirichlet_values
 using Gridap.FESpaces: TrialFESpace!
 using Gridap.FESpaces: HomogeneousTrialFESpace
+using Gridap.FESpaces: jacobian
 
 import Gridap.Geometry: Triangulation
 import Gridap.CellData: Measure
