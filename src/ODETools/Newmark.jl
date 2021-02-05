@@ -27,13 +27,13 @@ function solve_step!(
     a1 = similar(a0)
     nl_cache = nothing
   else
-    ode_cache, v1, a1, nl_cache = cache
+    v1, a1, ode_cache, nl_cache = cache
   end
   
   ode_cache = update_cache!(ode_cache,op,t1)  
   nlop = NewmarkNonlinearOperator(op,t1,dt,u0,v0,a0,ode_cache,v1,a1)
   nl_cache = solve!(u1,solver.nls,nlop,nl_cache)  
-  cache = (ode_cache, v1, a1, nl_cache)
+  cache = (v1, a1, ode_cache, nl_cache)
 
   return (u1,t1,cache)
   
