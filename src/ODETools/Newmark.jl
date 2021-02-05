@@ -19,6 +19,8 @@ function solve_step!(
   cache) # -> (uF,tF)
   
   dt = solver.dt
+  γ = solver.γ
+  β = solver.β
   t1 = t0+dt
   
   if cache === nothing
@@ -31,7 +33,7 @@ function solve_step!(
   end
   
   ode_cache = update_cache!(ode_cache,op,t1)  
-  nlop = NewmarkNonlinearOperator(op,t1,dt,u0,v0,a0,ode_cache,v1,a1)
+  nlop = NewmarkNonlinearOperator(op,t1,dt,γ,β,u0,v0,a0,ode_cache,v1,a1)
   nl_cache = solve!(u1,solver.nls,nlop,nl_cache)  
   cache = (v1, a1, ode_cache, nl_cache)
 
@@ -43,10 +45,12 @@ end
 Nonlinear operator that represents the Newmark nonlinear operator at a
 given time step, i.e., A(t,u_n+1,v_n+1,a_n+1)
 """
-struct ThetaMethodNonlinearOperator <: NonlinearOperator
+struct NewmarkNonlinearOperator <: NonlinearOperator
   odeop::ODEOperator
   t1::Float64
   dt::Float64
+  γ::Float64
+  β::Float64
   u0::AbstractVector
   v0::AbstractVector
   a0::AbstractVector
@@ -72,7 +76,7 @@ function jacobian!(A::AbstractMatrix,op::NewmarkNonlinearOperator,x::AbstractVec
   v1 = op.γ/(op.β*op.dt)*(u1-op.u0) + (1-op.γ/op.β)*op.v0 + op.dt*(1-op.γ/(2*op.β))*op.a0
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian_and_jacobian_t!(A,op.odeop,op.t1,u1,v1,a1,op.γ/(op.β*op.dt)*(u1-op.u0),1.0/(op.β*op.dt^2),op.ode_cache)
+  jacobian_and_jacobian_t!(A,op.odeop,op.t1,u1,v1,a1,op.γ/(op.β*op.dt),1.0/(op.β*op.dt^2),op.ode_cache)
 end
 
 function allocate_residual(op::NewmarkNonlinearOperator,x::AbstractVector)

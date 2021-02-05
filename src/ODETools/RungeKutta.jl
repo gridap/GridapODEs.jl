@@ -28,7 +28,7 @@ function ButcherTableau(::BE_1_0_1)
   b = [1.0]
   c = [1.0]
   d = [0.0]
-  ButcherTableau{BE_1_0_1()}(s,p,q,a,b,c,d)
+  ButcherTableau{BE_1_0_1}(s,p,q,a,b,c,d)
 end
 
 function ButcherTableau(type::SDIRK_2_1_2)

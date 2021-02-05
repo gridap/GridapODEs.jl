@@ -54,6 +54,7 @@ export ForwardEuler
 export MidPoint
 export ThetaMethod
 export RungeKutta
+export Newmark
 import Gridap.Algebra: fill_entries!
 
 export ODESolution
