@@ -92,10 +92,9 @@ function Base.iterate(sol::Generic2ndOrderODESolution)
   t0 = sol.t0
 
   # Solve step
-  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0)
+  uf, tf, vf, af, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0)
 
   # Update
-  vf, af, = cache
   u0 .= uf
   v0 .= vf
   a0 .= af
@@ -113,10 +112,9 @@ function Base.iterate(sol::Generic2ndOrderODESolution, state)
   end
 
   # Solve step
-  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0,cache)
+  uf, tf, vf, af, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0,cache)
 
   # Update
-  vf, af, = cache
   u0 .= uf
   v0 .= vf
   a0 .= af
