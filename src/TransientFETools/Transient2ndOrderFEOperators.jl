@@ -28,7 +28,7 @@ end
 
 function TransientAffineFEOperator(m::Function,c::Function,a::Function,b::Function,
   trial,test)
-  res(t,u,ut,v) = m(t,utt,v) + c(t,ut,v) + a(t,u,v) - b(t,v)
+  res(t,u,ut,utt,v) = m(t,utt,v) + c(t,ut,v) + a(t,u,v) - b(t,v)
   jac(t,u,ut,utt,du,v) = a(t,du,v)
   jac_t(t,u,ut,utt,dut,v) = c(t,dut,v)
   jac_tt(t,u,ut,utt,dutt,v) = m(t,dutt,v)
@@ -50,7 +50,7 @@ end
 function Transient2ndOrderFEOperator(res::Function,trial,test)
   jac(t,u,ut,utt,du,dv) = jacobian(x->res(t,x,ut,utt,dv),u)
   jac_t(t,u,ut,utt,dut,dv) = jacobian(xt->res(t,u,xt,utt,dv),ut)
-  jac_tt(t,u,ut,utt,dutt,dv) = jacobian(xt->res(t,u,ut,xtt,dv),utt)
+  jac_tt(t,u,ut,utt,dutt,dv) = jacobian(xtt->res(t,u,ut,xtt,dv),utt)
   TransientFEOperator(res,jac,jac_t,jac_tt,trial,test)
 end
 
