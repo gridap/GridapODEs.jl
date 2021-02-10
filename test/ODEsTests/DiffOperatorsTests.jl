@@ -3,7 +3,7 @@ module DiffOperatorsTests
 using Gridap
 using Test
 using GridapODEs
-using GridapODEs.ODETools: ∂t
+using GridapODEs.ODETools: ∂t, ∂tt
 
 using ForwardDiff
 
@@ -55,5 +55,18 @@ f2(x,t) = VectorValue(x[1]^2,t)
 # I guess not unless we create a type for these analytical (space-only or
 # space-time via a trait) functions
 # Probably a try-catch?
+
+# 2nd time derivative
+f(x,t) = t^2
+dtf = (x,t) -> ForwardDiff.derivative(t->f(x,t),t)
+dttf = (x,t) -> ForwardDiff.derivative(t->dtf(x,t),t)
+@test dttf(xv,tv) ≈ ∂tt(f)(xv,tv) ≈ ∂tt(f)(xv)(tv) ≈ ∂tt(f)(tv)(xv)
+@test ∂tt(f)(xv,tv) ≈ 2.0
+
+f2(x,t) = x[1]*t^2
+dtf2 = (x,t) -> ForwardDiff.derivative(t->f2(x,t),t)
+dttf2 = (x,t) -> ForwardDiff.derivative(t->dtf2(x,t),t)
+@test dttf2(xv,tv) ≈ ∂tt(f2)(xv,tv) ≈ ∂tt(f2)(xv)(tv) ≈ ∂tt(f2)(tv)(xv)
+@test ∂tt(f2)(xv,tv) ≈ 2.0*xv[1]
 
 end #module

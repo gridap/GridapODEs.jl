@@ -21,3 +21,5 @@ end
 function _time_derivative_f(f,x,t,fxt::TensorValue)
   TensorValue(ForwardDiff.derivative(t->get_array(f(x,t)),t))
 end
+
+∂tt(f::Function) = ∂t(∂t(f))

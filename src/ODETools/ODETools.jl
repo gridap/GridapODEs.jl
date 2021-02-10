@@ -6,6 +6,7 @@ using ForwardDiff
 
 const ϵ = 100*eps()
 export ∂t
+export ∂tt
 export time_derivative
 
 using Gridap.Fields: VectorValue, TensorValue
