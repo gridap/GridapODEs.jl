@@ -156,7 +156,9 @@ function residual!(b::AbstractVector,op::TransientFEOperatorFromWeakForm,
 end
 
 function allocate_jacobian(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
-  matdata = matdata_jacobian(op,0.0,uh,uh)
+  matdata_j = matdata_jacobian(op,0.0,uh,uh)
+  matdata_jt = matdata_jacobian_t(op,0.0,uh,uh,0.0)
+  matdata = vcat_matdata(matdata_j,matdata_jt)
   allocate_matrix(op.assem_t,matdata)
 end
 
