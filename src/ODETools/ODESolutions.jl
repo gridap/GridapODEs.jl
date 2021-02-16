@@ -75,7 +75,7 @@ end
 
 struct Generic2ndOrderODESolution <: ODESolution
   solver::ODESolver
-  op::ODEOperator
+  op::SecondOrderODEOperator
   u0::AbstractVector
   v0::AbstractVector
   a0::AbstractVector

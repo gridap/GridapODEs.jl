@@ -23,6 +23,7 @@ using Gridap.Algebra: AffineOperator
 export ODEOperator
 export AffineODEOperator
 export ConstantODEOperator
+export SecondOrderODEOperator
 export OperatorType
 export Nonlinear
 export Affine

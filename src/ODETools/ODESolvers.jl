@@ -28,7 +28,7 @@ end
 function solve_step!(
   uF::AbstractVector,
   solver::ODESolver,
-  op::ODEOperator,
+  op::SecondOrderODEOperator,
   u0::AbstractVector,
   v0::AbstractVector,
   a0::AbstractVector,
@@ -38,7 +38,7 @@ end
 
 function solve(
   solver::ODESolver,
-  op::ODEOperator,
+  op::SecondOrderODEOperator,
   u0::AbstractVector,
   v0::AbstractVector,
   a0::AbstractVector,

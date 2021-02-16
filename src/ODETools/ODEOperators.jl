@@ -8,6 +8,7 @@ struct Nonlinear <: OperatorType end
 struct Affine  <: OperatorType end
 struct Constant  <: OperatorType end
 
+
 """
 It represents the operator in an implicit ODE, i.e., A(t,u,∂tu) where the
 implicit PDE reads A(t,u,∂tu) = 0, when ∂tu is the time derivative of u.
@@ -15,6 +16,7 @@ The trait `{C}` determines whether the operator is fully nonlinear, affine
 or constant in time.
 """
 abstract type ODEOperator{C<:OperatorType} <: GridapType end
+abstract type SecondOrderODEOperator{C} <: ODEOperator{C} end
 
 """
 It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of

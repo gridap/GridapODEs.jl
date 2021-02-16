@@ -11,7 +11,7 @@ end
 function solve_step!(
   u1::AbstractVector,
   solver::Newmark,
-  op::ODEOperator,
+  op::SecondOrderODEOperator,
   u0::AbstractVector,
   v0::AbstractVector,
   a0::AbstractVector,
@@ -49,7 +49,7 @@ Nonlinear operator that represents the Newmark nonlinear operator at a
 given time step, i.e., A(t,u_n+1,v_n+1,a_n+1)
 """
 struct NewmarkNonlinearOperator <: NonlinearOperator
-  odeop::ODEOperator
+  odeop::SecondOrderODEOperator
   t1::Float64
   dt::Float64
   γ::Float64
