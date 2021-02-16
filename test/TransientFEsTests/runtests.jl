@@ -6,6 +6,8 @@ using Test
 
 @testset "TransientFEOperatorsTests" begin include("TransientFEOperatorsTests.jl") end
 
+@testset "Transient2ndOrderFEOperatorsTests" begin include("Transient2ndOrderFEOperatorsTests.jl") end
+
 @testset "AffineFEOperatorsTests" begin include("AffineFEOperatorsTests.jl") end
 
 @testset "ConstantFEOperatorsTests" begin include("ConstantFEOperatorsTests.jl") end
