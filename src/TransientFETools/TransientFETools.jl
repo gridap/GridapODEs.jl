@@ -6,7 +6,7 @@ using Gridap.Helpers
 
 export ∂t
 
-import GridapODEs.ODETools: ∂t
+import GridapODEs.ODETools: ∂t, ∂tt
 import GridapODEs.ODETools: time_derivative
 
 export TransientTrialFESpace
@@ -37,6 +37,7 @@ using Gridap.FESpaces: SparseMatrixAssembler
 import GridapODEs.ODETools: allocate_cache
 import GridapODEs.ODETools: update_cache!
 import GridapODEs.ODETools: ODEOperator
+import GridapODEs.ODETools: SecondOrderODEOperator
 import GridapODEs.ODETools: AffineODEOperator
 import GridapODEs.ODETools: ConstantODEOperator
 import GridapODEs.ODETools: allocate_residual
@@ -84,9 +85,13 @@ import GridapODEs.ODETools: GenericODESolution
 import Base: iterate
 export test_transient_fe_solution
 
+export Transient2ndOrderFEOperator
+
 include("TransientFESpaces.jl")
 
 include("TransientFEOperators.jl")
+
+include("Transient2ndOrderFEOperators.jl")
 
 include("ODEOperatorInterfaces.jl")
 

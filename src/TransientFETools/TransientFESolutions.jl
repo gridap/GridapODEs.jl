@@ -22,6 +22,20 @@ function TransientFESolution(
   TransientFESolution(ode_sol, trial)
 end
 
+function TransientFESolution(
+  solver::TransientFESolver, op::TransientFEOperator, uh0, vh0, ah0, t0::Real, tF::Real)
+
+  ode_solver = solver.odes
+  ode_op = get_algebraic_operator(op)
+  u0 = get_free_values(uh0)
+  v0 = get_free_values(vh0)
+  a0 = get_free_values(ah0)
+  ode_sol = solve(ode_solver,ode_op,u0,v0,a0,t0,tF)
+  trial = get_trial(op)
+
+  TransientFESolution(ode_sol, trial)
+end
+
 #@fverdugo this is a general implementation of iterate for TransientFESolution
 # We could also implement another one for the very common case that the
 # underlying ode_op is a ODEOpFromFEOp object

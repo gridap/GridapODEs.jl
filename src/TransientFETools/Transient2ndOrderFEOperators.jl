@@ -54,12 +54,6 @@ function Transient2ndOrderFEOperator(res::Function,trial,test)
   TransientFEOperator(res,jac,jac_t,jac_tt,trial,test)
 end
 
-function SparseMatrixAssembler(
-  trial::Union{TransientTrialFESpace,TransientMultiFieldTrialFESpace},
-  test::FESpace)
-  SparseMatrixAssembler(evaluate(trial,nothing),test)
-end
-
 get_assembler(op::Transient2ndOrderFEOperatorFromWeakForm) = op.assem_t
 
 get_test(op::Transient2ndOrderFEOperatorFromWeakForm) = op.test
@@ -156,11 +150,19 @@ function matdata_jacobian_tt(op::Transient2ndOrderFEOperatorFromWeakForm,t::Real
   matdata = collect_cell_matrix(duhtt_du*op.jac_tt(t,uh,uh_t,uh_tt,du_tt,v))
 end
 
+"""
+Returns a `SecondOrderODEOperator` wrapper of the `Transient2ndOrderFEOperator` that can be
+straightforwardly used with the `ODETools` module.
+"""
+function get_algebraic_operator(feop::Transient2ndOrderFEOperatorFromWeakForm{C}) where C
+  SecondOrderODEOpFromFEOp{C}(feop)
+end
+
 # Tester
 
 function test_transient_2ndOrder_fe_operator(op::TransientFEOperator,uh)
   odeop = get_algebraic_operator(op)
-  @test isa(odeop,ODEOperator)
+  @test isa(odeop,SecondOrderODEOperator)
   cache = allocate_cache(op)
   V = get_test(op)
   @test isa(V,FESpace)
