@@ -83,27 +83,27 @@ function allocate_cache(op::SecondOrderODEOpFromFEOp,v::AbstractVector,a::Abstra
   V = allocate_trial_space(Vt)
   A = allocate_trial_space(At)
   fecache = allocate_cache(op.feop)
-  ode_cache = ((v,a),U,V,A,Ut,Vt,At,fecache)
-  ode_cache
+  ode_cache = (U,V,A,Ut,Vt,At,fecache)
+  (v,a, ode_cache)
 end
 
 function update_cache!(ode_cache,op::SecondOrderODEOpFromFEOp,t::Real)
-  (v,a),U,V,A,Ut,Vt,At,fecache = ode_cache
+  v,a, (U,V,A,Ut,Vt,At,fecache) = ode_cache
   U = evaluate!(U,Ut,t)
   V = evaluate!(V,Vt,t)
   A = evaluate!(A,At,t)
   fecache = update_cache!(fecache,op.feop,t)
-  ((v,a),U,V,A,Ut,Vt,At,fecache)
+  (v,a,(U,V,A,Ut,Vt,At,fecache))
 end
 
 function allocate_residual(op::SecondOrderODEOpFromFEOp,uhF::AbstractVector,ode_cache)
-  (v,a),U,V,A,Ut,Vt,At,fecache = ode_cache
+  U,V,A,Ut,Vt,At,fecache = ode_cache
   uh = EvaluationFunction(U,uhF)
   allocate_residual(op.feop,uh,fecache)
 end
 
 function allocate_jacobian(op::SecondOrderODEOpFromFEOp,uhF::AbstractVector,ode_cache)
-  (v,a),U,V,A,Ut,Vt,At,fecache = ode_cache
+  U,V,A,Ut,Vt,At,fecache = ode_cache
   uh = EvaluationFunction(U,uhF)
   allocate_jacobian(op.feop,uh,fecache)
 end
@@ -116,7 +116,7 @@ function residual!(
   uhtF::AbstractVector,
   uhttF::AbstractVector,
   ode_cache)
-  (v,a),Uh,Uht,Uhtt, = ode_cache
+  Uh,Uht,Uhtt, = ode_cache
   uh = EvaluationFunction(Uh,uhF)
   uht = EvaluationFunction(Uht,uhtF)
   uhtt = EvaluationFunction(Uhtt,uhttF)
@@ -131,7 +131,7 @@ function jacobian!(
   uhtF::AbstractVector,
   uhttF::AbstractVector,
   ode_cache)
-  (v,a),Uh,Uht,Uhtt, = ode_cache
+  Uh,Uht,Uhtt, = ode_cache
   uh = EvaluationFunction(Uh,uhF)
   uht = EvaluationFunction(Uht,uhtF)
   uhtt = EvaluationFunction(Uhtt,uhttF)
@@ -147,7 +147,7 @@ function jacobian_t!(
   uhttF::AbstractVector,
   dut_u::Real,
   ode_cache)
-  (v,a),Uh,Uht,Uhtt, = ode_cache
+  Uh,Uht,Uhtt, = ode_cache
   uh = EvaluationFunction(Uh,uhF)
   uht = EvaluationFunction(Uht,uhtF)
   uhtt = EvaluationFunction(Uhtt,uhttF)
@@ -163,7 +163,7 @@ function jacobian_tt!(
   uhttF::AbstractVector,
   dutt_u::Real,
   ode_cache)
-  (v,a),Uh,Uht,Uhtt, = ode_cache
+  Uh,Uht,Uhtt, = ode_cache
   uh = EvaluationFunction(Uh,uhF)
   uht = EvaluationFunction(Uht,uhtF)
   uhtt = EvaluationFunction(Uhtt,uhttF)
@@ -180,9 +180,9 @@ function jacobian_and_jacobian_t!(
   dut_u::Real,
   dutt_u::Real,
   ode_cache)
-  (v,a),Uh,Uht,Uhtt, = ode_cache
+  Uh,Uht,Uhtt, = ode_cache
   uh = EvaluationFunction(Uh,uhF)
   uht = EvaluationFunction(Uht,uhtF)
   uhtt = EvaluationFunction(Uhtt,uhttF)
-  jacobian_and_jacobian_t!(J,op.feop,t,uh,uht,dut_u,dutt_u,ode_cache)
+  jacobian_and_jacobian_t!(J,op.feop,t,uh,uht,uhtt,dut_u,dutt_u,ode_cache)
 end

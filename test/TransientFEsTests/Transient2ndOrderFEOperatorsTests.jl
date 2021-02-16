@@ -69,12 +69,7 @@ for (uh_tn, tn) in sol_t
   @test tn≈_t_n
   e = u(tn) - uh_tn
   el2 = sqrt(sum( ∫(l2(e))dΩ ))
-  println(el2)
   @test el2 < tol
 end
-
-println(u(1.0)(0.5))
-println(v(1.0)(0.5))
-println(a(0.0)(0.5))
 
 end
