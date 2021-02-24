@@ -7,45 +7,58 @@ corresponding `ODEOperator` and `NonlinearOperator`
 abstract type ODESolver <: GridapType end
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,cache) # -> (uF,tF,cache)
+  uF::AbstractVector,
+  solver::ODESolver,
+  op::ODEOperator,
+  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  t0::Real,
+  cache) # -> (uF,tF,cache)
   @abstractmethod
 end
 
 # Default API
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> (uF,tF,cache)
+  uF::AbstractVector,
+  solver::ODESolver,
+  op::ODEOperator,
+  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  t0::Real) # -> (uF,tF,cache)
   solve_step!(uF,solver,op,u0,t0,nothing)
 end
 
 function solve(
-  solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,tf::Real)
+  solver::ODESolver,
+  op::ODEOperator,
+  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  t0::Real,
+  tf::Real)
   GenericODESolution(solver,op,u0,t0,tf)
 end
 
-# Default API 2nd Order ODE
+# # Default API 2nd Order ODE
 
-function solve_step!(
-  uF::AbstractVector,
-  solver::ODESolver,
-  op::SecondOrderODEOperator,
-  u0::AbstractVector,
-  v0::AbstractVector,
-  a0::AbstractVector,
-  t0::Real) # -> (uF,tF,cache)
-  solve_step!(uF,solver,op,u0,v0,a0,t0,nothing)
-end
+# function solve_step!(
+#   uF::AbstractVector,
+#   solver::ODESolver,
+#   op::SecondOrderODEOperator,
+#   u0::AbstractVector,
+#   v0::AbstractVector,
+#   a0::AbstractVector,
+#   t0::Real) # -> (uF,tF,cache)
+#   solve_step!(uF,solver,op,u0,v0,a0,t0,nothing)
+# end
 
-function solve(
-  solver::ODESolver,
-  op::SecondOrderODEOperator,
-  u0::AbstractVector,
-  v0::AbstractVector,
-  a0::AbstractVector,
-  t0::Real,
-  tf::Real)
-  Generic2ndOrderODESolution(solver,op,u0,v0,a0,t0,tf)
-end
+# function solve(
+#   solver::ODESolver,
+#   op::SecondOrderODEOperator,
+#   u0::AbstractVector,
+#   v0::AbstractVector,
+#   a0::AbstractVector,
+#   t0::Real,
+#   tf::Real)
+#   Generic2ndOrderODESolution(solver,op,u0,v0,a0,t0,tf)
+# end
 
 # testers
 

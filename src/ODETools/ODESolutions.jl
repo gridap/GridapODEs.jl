@@ -32,7 +32,7 @@ end
 struct GenericODESolution <: ODESolution
   solver::ODESolver
   op::ODEOperator
-  u0::AbstractVector
+  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}}
   t0::Real
   tF::Real
 end
@@ -71,54 +71,54 @@ function Base.iterate(sol::GenericODESolution, state)
   return (uf, tf), state
 end
 
-# Specialization for a 2nd order ODE
+# # Specialization for a 2nd order ODE
 
-struct Generic2ndOrderODESolution <: ODESolution
-  solver::ODESolver
-  op::SecondOrderODEOperator
-  u0::AbstractVector
-  v0::AbstractVector
-  a0::AbstractVector
-  t0::Real
-  tF::Real
-end
+# struct Generic2ndOrderODESolution <: ODESolution
+#   solver::ODESolver
+#   op::SecondOrderODEOperator
+#   u0::AbstractVector
+#   v0::AbstractVector
+#   a0::AbstractVector
+#   t0::Real
+#   tF::Real
+# end
 
-function Base.iterate(sol::Generic2ndOrderODESolution)
+# function Base.iterate(sol::Generic2ndOrderODESolution)
 
-  uf = copy(sol.u0)
-  u0 = copy(sol.u0)
-  v0 = copy(sol.v0)
-  a0 = copy(sol.a0)
-  t0 = sol.t0
+#   uf = copy(sol.u0)
+#   u0 = copy(sol.u0)
+#   v0 = copy(sol.v0)
+#   a0 = copy(sol.a0)
+#   t0 = sol.t0
 
-  # Solve step
-  uf, tf, vf, af, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0)
+#   # Solve step
+#   uf, tf, vf, af, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0)
 
-  # Update
-  u0 .= uf
-  v0 .= vf
-  a0 .= af
-  state = (uf,u0,v0,a0,tf,cache)
+#   # Update
+#   u0 .= uf
+#   v0 .= vf
+#   a0 .= af
+#   state = (uf,u0,v0,a0,tf,cache)
 
-  return (uf, tf), state
-end
+#   return (uf, tf), state
+# end
 
-function Base.iterate(sol::Generic2ndOrderODESolution, state)
+# function Base.iterate(sol::Generic2ndOrderODESolution, state)
 
-  uf,u0,v0,a0,t0,cache = state
+#   uf,u0,v0,a0,t0,cache = state
 
-  if t0 >= sol.tF - ϵ
-    return nothing
-  end
+#   if t0 >= sol.tF - ϵ
+#     return nothing
+#   end
 
-  # Solve step
-  uf, tf, vf, af, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0,cache)
+#   # Solve step
+#   uf, tf, vf, af, cache = solve_step!(uf,sol.solver,sol.op,u0,v0,a0,t0,cache)
 
-  # Update
-  u0 .= uf
-  v0 .= vf
-  a0 .= af
-  state = (uf,u0,v0,a0,tf,cache)
+#   # Update
+#   u0 .= uf
+#   v0 .= vf
+#   a0 .= af
+#   state = (uf,u0,v0,a0,tf,cache)
 
-  return (uf, tf), state
-end
+#   return (uf, tf), state
+# end

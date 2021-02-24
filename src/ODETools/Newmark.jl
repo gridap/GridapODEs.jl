@@ -11,10 +11,8 @@ end
 function solve_step!(
   u1::AbstractVector,
   solver::Newmark,
-  op::SecondOrderODEOperator,
-  u0::AbstractVector,
-  v0::AbstractVector,
-  a0::AbstractVector,
+  op::ODEOperator,
+  x0::NTuple{3,AbstractVector},
   t0::Real,
   cache) # -> (uF,tF)
 
@@ -22,6 +20,7 @@ function solve_step!(
   γ = solver.γ
   β = solver.β
   t1 = t0+dt
+  u0, v0, a0 = x0
 
   if cache === nothing
     ode_cache = allocate_cache(op,v0,a0)
@@ -49,33 +48,33 @@ Nonlinear operator that represents the Newmark nonlinear operator at a
 given time step, i.e., A(t,u_n+1,v_n+1,a_n+1)
 """
 struct NewmarkNonlinearOperator <: NonlinearOperator
-  odeop::SecondOrderODEOperator
+  odeop::ODEOperator
   t1::Float64
   dt::Float64
   γ::Float64
   β::Float64
-  u0::AbstractVector
-  v0::AbstractVector
-  a0::AbstractVector
+  x0::NTuple{3,AbstractVector}
   ode_cache
 end
 
 function residual!(b::AbstractVector,op::NewmarkNonlinearOperator,x::AbstractVector)
   u1 = x
+  u0, v0, a0 = op.x0
   v1, a1, cache = op.ode_cache
-  a1 = 1.0/(op.β*op.dt^2)*(u1-op.u0) - 1.0/(op.β*op.dt)*op.v0 - (1-2*op.β)/(2*op.β)*op.a0
-  v1 = op.γ/(op.β*op.dt)*(u1-op.u0) + (1-op.γ/op.β)*op.v0 + op.dt*(1-op.γ/(2*op.β))*op.a0
-  residual!(b,op.odeop,op.t1,u1,v1,a1,cache)
+  a1 = 1.0/(op.β*op.dt^2)*(u1-u0) - 1.0/(op.β*op.dt)*v0 - (1-2*op.β)/(2*op.β)*a0
+  v1 = op.γ/(op.β*op.dt)*(u1-u0) + (1-op.γ/op.β)*v0 + op.dt*(1-op.γ/(2*op.β))*a0
+  residual!(b,op.odeop,op.t1,(u1,v1,a1),cache)
 end
 
 function jacobian!(A::AbstractMatrix,op::NewmarkNonlinearOperator,x::AbstractVector)
   u1 = x
+  u0, v0, a0 = op.x0
   v1, a1, cache = op.ode_cache
-  a1 = 1.0/(op.β*op.dt^2)*(u1-op.u0) - 1.0/(op.β*op.dt)*op.v0 - (1-2*op.β)/(2*op.β)*op.a0
-  v1 = op.γ/(op.β*op.dt)*(u1-op.u0) + (1-op.γ/op.β)*op.v0 + op.dt*(1-op.γ/(2*op.β))*op.a0
+  a1 = 1.0/(op.β*op.dt^2)*(u1-u0) - 1.0/(op.β*op.dt)*v0 - (1-2*op.β)/(2*op.β)*a0
+  v1 = op.γ/(op.β*op.dt)*(u1-u0) + (1-op.γ/op.β)*v0 + op.dt*(1-op.γ/(2*op.β))*a0
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian_and_jacobian_t!(A,op.odeop,op.t1,u1,v1,a1,op.γ/(op.β*op.dt),1.0/(op.β*op.dt^2),cache)
+  jacobians!(A,op.odeop,op.t1,(u1,v1,a1),(1.0,op.γ/(op.β*op.dt),1.0/(op.β*op.dt^2)),cache)
 end
 
 function allocate_residual(op::NewmarkNonlinearOperator,x::AbstractVector)

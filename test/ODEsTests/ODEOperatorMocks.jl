@@ -13,8 +13,7 @@ import GridapODEs.ODETools: allocate_cache
 import GridapODEs.ODETools: update_cache!
 import GridapODEs.ODETools: allocate_residual
 import GridapODEs.ODETools: jacobian!
-import GridapODEs.ODETools: jacobian_t!
-import GridapODEs.ODETools: jacobian_and_jacobian_t!
+import GridapODEs.ODETools: jacobians!
 import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
 
@@ -22,16 +21,21 @@ struct ODEOperatorMock{T<:Real,C} <: ODEOperator{C}
   a::T
   b::T
   c::T
+  order::Integer
 end
 
-function residual!(r::AbstractVector,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,ode_cache)
+get_order(op::ODEOperatorMock) = op.order
+
+function residual!(r::AbstractVector,op::ODEOperatorMock,t::Real,x::NTuple{2,AbstractVector},ode_cache)
+  u,u_t = x
   r .= 0
   r[1] = u_t[1] - op.a * u[1]
   r[2] = u_t[2] - op.b * u[1] - op.c * u[2]
   r
 end
 
-function residual!(r::AbstractVector,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,u_tt::AbstractVector,ode_cache)
+function residual!(r::AbstractVector,op::ODEOperatorMock,t::Real,x::NTuple{3,AbstractVector},ode_cache)
+  u,u_t,u_tt = x
   r .= 0
   r[1] = u_tt[1] + op.b * u_t[1] - op.a * u[1]
   r[2] = u_tt[2] + op.a * u_t[1]- op.b * u[1] - op.c * u[2]
@@ -42,61 +46,62 @@ function allocate_residual(op::ODEOperatorMock,u::AbstractVector,cache)
   zeros(2)
 end
 
-function jacobian!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,ode_cache)
-  J[1,1] += -op.a
-  J[2,1] += -op.b
-  J[2,2] += -op.c
+function jacobian!(J::AbstractMatrix,
+  op::ODEOperatorMock,
+  t::Real,
+  x::NTuple{2,AbstractVector},
+  i::Int,
+  γᵢ::Real,
+  ode_cache)
+  @assert get_order(op) == 1
+  @assert i <= get_order(op)
+  if i==0
+    J[1,1] += -op.a
+    J[2,1] += -op.b
+    J[2,2] += -op.c
+  elseif i==1
+    J[1,1] += 1.0*γᵢ
+    J[2,2] += 1.0*γᵢ
+  end
   J
 end
 
-function jacobian!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,u_tt::AbstractVector,ode_cache)
-  J[1,1] += -op.a
-  J[2,1] += -op.b
-  J[2,2] += -op.c
+function jacobian!(J::AbstractMatrix,
+  op::ODEOperatorMock,
+  t::Real,
+  x::NTuple{3,AbstractVector},
+  i::Int,
+  γᵢ::Real,
+  ode_cache)
+  @assert get_order(op) == 2
+  @assert i <= get_order(op)
+  if i==0
+    J[1,1] += -op.a
+    J[2,1] += -op.b
+    J[2,2] += -op.c
+  elseif i==1
+    J[1,1] += op.b*γᵢ
+    J[2,2] += op.a*γᵢ
+  elseif i==2
+    J[1,1] += 1.0*γᵢ
+    J[2,2] += 1.0*γᵢ
+  end
   J
 end
 
-function jacobian_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,du_t_u::Real,ode_cache)
-  J[1,1] += 1.0*du_t_u
-  J[2,2] += 1.0*du_t_u
-  J
-end
-
-function jacobian_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,u_tt::AbstractVector,du_t_u::Real,ode_cache)
-  J[1,1] += op.b*du_t_u
-  J[2,1] += op.a*du_t_u
-  J
-end
-
-function jacobian_tt!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,u_tt::AbstractVector,du_tt_u::Real,ode_cache)
-  J[1,1] += 1.0*du_tt_u
-  J[2,2] += 1.0*du_tt_u
-  J
-end
-
-function jacobian_and_jacobian_t!(J::AbstractMatrix,op::ODEOperatorMock,t::Real,u::AbstractVector,u_t::AbstractVector,du_t_u::Real,ode_cache)
-  jacobian!(J,op,t,u,u_t,ode_cache)
-  jacobian_t!(J,op,t,u,u_t,du_t_u,ode_cache)
-  J
-end
-
-function jacobian_and_jacobian_t!(
+function jacobians!(
   J::AbstractMatrix,
   op::ODEOperatorMock,
   t::Real,
-  u::AbstractVector,
-  u_t::AbstractVector,
-  u_tt::AbstractVector,
-  du_t_u::Real,
-  du_tt_u::Real,
+  x::Tuple{Vararg{AbstractVector}},
+  γ::Tuple{Vararg{Real}},
   ode_cache)
-  jacobian!(J,op,t,u,u_t,u_tt,ode_cache)
-  jacobian_t!(J,op,t,u,u_t,u_tt,du_t_u,ode_cache)
-  jacobian_tt!(J,op,t,u,u_t,u_tt,du_tt_u,ode_cache)
+  @assert length(γ) == get_order(op) + 1
+  for order in 1:get_order(op)+1
+    jacobian!(J,op,t,x,order-1,γ[order],ode_cache)
+  end
   J
 end
-
-
 
 function allocate_jacobian(op::ODEOperatorMock,u::AbstractVector,cache)
   zeros(2,2)
