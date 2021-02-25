@@ -7,9 +7,8 @@ using GridapODEs.TransientFETools: TransientFEOperator
 using GridapODEs.ODETools: allocate_cache
 using GridapODEs.ODETools: update_cache!
 using GridapODEs.ODETools: residual!
-using GridapODEs.ODETools: jacobian_and_jacobian_t!
+using GridapODEs.ODETools: jacobians!
 using GridapODEs.ODETools: jacobian!
-using GridapODEs.ODETools: jacobian_t!
 
 using Gridap.Algebra: allocate_jacobian
 
@@ -46,28 +45,28 @@ function diffeq_wrappers(op)
     # TO DO (minor): Improve update_cache! st do nothing if same time t as in the cache
     # now it would be done twice (residual and jacobian)
     ode_cache = update_cache!(ode_cache, ode_op, t)
-    residual!(res, ode_op, t, u, du, ode_cache)
+    residual!(res, ode_op, t, (u, du), ode_cache)
   end
 
   function _jacobian!(jac, du, u, p, gamma, t)
     ode_cache = update_cache!(ode_cache, ode_op, t)
     z = zero(eltype(jac))
     fill_entries!(jac, z)
-    jacobian_and_jacobian_t!(jac, ode_op, t, u, du, gamma, ode_cache)
+    jacobians!(jac, ode_op, t, (u, du), (1.0, gamma), ode_cache)
   end
 
   function _mass!(mass, du, u, p, t)
     ode_cache = update_cache!(ode_cache, ode_op, t)
     z = zero(eltype(mass))
     fill_entries!(mass, z)
-    jacobian_t!(mass, ode_op, t, u, du, 1.0, ode_cache)
+    jacobian!(mass, ode_op, t, (u, du), 2, 1.0, ode_cache)
   end
 
   function _stiffness!(stif, du, u, p, t)
     ode_cache = update_cache!(ode_cache, ode_op, t)
     z = zero(eltype(stif))
     fill_entries!(stif, z)
-    jacobian!(stif, ode_op, t, u, du, ode_cache)
+    jacobian!(stif, ode_op, t, (u, du), 1, 1.0, ode_cache)
   end
 
   return _residual!, _jacobian!, _mass!, _stiffness!
