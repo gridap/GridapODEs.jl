@@ -23,14 +23,19 @@ function TransientFESolution(
 end
 
 function TransientFESolution(
-  solver::TransientFESolver, op::TransientFEOperator, uh0, vh0, ah0, t0::Real, tF::Real)
+  solver::TransientFESolver,
+  op::TransientFEOperator,
+  xh0::Tuple{Vararg{Any}},
+  t0::Real,
+  tF::Real)
 
   ode_solver = solver.odes
   ode_op = get_algebraic_operator(op)
-  u0 = get_free_values(uh0)
-  v0 = get_free_values(vh0)
-  a0 = get_free_values(ah0)
-  ode_sol = solve(ode_solver,ode_op,u0,v0,a0,t0,tF)
+  x0 = ()
+  for xhi in xh0
+    x0 = (x0...,get_free_values(xhi))
+  end
+  ode_sol = solve(ode_solver,ode_op,x0,t0,tF)
   trial = get_trial(op)
 
   TransientFESolution(ode_sol, trial)

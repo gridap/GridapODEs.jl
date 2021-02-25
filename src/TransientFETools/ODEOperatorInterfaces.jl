@@ -11,18 +11,21 @@ get_order(op::ODEOpFromFEOp) = get_order(op.feop)
 
 function allocate_cache(op::ODEOpFromFEOp)
   Ut = get_trial(op.feop)
-  Uts = (Ut)
-  for i in 1:get_order(op)
-    Uts = (Uts...,∂t(Uts[i]))
-  end
   U = allocate_trial_space(Ut)
-  Us = NTuple{get_order(op)+1,typeof(U)}
+  Uts = [Ut]
+  Us = [U]
   for i in 1:get_order(op)
-    Us[i+1] = allocate_trial_space(Uts[i+1])
+    push!(Uts,∂t(Uts[i]))
+    push!(Us,allocate_trial_space(Uts[i+1]))
   end
   fecache = allocate_cache(op.feop)
   ode_cache = (Us,Uts,fecache)
   ode_cache
+end
+
+function allocate_cache(op::ODEOpFromFEOp,v::AbstractVector,a::AbstractVector)
+  ode_cache = allocate_cache(op)
+  (v,a, ode_cache)
 end
 
 function update_cache!(ode_cache,op::ODEOpFromFEOp,t::Real)
@@ -42,7 +45,7 @@ end
 
 function allocate_jacobian(op::ODEOpFromFEOp,uhF::AbstractVector,ode_cache)
   Us,Uts,fecache = ode_cache
-  uh = EvaluationFunction(U,uhF)
+  uh = EvaluationFunction(Us[1],uhF)
   allocate_jacobian(op.feop,uh,fecache)
 end
 

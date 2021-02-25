@@ -9,7 +9,7 @@ struct Newmark <: ODESolver
 end
 
 function solve_step!(
-  u1::AbstractVector,
+  x1::NTuple{3,AbstractVector},
   solver::Newmark,
   op::ODEOperator,
   x0::NTuple{3,AbstractVector},
@@ -21,25 +21,27 @@ function solve_step!(
   β = solver.β
   t1 = t0+dt
   u0, v0, a0 = x0
+  u1, v1, a1 = x1
 
   if cache === nothing
-    ode_cache = allocate_cache(op,v0,a0)
+    newmark_cache = allocate_cache(op,v0,a0)
     nl_cache = nothing
   else
-    ode_cache, nl_cache = cache
+    newmark_cache, nl_cache = cache
   end
 
+  (v,a, ode_cache) = newmark_cache
   ode_cache = update_cache!(ode_cache,op,t1)
-  nlop = NewmarkNonlinearOperator(op,t1,dt,γ,β,u0,v0,a0,ode_cache)
+  nlop = NewmarkNonlinearOperator(op,t1,dt,γ,β,(u0,v0,a0),newmark_cache)
   nl_cache = solve!(u1,solver.nls,nlop,nl_cache)
 
-  v1, a1, = ode_cache
   v1 = γ/(β*dt)*(u1-u0) + (1-γ/β)*v0 + dt*(1-γ/(2*β))*a0
   a1 = 1.0/(β*dt^2)*(u1-u0) - 1.0/(β*dt)*v0 - (1-2*β)/(2*β)*a0
 
-  cache = (ode_cache, nl_cache)
+  cache = (newmark_cache, nl_cache)
+  x1 = (u1,v1,a1)
 
-  return (u1,t1,v1,a1,cache)
+  return (x1,t1,cache)
 
 end
 

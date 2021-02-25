@@ -74,7 +74,7 @@ function jacobian!(
   op::ODEOperator,
   t::Real,
   u::Tuple{Vararg{AbstractVector}},
-  i::Int,
+  i::Integer,
   γᵢ::Real,
   ode_cache)
   @abstractmethod
@@ -129,8 +129,8 @@ function test_ode_operator(op::ODEOperator,t::Real,u::AbstractVector,u_t::Abstra
   r = allocate_residual(op,u,cache)
   residual!(r,op,t,(u,u_t),cache)
   J = allocate_jacobian(op,u,cache)
-  jacobian!(J,op,t,(u,u_t),0,1.0,cache)
   jacobian!(J,op,t,(u,u_t),1,1.0,cache)
+  jacobian!(J,op,t,(u,u_t),2,1.0,cache)
   jacobians!(J,op,t,(u,u_t),(1.0,1.0),cache)
   true
 end

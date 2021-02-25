@@ -29,15 +29,15 @@ end
 
 # Specialization
 
-struct GenericODESolution <: ODESolution
+struct GenericODESolution{T} <: ODESolution
   solver::ODESolver
   op::ODEOperator
-  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}}
+  u0::T
   t0::Real
   tF::Real
 end
 
-function Base.iterate(sol::GenericODESolution)
+function Base.iterate(sol::GenericODESolution{T}) where {T<:AbstractVector}
 
   uf = copy(sol.u0)
   u0 = copy(sol.u0)
@@ -53,7 +53,7 @@ function Base.iterate(sol::GenericODESolution)
   return (uf, tf), state
 end
 
-function Base.iterate(sol::GenericODESolution, state)
+function Base.iterate(sol::GenericODESolution{T}, state) where {T<:AbstractVector}
 
   uf,u0,t0,cache = state
 
@@ -69,6 +69,48 @@ function Base.iterate(sol::GenericODESolution, state)
   state = (uf,u0,tf,cache)
 
   return (uf, tf), state
+end
+
+function Base.iterate(sol::GenericODESolution{T}) where {T<:Tuple{Vararg{AbstractVector}}}
+
+  uf = ()
+  u0 = ()
+  for i in 1:length(sol.u0)
+    uf = (uf...,copy(sol.u0[i]))
+    u0 = (u0...,copy(sol.u0[i]))
+  end
+  t0 = sol.t0
+
+  # Solve step
+  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,t0)
+
+  # Update
+  for i in 1:length(uf)
+    u0[i] .= uf[i]
+  end
+  state = (uf,u0,tf,cache)
+
+  return (uf[1], tf), state
+end
+
+function Base.iterate(sol::GenericODESolution{T}, state) where {T<:Tuple{Vararg{AbstractVector}}}
+
+  uf,u0,t0,cache = state
+
+  if t0 >= sol.tF - ϵ
+    return nothing
+  end
+
+  # Solve step
+  uf, tf, cache = solve_step!(uf,sol.solver,sol.op,u0,t0,cache)
+
+  # Update
+  for i in 1:length(uf)
+    u0[i] .= uf[i]
+  end
+  state = (uf,u0,tf,cache)
+
+  return (uf[1], tf), state
 end
 
 # # Specialization for a 2nd order ODE

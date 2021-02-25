@@ -54,12 +54,12 @@ function jacobian!(J::AbstractMatrix,
   γᵢ::Real,
   ode_cache)
   @assert get_order(op) == 1
-  @assert i <= get_order(op)
-  if i==0
+  @assert 0 < i <= get_order(op)+1
+  if i==1
     J[1,1] += -op.a
     J[2,1] += -op.b
     J[2,2] += -op.c
-  elseif i==1
+  elseif i==2
     J[1,1] += 1.0*γᵢ
     J[2,2] += 1.0*γᵢ
   end
@@ -74,15 +74,15 @@ function jacobian!(J::AbstractMatrix,
   γᵢ::Real,
   ode_cache)
   @assert get_order(op) == 2
-  @assert i <= get_order(op)
-  if i==0
+  @assert 0 < i <= get_order(op)+1
+  if i==1
     J[1,1] += -op.a
     J[2,1] += -op.b
     J[2,2] += -op.c
-  elseif i==1
+  elseif i==2
     J[1,1] += op.b*γᵢ
     J[2,2] += op.a*γᵢ
-  elseif i==2
+  elseif i==3
     J[1,1] += 1.0*γᵢ
     J[2,2] += 1.0*γᵢ
   end
@@ -98,7 +98,7 @@ function jacobians!(
   ode_cache)
   @assert length(γ) == get_order(op) + 1
   for order in 1:get_order(op)+1
-    jacobian!(J,op,t,x,order-1,γ[order],ode_cache)
+    jacobian!(J,op,t,x,order,γ[order],ode_cache)
   end
   J
 end

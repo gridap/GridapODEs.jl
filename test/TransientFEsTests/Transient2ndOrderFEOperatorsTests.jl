@@ -34,10 +34,10 @@ c(ut,v) = ∫(v*ut)dΩ
 a(u,v) = ∫(∇(v)⊙∇(u))dΩ
 b(v,t) = ∫(v*f(t))dΩ
 
-res(t,u,ut,utt,v) = m(utt,v) + c(ut,v) + a(u,v) - b(v,t)
-jac(t,u,ut,utt,du,v) = a(du,v)
-jac_t(t,u,ut,utt,dut,v) = c(dut,v)
-jac_tt(t,u,ut,utt,dutt,v) = m(dutt,v)
+res(t,(u,ut,utt),v) = m(utt,v) + c(ut,v) + a(u,v) - b(v,t)
+jac(t,(u,ut,utt),du,v) = a(du,v)
+jac_t(t,(u,ut,utt),dut,v) = c(dut,v)
+jac_tt(t,(u,ut,utt),dutt,v) = m(dutt,v)
 
 op = TransientFEOperator(res,jac,jac_t,jac_tt,U,V0)
 
@@ -56,7 +56,7 @@ ls = LUSolver()
 odes = Newmark(ls,dt,γ,β)
 solver = TransientFESolver(odes)
 
-sol_t = solve(solver,op,uh0,vh0,ah0,t0,tF)
+sol_t = solve(solver,op,(uh0,vh0,ah0),t0,tF)
 
 l2(w) = w*w
 

@@ -32,14 +32,14 @@ _r[2] = u_t[2] - op.b * u[1] - op.c * u[2]
 @test all(r .== _r)
 
 J .= 0
-jacobian!(J,op,t,(u,u_t),0,1.0,cache)
+jacobian!(J,op,t,(u,u_t),1,1.0,cache)
 _J = zeros(2,2)
 _J[1,1] = -op.a
 _J[2,1] = -op.b
 _J[2,2] = -op.c
 @test all(J .== _J)
 
-jacobian!(J,op,t,(u,u_t),1,1.0,cache)
+jacobian!(J,op,t,(u,u_t),2,1.0,cache)
 _J[1,1] += 1.0
 _J[2,2] += 1.0
 @test all(J .== _J)

@@ -7,7 +7,7 @@ corresponding `ODEOperator` and `NonlinearOperator`
 abstract type ODESolver <: GridapType end
 
 function solve_step!(
-  uF::AbstractVector,
+  uF::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
   solver::ODESolver,
   op::ODEOperator,
   u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
@@ -19,7 +19,7 @@ end
 # Default API
 
 function solve_step!(
-  uF::AbstractVector,
+  uF::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
   solver::ODESolver,
   op::ODEOperator,
   u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
@@ -30,10 +30,10 @@ end
 function solve(
   solver::ODESolver,
   op::ODEOperator,
-  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  u0::T,#Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
   t0::Real,
-  tf::Real)
-  GenericODESolution(solver,op,u0,t0,tf)
+  tf::Real) where {T}
+  GenericODESolution{T}(solver,op,u0,t0,tf)
 end
 
 # # Default API 2nd Order ODE

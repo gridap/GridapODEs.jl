@@ -141,6 +141,6 @@ function ThetaMethodConstantOperator(odeop::ConstantODEOperator,tθ::Float64,dt�
   b = -1*b
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobians!(A,odeop,tθ,(vθ,vθ),(1/dtθ),ode_cache)
+  jacobians!(A,odeop,tθ,(vθ,vθ),(1.0,1/dtθ),ode_cache)
   return A, b
 end
