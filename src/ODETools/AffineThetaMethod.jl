@@ -110,7 +110,7 @@ end
 function _mass_matrix!(A,odeop,tθ,dtθ,u0,ode_cache,vθ)
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian!(A,odeop,tθ,(vθ,vθ),1,(1/dtθ),ode_cache)
+  jacobian!(A,odeop,tθ,(vθ,vθ),2,(1/dtθ),ode_cache)
 end
 
 function _vector!(b,odeop,tθ,dtθ,u0,ode_cache,vθ)
