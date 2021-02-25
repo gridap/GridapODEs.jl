@@ -12,11 +12,11 @@ get_order(op::ODEOpFromFEOp) = get_order(op.feop)
 function allocate_cache(op::ODEOpFromFEOp)
   Ut = get_trial(op.feop)
   U = allocate_trial_space(Ut)
-  Uts = [Ut]
-  Us = [U]
+  Uts = (Ut,)
+  Us = (U,)
   for i in 1:get_order(op)
-    push!(Uts,∂t(Uts[i]))
-    push!(Us,allocate_trial_space(Uts[i+1]))
+    Uts = (Uts...,∂t(Uts[i]))
+    Us = (Us...,allocate_trial_space(Uts[i+1]))
   end
   fecache = allocate_cache(op.feop)
   ode_cache = (Us,Uts,fecache)
@@ -29,9 +29,10 @@ function allocate_cache(op::ODEOpFromFEOp,v::AbstractVector,a::AbstractVector)
 end
 
 function update_cache!(ode_cache,op::ODEOpFromFEOp,t::Real)
-  Us,Uts,fecache = ode_cache
+  _Us,Uts,fecache = ode_cache
+  Us = ()
   for i in 1:get_order(op)+1
-    Us[i] = evaluate!(Us[i],Uts[i],t)
+    Us = (Us...,evaluate!(_Us[i],Uts[i],t))
   end
   fecache = update_cache!(fecache,op.feop,t)
   (Us,Uts,fecache)
