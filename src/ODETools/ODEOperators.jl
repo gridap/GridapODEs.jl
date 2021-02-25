@@ -33,7 +33,6 @@ const ConstantODEOperator = ODEOperator{Constant}
 Returns the `OperatorType`, i.e., nonlinear, affine, or constant in time
 """
 OperatorType(::ODEOperator{C}) where {C} = C
-# OperatorType(::Type{<:ODEOperator{C}}) where C = C
 
 """
 Returns the order of the ODE operator
@@ -80,17 +79,6 @@ function jacobian!(
   @abstractmethod
   # Add values to J
 end
-
-# """
-# Add the contribution γ*[∂A/∂(∂tu)](u,∂tu) to the Jacobian matrix, where γ
-# is a scaling coefficient provided by the `ODESolver`, e.g., 1/Δt for Backward
-# Euler; It represents ∂(δt(u))/∂(u), in which δt(⋅) is the approximation of ∂t(⋅)
-# in the solver.
-# """
-# function jacobian_t!(J::AbstractMatrix,op::ODEOperator,t::Real,u::AbstractVector,u_t::AbstractVector,dut_u::Real,ode_cache)
-#   @abstractmethod
-#   # Add values to J
-# end
 
 """
 Add the contribution of both all jacobians ,i.e., ∑ᵢ γ_i*[∂A/∂(∂t^iu)](t,u,∂tu,...,,∂t^Nu)
