@@ -108,14 +108,15 @@ struct TransientFEOperatorFromWeakForm{C} <: TransientFEOperator{C}
   trials::Tuple{Vararg{Any}}
   test::FESpace
   order::Integer
-  function TransientFEOperatorFromWeakForm(
-    res::Function
-    jacs::Tuple{Vararg{Function}}
-    assem_t::Assembler
-    trials::Tuple{Vararg{Any}}
-    test::FESpace)
-    new{C}(res,jacs,assem_t,trials,test,1)
-  end
+end
+
+function TransientFEOperatorFromWeakForm{C<:OperatorType}(
+  res::Function,
+  jacs::Tuple{Vararg{Function}},
+  assem_t::Assembler,
+  trials::Tuple{Vararg{Any}},
+  test::FESpace)
+  TransientFEOperatorFromWeakForm{C}(res,jacs,assem_t,trials,test,1)
 end
 
 function TransientConstantFEOperator(m::Function,a::Function,b::Function,
@@ -202,7 +203,7 @@ function allocate_jacobian(op::TransientFEOperatorFromWeakForm,uh::FEFunction,ca
   end
   _matdata = ()
   for i in 1:get_order(op)+1
-    _matdata = (_matdata...,matdata_jacobian(op,0.0,xh,i-1,0.0)
+    _matdata = (_matdata...,matdata_jacobian(op,0.0,xh,i-1,0.0))
   end
   matdata = vcat_matdata(_matdata)
   allocate_matrix(op.assem_t,matdata)
@@ -230,7 +231,7 @@ function jacobians!(
   cache)
   _matdata = ()
   for i in 1:get_order(op)+1
-    _matdata = (_matdata...,matdata_jacobian(op,t,xh,i-1,γ[i])
+    _matdata = (_matdata...,matdata_jacobian(op,t,xh,i-1,γ[i]))
   end
   matdata = vcat_matdata(_matdata)
   assemble_matrix_add!(A,op.assem_t, matdata)
@@ -259,8 +260,8 @@ function matdata_jacobian(
   op::TransientFEOperatorFromWeakForm,
   t::Real,
   xh::Tuple{Vararg{FEFunction}},
-  i::order,
-  γᵢ::Reak)
+  i::Integer,
+  γᵢ::Real)
   Uh = evaluate(get_trial(op),nothing)
   du = get_cell_shapefuns_trial(Uh)
   v = get_cell_shapefuns(get_test(op))
@@ -280,15 +281,15 @@ function test_transient_fe_operator(op::TransientFEOperator,uh)
   @test isa(U0,FESpace)
   r = allocate_residual(op,uh,cache)
   @test isa(r,AbstractVector)
-  residual!(r,op,0.0,uh,uh,cache)
+  residual!(r,op,0.0,(uh,uh),cache)
   @test isa(r,AbstractVector)
   J = allocate_jacobian(op,uh,cache)
   @test isa(J,AbstractMatrix)
-  jacobian!(J,op,0.0,uh,uh,cache)
+  jacobian!(J,op,0.0,(uh,uh),0,1.0,cache)
   @test isa(J,AbstractMatrix)
-  jacobian_t!(J,op,0.0,uh,uh,1.0,cache)
+  jacobian!(J,op,0.0,(uh,uh),1,1.0,cache)
   @test isa(J,AbstractMatrix)
-  jacobian_and_jacobian_t!(J,op,0.0,uh,uh,1.0,cache)
+  jacobians!(J,op,0.0,(uh,uh),(1.0,1.0),cache)
   @test isa(J,AbstractMatrix)
   cache = update_cache!(cache,op,0.0)
   true
