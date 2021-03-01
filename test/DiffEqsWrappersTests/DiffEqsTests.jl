@@ -48,7 +48,7 @@ function fe_problem(u, n)
 
   U0 = U(0.0)
   uh0 = interpolate_everywhere(u(0.0), U0)
-  u0 = get_free_values(uh0)
+  u0 = get_free_dof_values(uh0)
 
   return op, u0
 

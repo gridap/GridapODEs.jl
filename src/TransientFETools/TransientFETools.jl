@@ -19,7 +19,7 @@ using Gridap.FESpaces: FESpace
 using Gridap.FESpaces: SingleFieldFESpace
 using Gridap.FESpaces: TrialFESpace
 using Gridap.FESpaces: ZeroMeanFESpace
-using Gridap.FESpaces: get_free_values
+using Gridap.FESpaces: get_free_dof_values
 using Gridap.FESpaces: get_dirichlet_values
 using Gridap.FESpaces: TrialFESpace!
 using Gridap.FESpaces: HomogeneousTrialFESpace

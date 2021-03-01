@@ -15,7 +15,7 @@ function TransientFESolution(
 
   ode_solver = solver.odes
   ode_op = get_algebraic_operator(op)
-  u0 = get_free_values(uh0)
+  u0 = get_free_dof_values(uh0)
   ode_sol = solve(ode_solver,ode_op,u0,t0,tF)
   trial = get_trial(op)
 
@@ -33,7 +33,7 @@ function TransientFESolution(
   ode_op = get_algebraic_operator(op)
   x0 = ()
   for xhi in xh0
-    x0 = (x0...,get_free_values(xhi))
+    x0 = (x0...,get_free_dof_values(xhi))
   end
   ode_sol = solve(ode_solver,ode_op,x0,t0,tF)
   trial = get_trial(op)
