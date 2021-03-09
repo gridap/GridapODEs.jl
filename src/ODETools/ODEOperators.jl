@@ -19,13 +19,13 @@ abstract type ODEOperator{C<:OperatorType} <: GridapType end
 
 """
 It represents an _affine_ operator in an implicit ODE, i.e., an ODE operator of
-the form A(t,u,∂tu,...,,∂t^Nu) = A_N(t)∂t^Nu + ...A_1(t)∂tu + A_0(t)u + f(t)
+the form A(t,u,∂tu,...,∂t^Nu) = A_N(t)∂t^Nu + ...A_1(t)∂tu + A_0(t)u + f(t)
 """
 const AffineODEOperator = ODEOperator{Affine}
 
 """
 It represents a constant operator in an implicit ODE, i.e., an ODE operator of
-the form A(t,u,∂tu,...,,∂t^Nu) = A_N∂t^Nu + ...A_1∂tu + A_0u + f
+the form A(t,u,∂tu,...,∂t^Nu) = A_N∂t^Nu + ...A_1∂tu + A_0u + f
 """
 const ConstantODEOperator = ODEOperator{Constant}
 
@@ -42,7 +42,7 @@ function get_order(::ODEOperator)
 end
 
 """
-It provides A(t,u,∂tu,...,,∂t^Nu) for a given (t,u,∂tu,...,,∂t^Nu)
+It provides A(t,u,∂tu,...,∂t^Nu) for a given (t,u,∂tu,...,∂t^Nu)
 """
 function residual!(
   r::AbstractVector,
@@ -63,10 +63,12 @@ function allocate_residual(
 end
 
 """
-It adds γ_i*[∂A/∂(∂t^iu)](t,u,∂tu,...,,∂t^Nu) for a given (t,u,∂tu,...,∂t^Nu) to
-a given matrix J, where γ is a scaling coefficient provided by the `ODESolver`,
-e.g., 1/Δt for Backward Euler; It represents ∂(δt^i(u))/∂(u), in which δt^i(⋅) is
-the approximation of ∂t^i(⋅) in the solver.
+It adds contribution to the Jacobian with respect to the i-th time derivative,
+with i=0,...,N. That is, adding γ_i*[∂A/∂(∂t^iu)](t,u,∂tu,...,∂t^Nu) for a 
+given (t,u,∂tu,...,∂t^Nu) to a given matrix J, where γ_i is a scaling coefficient 
+provided by the `ODESolver`, e.g., 1/Δt for Backward Euler; It represents 
+∂(δt^i(u))/∂(u), in which δt^i(⋅) is the approximation of ∂t^i(⋅) in the solver.
+Note that for i=0, γ_i=1.0.
 """
 function jacobian!(
   J::AbstractMatrix,
@@ -81,7 +83,7 @@ function jacobian!(
 end
 
 """
-Add the contribution of both all jacobians ,i.e., ∑ᵢ γ_i*[∂A/∂(∂t^iu)](t,u,∂tu,...,,∂t^Nu)
+Add the contribution of all jacobians ,i.e., ∑ᵢ γ_i*[∂A/∂(∂t^iu)](t,u,∂tu,...,∂t^Nu)
 """
 function jacobians!(
   J::AbstractMatrix,
