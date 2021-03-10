@@ -71,7 +71,7 @@ function residual!(b::AbstractVector,op::ThetaMethodNonlinearOperator,x::Abstrac
   uθ = x
   vθ = op.vθ
   vθ = (x-op.u0)/op.dtθ
-  residual!(b,op.odeop,op.tθ,uθ,vθ,op.ode_cache)
+  residual!(b,op.odeop,op.tθ,(uθ,vθ),op.ode_cache)
 end
 
 function jacobian!(A::AbstractMatrix,op::ThetaMethodNonlinearOperator,x::AbstractVector)
@@ -80,7 +80,7 @@ function jacobian!(A::AbstractMatrix,op::ThetaMethodNonlinearOperator,x::Abstrac
   vθ = (x-op.u0)/op.dtθ
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian_and_jacobian_t!(A,op.odeop,op.tθ,uF,vθ,(1/op.dtθ),op.ode_cache)
+  jacobians!(A,op.odeop,op.tθ,(uF,vθ),(1.0,1/op.dtθ),op.ode_cache)
 end
 
 function allocate_residual(op::ThetaMethodNonlinearOperator,x::AbstractVector)

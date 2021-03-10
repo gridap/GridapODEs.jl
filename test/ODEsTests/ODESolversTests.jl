@@ -3,7 +3,7 @@
 using GridapODEs
 using GridapODEs.ODETools: GenericODESolution
 using GridapODEs.ODETools: BackwardEuler
-using GridapODEs.ODETools: RKMethod
+using GridapODEs.ODETools: RungeKutta
 using GridapODEs.ODETools: ThetaMethodNonlinearOperator
 using GridapODEs.ODETools: solve!
 using GridapODEs
@@ -152,5 +152,25 @@ uf, tf, cache = solve_step!(uf,odesol,op,u0,t0,cache)
 
 @test test_ode_solver(odesol,op,u0,t0,tf)
 test_ode_solver(odesol,op,u0,t0,tf)
+
+# Newmark test
+
+op = ODEOperatorMock{Float64,Constant}(1.0,0.0,0.0)
+ls = LUSolver()
+γ = 0.5
+β = 0.25
+odesol = Newmark(ls,dt,γ,β)
+uf = copy(u0)
+v0 = ones(2)*(β*dt)
+a0 = 0.0*ones(2)
+uf.=1.0
+cache = nothing
+# Juno.@enter solve_step!(uf,odesol,op,u0,t0,cache)
+uf, tf, vf, af, cache = solve_step!(uf,odesol,op,u0,v0,a0,t0,cache)
+aᵧ = γ*af .+ (1-γ)*a0
+aᵦ = 2*β*af .+ (1-2*β)*a0
+@test tf==t0+dt
+@test all(vf .≈ (v0 + dt*aᵧ))
+@test all(uf .≈ (u0 + dt*v0 + 0.5*dt^2*aᵦ))
 
 # end #module

@@ -6,7 +6,7 @@ using Gridap.Helpers
 
 export ∂t
 
-import GridapODEs.ODETools: ∂t
+import GridapODEs.ODETools: ∂t, ∂tt
 import GridapODEs.ODETools: time_derivative
 
 export TransientTrialFESpace
@@ -43,8 +43,7 @@ import GridapODEs.ODETools: allocate_residual
 import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
 import GridapODEs.ODETools: jacobian!
-import GridapODEs.ODETools: jacobian_t!
-import GridapODEs.ODETools: jacobian_and_jacobian_t!
+import GridapODEs.ODETools: jacobians!
 import GridapODEs.ODETools: OperatorType
 using GridapODEs.ODETools: Nonlinear
 using GridapODEs.ODETools: Affine
@@ -83,6 +82,8 @@ import GridapODEs.ODETools: ODESolution
 import GridapODEs.ODETools: GenericODESolution
 import Base: iterate
 export test_transient_fe_solution
+
+export Transient2ndOrderFEOperator
 
 include("TransientFESpaces.jl")
 

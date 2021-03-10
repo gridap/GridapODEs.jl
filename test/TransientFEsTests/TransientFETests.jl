@@ -67,9 +67,9 @@ dΩ = Measure(Ω,degree)
 a(u,v) = ∫(∇(v)⋅∇(u))dΩ
 b(v,t) = ∫(v*f(t))dΩ
 
-res(t,u,ut,v) = a(u,v) + ∫(ut*v)dΩ - b(v,t)
-jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = ∫(dut*v)dΩ
+res(t,(u,ut),v) = a(u,v) + ∫(ut*v)dΩ - b(v,t)
+jac(t,(u,ut),du,v) = a(du,v)
+jac_t(t,(u,ut),dut,v) = ∫(dut*v)dΩ
 
 U0 = U(0.0)
 _res(u,v) = a(u,v) + 10.0*∫(u*v)dΩ - b(v,0.0)
@@ -91,9 +91,9 @@ cache = allocate_cache(odeop)
 r = allocate_residual(op,uh,cache)
 J = allocate_jacobian(op,uh,cache)
 uh10 = interpolate_everywhere(0.0,U0)#10.0)
-residual!(r,op,0.0,uh,uh10,cache)
-jacobian!(J,op,1.0,uh,uh10,cache)
-jacobian_t!(J,op,1.0,uh,uh10,10.0,cache)
+residual!(r,op,0.0,(uh,uh10),cache)
+jacobian!(J,op,1.0,(uh,uh10),1,1.0,cache)
+jacobian!(J,op,1.0,(uh,uh10),2,10.0,cache)
 @test all(r.≈_r)
 @test all(J.≈_J)
 
@@ -116,9 +116,9 @@ odes = ThetaMethod(nls,dt,1.0)
 solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
 @test test_transient_fe_solver(solver,op,uh0,t0,tF)
 
-residual!(r,op,0.1,uh,uh,cache)
-jacobian!(J,op,1.0,uh,uh10,cache)
-jacobian_t!(J,op,1.0,uh,uh10,10.0,cache)
+residual!(r,op,0.1,(uh,uh),cache)
+jacobian!(J,op,1.0,(uh,uh10),1,1.0,cache)
+jacobian!(J,op,1.0,(uh,uh10),2,10.0,cache)
 
 u0 = get_free_values(uh0)
 odes
@@ -139,13 +139,13 @@ x = copy(nlop.u0)
 b1 = allocate_residual(nlop,x)
 residual!(b1,nlop,x)
 b2 = allocate_residual(nlop,x)
-residual!(b2,nlop.odeop,nlop.tθ,x,10.0*x,nlop.ode_cache)
+residual!(b2,nlop.odeop,nlop.tθ,(x,10.0*x),nlop.ode_cache)
 @test all(b1 .≈ b2)
 J1 = allocate_jacobian(nlop,x)
 jacobian!(J1,nlop,x)
 J2 = allocate_jacobian(nlop,x)
-jacobian!(J2,nlop.odeop,nlop.tθ,x,10.0*x,nlop.ode_cache)
-jacobian_t!(J2,nlop.odeop,nlop.tθ,x,10.0*x,10.0,nlop.ode_cache)
+jacobian!(J2,nlop.odeop,nlop.tθ,(x,10.0*x),1,1.0,nlop.ode_cache)
+jacobian!(J2,nlop.odeop,nlop.tθ,(x,10.0*x),2,10.0,nlop.ode_cache)
 @test all(J1 .≈ J2)
 using Gridap.Algebra: test_nonlinear_operator
 test_nonlinear_operator(nlop,x,b1,jac=J1)

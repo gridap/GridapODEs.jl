@@ -43,9 +43,9 @@ quad = CellQuadrature(trian,degree)
 a(u,v) = ∇(v)⋅∇(u)
 b(v,t) = v*f(t)
 
-res(t,u,ut,v) = a(u,v) + ut*v - b(v,t)
-jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = dut*v
+res(t,(u,ut),v) = a(u,v) + ut*v - b(v,t)
+jac(t,(u,ut),du,v) = a(du,v)
+jac_t(t,(u,ut),dut,v) = dut*v
 
 t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(U,V0,t_Ω)

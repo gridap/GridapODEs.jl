@@ -28,7 +28,7 @@ function ButcherTableau(::BE_1_0_1)
   b = [1.0]
   c = [1.0]
   d = [0.0]
-  ButcherTableau{BE_1_0_1()}(s,p,q,a,b,c,d)
+  ButcherTableau{BE_1_0_1}(s,p,q,a,b,c,d)
 end
 
 function ButcherTableau(type::SDIRK_2_1_2)
@@ -162,7 +162,7 @@ function residual!(b::AbstractVector,op::RungeKuttaNonlinearOperator,x::Abstract
   ui = x
   vi = op.vi
   vi = (x-op.u0)/(op.a[op.i,op.i]*op.dt)
-  residual!(b,op.odeop,op.ti,ui,vi,op.ode_cache)
+  residual!(b,op.odeop,op.ti,(ui,vi),op.ode_cache)
   for j in 1:op.i-1
     b .= b - op.a[op.i,j]/op.a[op.i,op.i] * op.fi[j]
   end
@@ -176,7 +176,7 @@ function jacobian!(A::AbstractMatrix,op::RungeKuttaNonlinearOperator,x::Abstract
   vi = (x-op.u0)/(op.a[op.i,op.i]*op.dt)
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian_and_jacobian_t!(A,op.odeop,op.ti,ui,vi,(1/(op.a[op.i,op.i]*op.dt)),op.ode_cache)
+  jacobians!(A,op.odeop,op.ti,(ui,vi),(1/(op.a[op.i,op.i]*op.dt)),op.ode_cache)
 end
 
 function allocate_residual(op::RungeKuttaNonlinearOperator,x::AbstractVector)
@@ -202,7 +202,7 @@ function get_fi(x::AbstractVector, op::RungeKuttaNonlinearOperator, cache::Nothi
     vi = (x-op.u0)/(op.a[op.i,op.i]*op.dt)
   end
   b=similar(x)
-  residual!(b,op.odeop,op.ti,ui,vi,op.ode_cache)
+  residual!(b,op.odeop,op.ti,(ui,vi),op.ode_cache)
   (vi-b) # store fi for future stages
 end
 function get_fi(x::AbstractVector, op::RungeKuttaNonlinearOperator, cache)
@@ -213,7 +213,7 @@ function get_fi(x::AbstractVector, op::RungeKuttaNonlinearOperator, cache)
   else
     vi = (x-op.u0)/(op.a[op.i,op.i]*op.dt)
   end
-  residual!(cache.b,op.odeop,op.ti,ui,vi,op.ode_cache)
+  residual!(cache.b,op.odeop,op.ti,(ui,vi),op.ode_cache)
   (vi-cache.b) # store fi for future stages
 end
 

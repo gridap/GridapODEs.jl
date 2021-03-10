@@ -1,66 +1,112 @@
 """
 A wrapper of `TransientFEOperator` that transforms it to `ODEOperator`, i.e.,
-takes A(t,uh,∂tuh,vh) and returns A(t,uF,∂tuF) where uF and ∂tuF represent the
-free values of the `EvaluationFunction` uh and ∂tuh.
+takes A(t,uh,∂tuh,∂t^2uh,...,∂t^Nuh,vh) and returns A(t,uF,∂tuF,...,∂t^NuF) 
+where uF,∂tuF,...,∂t^NuF represent the free values of the `EvaluationFunction`
+uh,∂tuh,∂t^2uh,...,∂t^Nuh.
 """
 struct ODEOpFromFEOp{C} <: ODEOperator{C}
   feop::TransientFEOperator{C}
 end
 
+get_order(op::ODEOpFromFEOp) = get_order(op.feop)
+
 function allocate_cache(op::ODEOpFromFEOp)
   Ut = get_trial(op.feop)
-  Vt = ∂t(Ut)
   U = allocate_trial_space(Ut)
-  V = allocate_trial_space(Vt)
+  Uts = (Ut,)
+  Us = (U,)
+  for i in 1:get_order(op)
+    Uts = (Uts...,∂t(Uts[i]))
+    Us = (Us...,allocate_trial_space(Uts[i+1]))
+  end
   fecache = allocate_cache(op.feop)
-  ode_cache = (U,V,Ut,Vt,fecache)
+  ode_cache = (Us,Uts,fecache)
   ode_cache
 end
 
+function allocate_cache(op::ODEOpFromFEOp,v::AbstractVector,a::AbstractVector)
+  ode_cache = allocate_cache(op)
+  (v,a, ode_cache)
+end
+
 function update_cache!(ode_cache,op::ODEOpFromFEOp,t::Real)
-  U,V,Ut,Vt,fecache = ode_cache
-  U = evaluate!(U,Ut,t)
-  V = evaluate!(V,Vt,t)
+  _Us,Uts,fecache = ode_cache
+  Us = ()
+  for i in 1:get_order(op)+1
+    Us = (Us...,evaluate!(_Us[i],Uts[i],t))
+  end
   fecache = update_cache!(fecache,op.feop,t)
-  (U,V,Ut,Vt,fecache)
+  (Us,Uts,fecache)
 end
 
 function allocate_residual(op::ODEOpFromFEOp,uhF::AbstractVector,ode_cache)
-  U,V,Ut,Vt,fecache = ode_cache
-  uh = EvaluationFunction(U,uhF)
+  Us,Uts,fecache = ode_cache
+  uh = EvaluationFunction(Us[1],uhF)
   allocate_residual(op.feop,uh,fecache)
 end
 
 function allocate_jacobian(op::ODEOpFromFEOp,uhF::AbstractVector,ode_cache)
-  U,V,Ut,Vt,fecache = ode_cache
-  uh = EvaluationFunction(U,uhF)
+  Us,Uts,fecache = ode_cache
+  uh = EvaluationFunction(Us[1],uhF)
   allocate_jacobian(op.feop,uh,fecache)
 end
 
-function residual!(b::AbstractVector,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,ode_cache)
-  Uh,Uht, = ode_cache
-  uh = EvaluationFunction(Uh,uhF)
-  uht = EvaluationFunction(Uht,uhtF)
-  residual!(b,op.feop,t,uh,uht,ode_cache)
+"""
+It provides A(t,uh,∂tuh,...,∂t^Nuh) for a given (t,uh,∂tuh,...,∂t^Nuh)
+"""
+function residual!(
+  b::AbstractVector,
+  op::ODEOpFromFEOp,
+  t::Real,
+  xhF::Tuple{Vararg{AbstractVector}},
+  ode_cache)
+  Xh, = ode_cache
+  xh = ()
+  for i in 1:get_order(op)+1
+    xh = (xh...,EvaluationFunction(Xh[i],xhF[i]))
+  end
+  residual!(b,op.feop,t,xh,ode_cache)
 end
 
-function jacobian!(A::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,ode_cache)
-  Uh,Uht, = ode_cache
-  uh = EvaluationFunction(Uh,uhF)
-  uht = EvaluationFunction(Uht,uhtF)
-  jacobian!(A,op.feop,t,uh,uht,ode_cache)
+
+"""
+It adds contribution to the Jacobian with respect to the i-th time derivative,
+with i=0,...,N. That is, adding γ_i*[∂A/∂(∂t^iuh)](t,uh,∂tuh,...,∂t^Nuh) for a 
+given (t,uh,∂tuh,...,∂t^Nuh) to a given matrix J, where γ_i is a scaling coefficient 
+provided by the `ODESolver`, e.g., 1/Δt for Backward Euler; It represents 
+∂(δt^i(uh))/∂(uh), in which δt^i(⋅) is the approximation of ∂t^i(⋅) in the solver.
+Note that for i=0, γ_i=1.0.
+"""
+function jacobian!(
+  A::AbstractMatrix,
+  op::ODEOpFromFEOp,
+  t::Real,
+  xhF::Tuple{Vararg{AbstractVector}},
+  i::Integer,
+  γᵢ::Real,
+  ode_cache)
+  Xh, = ode_cache
+  xh = ()
+  for i in 1:get_order(op)+1
+    xh = (xh...,EvaluationFunction(Xh[i],xhF[i]))
+  end
+  jacobian!(A,op.feop,t,xh,i,γᵢ,ode_cache)
 end
 
-function jacobian_t!(J::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,dut_u::Real,ode_cache)
-  Uh,Uht, = ode_cache
-  uh = EvaluationFunction(Uh,uhF)
-  uht = EvaluationFunction(Uht,uhtF)
-  jacobian_t!(J,op.feop,t,uh,uht,dut_u,ode_cache)
-end
-
-function jacobian_and_jacobian_t!(J::AbstractMatrix,op::ODEOpFromFEOp,t::Real,uhF::AbstractVector,uhtF::AbstractVector,dut_u::Real,ode_cache)
-  Uh,Uht, = ode_cache
-  uh = EvaluationFunction(Uh,uhF)
-  uht = EvaluationFunction(Uht,uhtF)
-  jacobian_and_jacobian_t!(J,op.feop,t,uh,uht,dut_u,ode_cache)
+"""
+Add the contribution of all jacobians ,i.e., ∑ᵢ γ_i*[∂A/∂(∂t^iuh)](t,uh,∂tuh,...,∂t^Nuh,vh)
+"""
+function jacobians!(
+  J::AbstractMatrix,
+  op::ODEOpFromFEOp,
+  t::Real,
+  xhF::Tuple{Vararg{AbstractVector}},
+  γ::Tuple{Vararg{Real}},
+  ode_cache)
+  Xh, = ode_cache
+  xh = ()
+  for i in 1:get_order(op)+1
+    xh = (xh...,EvaluationFunction(Xh[i],xhF[i]))
+  end
+  jacobians!(J,op.feop,t,xh,γ,ode_cache)
 end

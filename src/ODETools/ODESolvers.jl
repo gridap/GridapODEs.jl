@@ -7,20 +7,33 @@ corresponding `ODEOperator` and `NonlinearOperator`
 abstract type ODESolver <: GridapType end
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,cache) # -> (uF,tF,cache)
+  uF::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  solver::ODESolver,
+  op::ODEOperator,
+  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  t0::Real,
+  cache) # -> (uF,tF,cache)
   @abstractmethod
 end
 
 # Default API
 
 function solve_step!(
-  uF::AbstractVector,solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real) # -> (uF,tF,cache)
+  uF::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  solver::ODESolver,
+  op::ODEOperator,
+  u0::Union{AbstractVector,Tuple{Vararg{AbstractVector}}},
+  t0::Real) # -> (uF,tF,cache)
   solve_step!(uF,solver,op,u0,t0,nothing)
 end
 
 function solve(
-  solver::ODESolver,op::ODEOperator,u0::AbstractVector,t0::Real,tf::Real)
-  GenericODESolution(solver,op,u0,t0,tf)
+  solver::ODESolver,
+  op::ODEOperator,
+  u0::T,
+  t0::Real,
+  tf::Real) where {T}
+  GenericODESolution{T}(solver,op,u0,t0,tf)
 end
 
 # testers
@@ -39,3 +52,5 @@ include("ThetaMethod.jl")
 include("AffineThetaMethod.jl")
 
 include("RungeKutta.jl")
+
+include("Newmark.jl")

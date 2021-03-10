@@ -54,9 +54,9 @@ b(v,t) = ∫(v*f(t))dΩ
 m(ut,v) = ∫(ut*v)dΩ
 b_Γ(v,t) = ∫(v*(∇(u(t))⋅nb))dΓ
 
-res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t) - b_Γ(v,t)
-jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = m(dut,v)
+res(t,(u,ut),v) = a(u,v) + m(ut,v) - b(v,t) - b_Γ(v,t)
+jac(t,(u,ut),du,v) = a(du,v)
+jac_t(t,(u,ut),dut,v) = m(dut,v)
 
 op = TransientFEOperator(res,jac,jac_t,U,V0)
 

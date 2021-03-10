@@ -6,6 +6,7 @@ using ForwardDiff
 
 const ϵ = 100*eps()
 export ∂t
+export ∂tt
 export time_derivative
 
 using Gridap.Fields: VectorValue, TensorValue
@@ -22,6 +23,7 @@ using Gridap.Algebra: AffineOperator
 export ODEOperator
 export AffineODEOperator
 export ConstantODEOperator
+export SecondOrderODEOperator
 export OperatorType
 export Nonlinear
 export Affine
@@ -54,6 +56,7 @@ export ForwardEuler
 export MidPoint
 export ThetaMethod
 export RungeKutta
+export Newmark
 import Gridap.Algebra: fill_entries!
 
 export ODESolution

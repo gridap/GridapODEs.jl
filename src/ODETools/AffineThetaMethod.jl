@@ -104,17 +104,17 @@ end
 function _matrix!(A,odeop,tθ,dtθ,u0,ode_cache,vθ)
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian_and_jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
+  jacobians!(A,odeop,tθ,(vθ,vθ),(1.0,1/dtθ),ode_cache)
 end
 
 function _mass_matrix!(A,odeop,tθ,dtθ,u0,ode_cache,vθ)
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
+  jacobian!(A,odeop,tθ,(vθ,vθ),2,(1/dtθ),ode_cache)
 end
 
 function _vector!(b,odeop,tθ,dtθ,u0,ode_cache,vθ)
-  residual!(b,odeop,tθ,u0,vθ,ode_cache)
+  residual!(b,odeop,tθ,(u0,vθ),ode_cache)
   b .*= -1.0
 end
 
@@ -137,10 +137,10 @@ function ThetaMethodConstantOperator(odeop::ConstantODEOperator,tθ::Float64,dt�
                                    u0::AbstractVector,ode_cache,vθ::AbstractVector)
   b = allocate_residual(odeop,u0,ode_cache)
   A = allocate_jacobian(odeop,u0,ode_cache)
-  residual!(b,odeop,tθ,u0,vθ,ode_cache)
+  residual!(b,odeop,tθ,(u0,vθ),ode_cache)
   b = -1*b
   z = zero(eltype(A))
   fill_entries!(A,z)
-  jacobian_and_jacobian_t!(A,odeop,tθ,vθ,vθ,(1/dtθ),ode_cache)
+  jacobians!(A,odeop,tθ,(vθ,vθ),(1.0,1/dtθ),ode_cache)
   return A, b
 end
