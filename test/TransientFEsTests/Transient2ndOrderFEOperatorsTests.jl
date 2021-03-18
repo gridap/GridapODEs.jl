@@ -34,10 +34,10 @@ c(ut,v) = ∫(v*ut)dΩ
 a(u,v) = ∫(∇(v)⊙∇(u))dΩ
 b(v,t) = ∫(v*f(t))dΩ
 
-res(t,(u,ut,utt),v) = m(utt,v) + c(ut,v) + a(u,v) - b(v,t)
-jac(t,(u,ut,utt),du,v) = a(du,v)
-jac_t(t,(u,ut,utt),dut,v) = c(dut,v)
-jac_tt(t,(u,ut,utt),dutt,v) = m(dutt,v)
+res(t,u,v) = m(∂tt(u),v) + c(∂t(u),v) + a(u,v) - b(v,t)
+jac(t,u,du,v) = a(du,v)
+jac_t(t,u,dut,v) = c(dut,v)
+jac_tt(t,u,dutt,v) = m(dutt,v)
 
 op = TransientFEOperator(res,jac,jac_t,jac_tt,U,V0)
 
