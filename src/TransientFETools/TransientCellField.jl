@@ -32,3 +32,5 @@ function ∂t(f::Union{TransientCellField,TransientFEBasis})
   cellfield, derivatives = first_and_tail(f.derivatives)
   TransientCellField(cellfield,derivatives)
 end
+
+∂tt(f::Union{TransientCellField,TransientFEBasis}) = ∂t(∂t(f::Union{TransientCellField,TransientFEBasis}))
