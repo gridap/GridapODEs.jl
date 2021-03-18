@@ -85,6 +85,10 @@ export test_transient_fe_solution
 
 export Transient2ndOrderFEOperator
 
+using Gridap.CellData: CellField
+using Gridap.CellData: DomainStyle
+using Gridap.FESpaces: FEBasis
+
 include("TransientFESpaces.jl")
 
 include("TransientFEOperators.jl")
@@ -94,6 +98,8 @@ include("ODEOperatorInterfaces.jl")
 include("TransientFESolvers.jl")
 
 include("TransientFESolutions.jl")
+
+include("TransientCellField.jl")
 
 export FETerm
 function FETerm(args...)
