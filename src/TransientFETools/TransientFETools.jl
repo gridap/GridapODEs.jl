@@ -85,6 +85,7 @@ export test_transient_fe_solution
 
 export TransientCellField
 using Gridap.CellData: CellField
+using Gridap.MultiField: MultiFieldCellField
 using Gridap.FESpaces: FEBasis
 import Gridap.CellData: get_data
 import Gridap.CellData: get_triangulation

@@ -12,6 +12,35 @@ gradient(f::TransientCellField) = gradient(f.cellfield)
 ∇∇(f::TransientCellField) = ∇∇(f.cellfield)
 change_domain(f::TransientCellField,trian::Triangulation,target_domain::DomainStyle) = change_domain(f.cellfield,trian,target_domain)
 
+# MultiFieldCellField methods
+num_fields(f::TransientCellField{A}) where A = num_fields(f.cellfield)
+function Base.getindex(f::TransientCellField{A},i::Integer) where A 
+  singleCellfield = getindex(f.single_cellfields,i)
+  singleDerivatives = (getindex(i_derivatives,i) for i_derivatives in f.derivatives)
+  TransientCellField(singleCellfield,singleDerivatives)
+end
+function Base.iterate(f::TransientCellField{A}) where A
+  cellField, state1 = iterate(f.cellfield)
+  derivatives = ()
+  state2 = []
+  for i_derivatives in f.derivatives
+    single_derivative, single_state = iterate(i_derivatives)
+    derivatives = (derivatives...,single_derivative)
+    push!(state2,single_state)
+  end
+  TransientCellField(cellField,derivatives),(state1,state2)
+end
+function Base.iterate(f::TransientCellField{A},state) where A
+  state1, state2 = state
+  cellField, state1 = iterate(f.cellfield,state[1])
+  derivatives = ()
+  for (i,i_derivatives) in enumerate(f.derivatives)
+    single_derivative, state2[i] = iterate(i_derivatives)
+    derivatives = (derivatives...,single_derivative)
+  end
+  TransientCellField(cellField,derivatives),(state1, state2)
+end
+
 # Transient FEBasis
 struct TransientFEBasis{A} <: FEBasis
   febasis::A
