@@ -41,9 +41,9 @@ dΩ = Measure(Ω,degree)
 a(u,v) = ∫(∇(v)⋅∇(u))dΩ
 b(v,t) = ∫(v*f(t))dΩ
 
-res(t,(u,ut),v) = a(u,v) + ∫(ut*v)dΩ - b(v,t)
-jac(t,(u,ut),du,v) = a(du,v)
-jac_t(t,(u,ut),dut,v) = ∫(dut*v)dΩ
+res(t,u,v) = a(u,v) + ∫(∂t(u)*v)dΩ - b(v,t)
+jac(t,u,du,v) = a(du,v)
+jac_t(t,u,dut,v) = ∫(dut*v)dΩ
 
 U₀ = evaluate(U,nothing)
 dv = get_cell_shapefuns(V0)

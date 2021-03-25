@@ -47,11 +47,11 @@ m(ut,v) = ∫(ut⋅v)dΩ
 X = TransientMultiFieldFESpace([U,U])
 Y = MultiFieldFESpace([V0,V0])
 
-_res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t)
+_res(t,u,v) = a(u,v) + m(∂t(u),v) - b(v,t)
 
-res(t,((u1,u2),(u1t,u2t)),(v1,v2)) = _res(t,u1,u1t,v1) + _res(t,u2,u2t,v2)
-jac(t,(x,xt),(du1,du2),(v1,v2)) = a(du1,v1) + a(du2,v2)
-jac_t(t,(x,xt),(du1t,du2t),(v1,v2)) = m(du1t,v1) + m(du2t,v2)
+res(t,(u1,u2),(v1,v2)) = _res(t,u1,v1) + _res(t,u2,v2)
+jac(t,x,(du1,du2),(v1,v2)) = a(du1,v1) + a(du2,v2)
+jac_t(t,x,(du1t,du2t),(v1,v2)) = m(du1t,v1) + m(du2t,v2)
 
 op = TransientFEOperator(res,jac,jac_t,X,Y)
 
