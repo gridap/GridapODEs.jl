@@ -14,8 +14,8 @@ change_domain(f::TransientCellField,trian::Triangulation,target_domain::DomainSt
 
 # MultiFieldCellField methods
 num_fields(f::TransientCellField{A}) where A = num_fields(f.cellfield)
-function Base.getindex(f::TransientCellField{A},i::Integer) where A 
-  singleCellfield = getindex(f.single_cellfields,i)
+function Base.getindex(f::TransientCellField{A},i::Integer) where A
+  singleCellfield = getindex(f.cellfield,i)
   singleDerivatives = (getindex(i_derivatives,i) for i_derivatives in f.derivatives)
   TransientCellField(singleCellfield,singleDerivatives)
 end
