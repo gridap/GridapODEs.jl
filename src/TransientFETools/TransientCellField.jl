@@ -1,7 +1,7 @@
 # Transient CellField
 struct TransientCellField{A} <: CellField
   cellfield::A
-  derivatives::Tuple{Vararg{A}}
+  derivatives::Tuple#{Vararg{A,B} where B}
 end
 
 # CellField methods
@@ -15,8 +15,12 @@ change_domain(f::TransientCellField,trian::Triangulation,target_domain::DomainSt
 # MultiFieldCellField methods
 num_fields(f::TransientCellField{A}) where A = num_fields(f.cellfield)
 function Base.getindex(f::TransientCellField{A},i::Integer) where A 
-  singleCellfield = getindex(f.single_cellfields,i)
-  singleDerivatives = (getindex(i_derivatives,i) for i_derivatives in f.derivatives)
+  singleCellfield = getindex(f.cellfield,i)
+  singleDerivatives = ()
+  for i_derivatives in f.derivatives
+    singleDerivatives = (singleDerivatives...,getindex(i_derivatives,i))
+  end
+  # singleDerivatives = (getindex(i_derivatives,i) for i_derivatives in f.derivatives)
   TransientCellField(singleCellfield,singleDerivatives)
 end
 function Base.iterate(f::TransientCellField{A}) where A

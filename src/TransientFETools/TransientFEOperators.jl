@@ -171,20 +171,27 @@ function TransientFEOperator(res::Function,jac::Function,jac_t::Function,
 end
 
 function TransientFEOperator(res::Function,trial,test;order::Integer=1)
-  jacs = ()
-  for i in 1:order+1
+  function jac_0(t,x,dx0,dv)
+    function res_0(y)
+      x0 = TransientCellField(y,x.derivatives)
+      res(t,x0,dv)
+    end
+    jacobian(res_0,x.cellfield)
+  end
+  jacs = (jac_0,)
+  for i in 1:order
     function jac_i(t,x,dxi,dv)
       function res_i(y)
-        x[i] = y
+        derivatives = (x.derivatives[1:i-1],y,x.derivatives[i+1:end])
         res(t,x,dv)
       end
-      jacobian(res_i,x[i])
+      jacobian(res_i,x.derivatives[i])
     end
     jacs = (jacs...,jac_i)
   end
   # jac(t,u,ut,du,dv) = jacobian(x->res(t,x,ut,dv),u)
   # jac_t(t,u,ut,dut,dv) = jacobian(xt->res(t,u,xt,dv),ut)
-  TransientFEOperator(res,jacs,trial,test)
+  TransientFEOperator(res,jacs...,trial,test)
 end
 
 function SparseMatrixAssembler(
