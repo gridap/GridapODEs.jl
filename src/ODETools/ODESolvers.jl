@@ -54,3 +54,7 @@ include("AffineThetaMethod.jl")
 include("RungeKutta.jl")
 
 include("Newmark.jl")
+
+include("AffineNewmark.jl")
+
+include("ConstantNewmark.jl")
