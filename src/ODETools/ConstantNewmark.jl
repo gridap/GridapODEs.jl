@@ -15,17 +15,10 @@ function solve_step!(
 
   if cache === nothing
     # Auxiliar variables
-    u0_ = similar(v0)
-    v0_ = similar(v0)
-    a0_ = similar(a0)
-    u0_ .= 0.0
-    v0_ .= 0.0
-    a0_ .= 0.0
     newmatrix = true
 
     # Allocate caches
     newmark_cache = allocate_cache(op,v0,a0)
-    newmark0_cache = allocate_cache(op,v0_,a0_)
     (v,a, ode_cache) = newmark_cache
 
     # Allocate matrices and vectors
@@ -37,16 +30,14 @@ function solve_step!(
 
     # Define Newmark operator
     newmark_affOp = NewmarkConstantOperator(op,t1,dt,γ,β,(u0,v0,a0),newmark_cache)
-    newmark0_affOp = NewmarkConstantOperator(op,t1,dt,γ,β,(u0_,v0_,a0_),newmark0_cache)
 
     # Fill matrices and vector
     _matrix!(A,newmark_affOp,u1)
-    _vector!(b,newmark0_affOp,u0_)
     _mass_matrix!(M,newmark_affOp,u1)
     _damping_matrix!(C,newmark_affOp,u1)
 
     # Create affine operator cache
-    affOp_cache = (A,b,M,C,nothing)
+    affOp_cache = (A,b,M,C,newmark_affOp,nothing)
   else
     newmark_cache, affOp_cache = cache
     newmatrix = false
@@ -55,9 +46,10 @@ function solve_step!(
   # Unpack and update caches
   (v,a, ode_cache) = newmark_cache
   ode_cache = update_cache!(ode_cache,op,t1)
-  A,b,M,C,l_cache = affOp_cache
+  A,b,M,C,newmark_affOp,l_cache = affOp_cache
 
   # Update RHS
+  _vector!(b,newmark_affOp,u1)
   b1 = b + ( M*(1.0/(β*dt^2)) + C*(γ/(β*dt)) )*u0 +
            ( M*(1.0/(β*dt)) - C*(1-γ/β) )*v0 +
            ( M*(1-2*β)/(2*β) - C*(dt*(1-γ/(2*β))) )*a0
@@ -71,7 +63,7 @@ function solve_step!(
   a1 = 1.0/(β*dt^2)*(u1-u0) - 1.0/(β*dt)*v0 - (1-2*β)/(2*β)*a0
 
   # Pack caches
-  affOp_cache = A,b,M,C,l_cache
+  affOp_cache = A,b,M,C,newmark_affOp,l_cache
   cache = (newmark_cache, affOp_cache)
   x1 = (u1,v1,a1)
 

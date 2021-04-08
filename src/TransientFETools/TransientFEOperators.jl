@@ -112,7 +112,7 @@ end
 
 function TransientConstantFEOperator(m::Function,a::Function,b::Function,
   trial,test)
-  res(t,(u,ut),v) = m(ut,v) + a(u,v) - b(v)
+  res(t,(u,ut),v) = -1.0 * b(t,v)
   jac(t,(u,ut),du,v) = a(du,v)
   jac_t(t,(u,ut),dut,v) = m(dut,v)
   assem_t = SparseMatrixAssembler(trial,test)
@@ -137,7 +137,7 @@ end
 
 function TransientConstantFEOperator(m::Function,c::Function,a::Function,b::Function,
   trial,test)
-  res(t,(u,ut,utt),v) = m(utt,v) + c(ut,v) + a(u,v) - b(v)
+  res(t,(u,ut,utt),v) = -1.0 * b(t,v)
   jac(t,(u,ut,utt),du,v) = a(du,v)
   jac_t(t,(u,ut,utt),dut,v) = c(dut,v)
   jac_tt(t,(u,ut,utt),dutt,v) = m(dutt,v)
