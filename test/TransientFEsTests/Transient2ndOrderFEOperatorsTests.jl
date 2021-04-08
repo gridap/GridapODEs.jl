@@ -4,7 +4,6 @@ using Gridap
 using GridapODEs.ODETools
 using GridapODEs.TransientFETools
 using Test
-using WriteVTK
 
 # Analytical functions
 u(x,t) = (1.0-x[1])*x[1]*(t^2+3.0)
