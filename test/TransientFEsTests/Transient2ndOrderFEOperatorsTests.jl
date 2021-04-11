@@ -39,7 +39,7 @@ m(utt,v) = ∫(v*utt)dΩ
 c(ut,v) = ∫(v*ut)dΩ
 a(u,v) = ∫(∇(v)⊙∇(u))dΩ
 b(t,v) = ∫(v*f(t))dΩ
-b_const(t,v) = ∫(v*f_const(0.0))dΩ
+b_const(v) = ∫(v*f_const(0.0))dΩ
 m(t,utt,v) = m(utt,v)
 c(t,ut,v) = c(ut,v)
 a(t,u,v) = a(u,v)
@@ -52,6 +52,7 @@ jac_tt(t,(u,ut,utt),dutt,v) = m(dutt,v)
 op = TransientFEOperator(res,jac,jac_t,jac_tt,U,V0)
 op_affine = TransientAffineFEOperator(m,c,a,b,U,V0)
 op_const = TransientConstantFEOperator(m,c,a,b_const,U,V0)
+op_const_mat = TransientConstantMatrixFEOperator(m,c,a,b,U,V0)
 
 t0 = 0.0
 tF = 1.0
@@ -73,6 +74,7 @@ solver = TransientFESolver(odes)
 sol_t = solve(solver,op,(uh0,vh0,ah0),t0,tF)
 sol_affine_t = solve(solver,op_affine,(uh0,vh0,ah0),t0,tF)
 sol_const_t = solve(solver,op_const,(uh0,vh0_const,ah0_const),t0,tF)
+sol_const_mat_t = solve(solver,op_const_mat,(uh0,vh0,ah0),t0,tF)
 
 l2(w) = w*w
 
@@ -106,6 +108,16 @@ for (uh_tn, tn) in sol_const_t
   e = u_const(tn) - uh_tn
   el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
+end
+
+_t_n = t0
+for (uh_tn, tn) in sol_const_mat_t
+  global _t_n
+  _t_n += dt
+  @test tn≈_t_n
+  e = u(tn) - uh_tn
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
+ @test el2 < tol
 end
 
 end

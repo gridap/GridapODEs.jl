@@ -23,11 +23,13 @@ using Gridap.Algebra: AffineOperator
 export ODEOperator
 export AffineODEOperator
 export ConstantODEOperator
+export ConstantMatrixODEOperator
 export SecondOrderODEOperator
 export OperatorType
 export Nonlinear
 export Affine
 export Constant
+export ConstantMatrix
 using Gridap.Algebra: residual
 using Gridap.Algebra: jacobian
 using Gridap.Algebra: symbolic_setup
