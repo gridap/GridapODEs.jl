@@ -41,7 +41,7 @@ dΩ = Measure(Ω,degree)
 
 #
 a(u,v) = ∫(∇(v)⋅∇(u))dΩ
-b(t,v) = ∫(v*f(0.0))dΩ
+b(v) = ∫(v*f(0.0))dΩ
 m(ut,v) = ∫(ut*v)dΩ
 
 op = TransientConstantFEOperator(m,a,b,U,V0)

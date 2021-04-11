@@ -58,3 +58,5 @@ include("Newmark.jl")
 include("AffineNewmark.jl")
 
 include("ConstantNewmark.jl")
+
+include("ConstantMatrixNewmark.jl")

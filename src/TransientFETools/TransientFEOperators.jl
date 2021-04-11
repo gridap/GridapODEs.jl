@@ -112,11 +112,20 @@ end
 
 function TransientConstantFEOperator(m::Function,a::Function,b::Function,
   trial,test)
-  res(t,(u,ut),v) = -1.0 * b(t,v)
+  res(t,(u,ut),v) = -1.0 * b(v)
   jac(t,(u,ut),du,v) = a(du,v)
   jac_t(t,(u,ut),dut,v) = m(dut,v)
   assem_t = SparseMatrixAssembler(trial,test)
   TransientFEOperatorFromWeakForm{Constant}(res,(jac,jac_t),assem_t,(trial,∂t(trial)),test,1)
+end
+
+function TransientConstantMatrixFEOperator(m::Function,a::Function,b::Function,
+  trial,test)
+  res(t,(u,ut),v) = m(ut,v) + a(u,v) - b(t,v)
+  jac(t,(u,ut),du,v) = a(du,v)
+  jac_t(t,(u,ut),dut,v) = m(dut,v)
+  assem_t = SparseMatrixAssembler(trial,test)
+  TransientFEOperatorFromWeakForm{ConstantMatrix}(res,(jac,jac_t),assem_t,(trial,∂t(trial)),test,1)
 end
 
 function TransientAffineFEOperator(m::Function,a::Function,b::Function,
@@ -137,7 +146,7 @@ end
 
 function TransientConstantFEOperator(m::Function,c::Function,a::Function,b::Function,
   trial,test)
-  res(t,(u,ut,utt),v) = -1.0 * b(t,v)
+  res(t,(u,ut,utt),v) = -1.0 * b(v)
   jac(t,(u,ut,utt),du,v) = a(du,v)
   jac_t(t,(u,ut,utt),dut,v) = c(dut,v)
   jac_tt(t,(u,ut,utt),dutt,v) = m(dutt,v)
@@ -145,6 +154,19 @@ function TransientConstantFEOperator(m::Function,c::Function,a::Function,b::Func
   trial_t = ∂t(trial)
   trial_tt = ∂t(trial_t)
   TransientFEOperatorFromWeakForm{Constant}(
+    res,(jac,jac_t,jac_tt),assem_t,(trial,trial_t,trial_tt),test,2)
+end
+
+function TransientConstantMatrixFEOperator(m::Function,c::Function,a::Function,b::Function,
+  trial,test)
+  res(t,(u,ut,utt),v) = m(utt,v) + c(ut,v) + a(u,v) - b(t,v)
+  jac(t,(u,ut,utt),du,v) = a(du,v)
+  jac_t(t,(u,ut,utt),dut,v) = c(dut,v)
+  jac_tt(t,(u,ut,utt),dutt,v) = m(dutt,v)
+  assem_t = SparseMatrixAssembler(trial,test)
+  trial_t = ∂t(trial)
+  trial_tt = ∂t(trial_t)
+  TransientFEOperatorFromWeakForm{ConstantMatrix}(
     res,(jac,jac_t,jac_tt),assem_t,(trial,trial_t,trial_tt),test,2)
 end
 
