@@ -24,4 +24,6 @@ using Test
 
 @testset "DGHeatEquationTests" begin include("DGHeatEquationTests.jl") end
 
+@testset "FreeSurfacePotentialFlowTests" begin include("FreeSurfacePotentialFlowTests.jl") end
+
 end # module
