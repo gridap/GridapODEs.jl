@@ -4,11 +4,12 @@ using Gridap
 using Gridap.Geometry
 using GridapODEs.TransientFETools
 using GridapODEs.ODETools
+using Test
 
 # Parameters
 L = 2*π
 H = 1.0
-n = 4
+n = 8
 order = 2
 g = 9.81
 ξ = 0.1
@@ -17,7 +18,7 @@ k = 2*π/L
 h = L/n
 ω = √(g*k*tanh(k*H))
 t₀ = 0.0
-tf = 8*π
+tf = 2*π
 Δt = h/(2*λ*ω)
 θ = 0.5
 
@@ -67,11 +68,7 @@ b((w,v)) = ∫( 0.0*w )dΓ
 res(t,x,y) = m(∂t(x),y) + a(x,y) - b(y)
 jac(t,x,dx,y) = a(dx,y)
 jac_t(t,x,dxt,y) = m(dxt,y)
-# res(t,(ϕ,η),(w,v)) = m(∂t((ϕ,η)),(w,v)) + a((ϕ,η),(w,v)) - b((w,v))#∫( ∇(ϕ)⋅∇(w) )dΩ + ∫( -∂t(η)*w + (∂t(ϕ)+g*η) * 0.5*(v + α/g*w) )dΓ
-# jac(t,(ϕ,η),(dϕ,dη),(w,v)) = a((dϕ,dη),(w,v))#∫( ∇(dϕ)⋅∇(w) )dΩ + ∫( g*dη * 0.5*(v + α/g*w) )dΓ
-# jac_t(t,(ϕ,η),(dϕt,dηt),(w,v)) = m((dϕt,dηt),(w,v))#∫( -dηt*w + dϕt * 0.5*(v + α/g*w) )dΓ
-#op = TransientFEOperator(res,jac,jac_t,X,Y)
-op = TransientFEOperator(res,X,Y)
+op = TransientFEOperator(res,jac,jac_t,X,Y)
 
 # Solver
 ls = LUSolver()
@@ -91,22 +88,14 @@ E_kin(w) = 0.5*∑( ∫(∇(w)⋅∇(w))dΩ )
 E_pot(v) = g*0.5*∑( ∫(v*v)dΓ )
 Eₑ = 0.5*g*ξ^2*L
 
-# folderName = "ϕFlow-results"
-# if !isdir(folderName)
-#   mkdir(folderName)
-# end
-# filePath_Ω = folderName * "/fields_Ω"
-# filePath_Γ = folderName * "/fields_Γ"
-# pvd_Ω = paraview_collection(filePath_Ω, append=false)
-# pvd_Γ = paraview_collection(filePath_Γ, append=false)
+tol = 1.0e-2
 for ((ϕn,ηn),tn) in sol_t
   E = E_kin(ϕn) + E_pot(ηn)
   error_ϕ = l2_Ω(ϕn-ϕₑ(tn))
   error_η = l2_Γ(ηn-ηₑ(tn))
-  println(E/Eₑ," ", error_ϕ," ",error_η)
-
-  # pvd_Ω[tn] = createvtk(Ω,filePath_Ω * "_$tn.vtu",cellfields = ["phi" => ϕn])
-  # pvd_Γ[tn] = createvtk(Γ,filePath_Γ * "_$tn.vtu",cellfields = ["eta" => ηn])
+  @test abs(E/Eₑ-1.0) <= tol
+  @test error_ϕ <= tol
+  @test error_η <= tol
 end
 
 end
