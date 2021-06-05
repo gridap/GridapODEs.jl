@@ -203,7 +203,7 @@ get_order(op::TransientFEOperatorFromWeakForm) = op.order
 
 function allocate_residual(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
   V = get_test(op)
-  v = get_cell_shapefuns(V)
+  v = get_fe_basis(V)
   xh = ()
   for i in 1:get_order(op)+1
     xh = (xh...,uh)
@@ -219,7 +219,7 @@ function residual!(
   xh::Tuple{Vararg{FEFunction}},
   cache)
   V = get_test(op)
-  v = get_cell_shapefuns(V)
+  v = get_fe_basis(V)
   vecdata = collect_cell_vector(V,op.res(t,xh,v))
   assemble_vector!(b,op.assem_t,vecdata)
   b
@@ -293,8 +293,8 @@ function matdata_jacobian(
   γᵢ::Real)
   Uh = evaluate(get_trial(op),nothing)
   V = get_test(op)
-  du = get_cell_shapefuns_trial(Uh)
-  v = get_cell_shapefuns(V)
+  du = get_trial_fe_basis(Uh)
+  v = get_fe_basis(V)
   matdata = collect_cell_matrix(Uh,V,γᵢ*op.jacs[i](t,xh,du,v))
 end
 

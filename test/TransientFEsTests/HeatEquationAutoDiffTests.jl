@@ -46,8 +46,8 @@ jac(t,(u,ut),du,v) = a(du,v)
 jac_t(t,(u,ut),dut,v) = ∫(dut*v)dΩ
 
 U₀ = evaluate(U,nothing)
-dv = get_cell_shapefuns(V0)
-du = get_cell_shapefuns_trial(U₀)
+dv = get_fe_basis(V0)
+du = get_trial_fe_basis(U₀)
 uh = FEFunction(U₀,rand(num_free_dofs(U₀)))
 
 cell_j = get_array(jac(0.5,uh,uh,du,dv))
