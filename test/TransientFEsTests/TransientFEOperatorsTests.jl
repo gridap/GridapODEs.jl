@@ -81,8 +81,8 @@ end
 
 #
 
-u0 = get_free_values(uh0)
-uf = get_free_values(uh0)
+u0 = get_free_dof_values(uh0)
+uf = get_free_dof_values(uh0)
 
 odeop = get_algebraic_operator(op)
 
