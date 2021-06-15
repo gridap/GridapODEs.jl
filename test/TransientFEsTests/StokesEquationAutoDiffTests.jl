@@ -72,8 +72,8 @@ b((v,q)) = b((v,q),0.0)
 mat((du1,du2),(v1,v2)) = a(du1,v1)+a(du2,v2)
 
 X₀ = evaluate(X,nothing)
-dy = get_cell_shapefuns(Y)
-dx = get_cell_shapefuns_trial(X₀)
+dy = get_fe_basis(Y)
+dx = get_trial_fe_basis(X₀)
 xh = FEFunction(X₀,rand(num_free_dofs(X₀)))
 
 cell_j = get_array(jac(0.5,xh,xh,dx,dy))

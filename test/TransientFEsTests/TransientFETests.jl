@@ -41,11 +41,11 @@ U0 = TrialFESpace(V0,u(0.0))
 @test test_transient_trial_fe_space(U)
 
 U0 = U(1.0)
-ud0 = copy(get_dirichlet_values(U0))
-_ud0 = get_dirichlet_values(U0)
+ud0 = copy(get_dirichlet_dof_values(U0))
+_ud0 = get_dirichlet_dof_values(U0)
 U1 = U(2.0)
-ud1 = copy(get_dirichlet_values(U1))
-_ud1 = get_dirichlet_values(U1)
+ud1 = copy(get_dirichlet_dof_values(U1))
+_ud1 = get_dirichlet_dof_values(U1)
 @test all(ud0 .≈ 0.5ud1)
 all(_ud0 .≈ _ud1)
 
@@ -55,8 +55,8 @@ Ut0 = Ut(0.0)
 Ut0.dirichlet_values
 
 Ut1 = Ut(1.0)
-utd0 = copy(get_dirichlet_values(Ut0))
-utd1 = copy(get_dirichlet_values(Ut1))
+utd0 = copy(get_dirichlet_dof_values(Ut0))
+utd1 = copy(get_dirichlet_dof_values(Ut1))
 @test all(utd0 .== utd1)
 @test all(utd1 .== ud0)
 
