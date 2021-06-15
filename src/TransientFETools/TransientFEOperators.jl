@@ -184,7 +184,7 @@ function TransientFEOperator(res::Function,trial,test;order::Integer=1)
   end
   # jac(t,u,ut,du,dv) = jacobian(x->res(t,x,ut,dv),u)
   # jac_t(t,u,ut,dut,dv) = jacobian(xt->res(t,u,xt,dv),ut)
-  TransientFEOperator(res,jacs,trial,test)
+  TransientFEOperator(res,jacs...,trial,test)
 end
 
 function SparseMatrixAssembler(
