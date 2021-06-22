@@ -32,6 +32,7 @@ using Gridap.FESpaces: ∫
 export TransientFEOperator
 export TransientAffineFEOperator
 export TransientConstantFEOperator
+export TransientConstantMatrixFEOperator
 using Gridap.FESpaces: Assembler
 using Gridap.FESpaces: SparseMatrixAssembler
 import GridapODEs.ODETools: allocate_cache
@@ -39,6 +40,7 @@ import GridapODEs.ODETools: update_cache!
 import GridapODEs.ODETools: ODEOperator
 import GridapODEs.ODETools: AffineODEOperator
 import GridapODEs.ODETools: ConstantODEOperator
+import GridapODEs.ODETools: ConstantMatrixODEOperator
 import GridapODEs.ODETools: allocate_residual
 import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
@@ -48,6 +50,7 @@ import GridapODEs.ODETools: OperatorType
 using GridapODEs.ODETools: Nonlinear
 using GridapODEs.ODETools: Affine
 using GridapODEs.ODETools: Constant
+using GridapODEs.ODETools: ConstantMatrix
 import Gridap.FESpaces: get_algebraic_operator
 import Gridap.FESpaces: assemble_vector!
 import Gridap.FESpaces: assemble_matrix_add!

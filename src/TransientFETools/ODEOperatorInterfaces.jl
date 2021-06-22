@@ -1,6 +1,6 @@
 """
 A wrapper of `TransientFEOperator` that transforms it to `ODEOperator`, i.e.,
-takes A(t,uh,∂tuh,∂t^2uh,...,∂t^Nuh,vh) and returns A(t,uF,∂tuF,...,∂t^NuF) 
+takes A(t,uh,∂tuh,∂t^2uh,...,∂t^Nuh,vh) and returns A(t,uF,∂tuF,...,∂t^NuF)
 where uF,∂tuF,...,∂t^NuF represent the free values of the `EvaluationFunction`
 uh,∂tuh,∂t^2uh,...,∂t^Nuh.
 """
@@ -71,9 +71,9 @@ end
 
 """
 It adds contribution to the Jacobian with respect to the i-th time derivative,
-with i=0,...,N. That is, adding γ_i*[∂A/∂(∂t^iuh)](t,uh,∂tuh,...,∂t^Nuh) for a 
-given (t,uh,∂tuh,...,∂t^Nuh) to a given matrix J, where γ_i is a scaling coefficient 
-provided by the `ODESolver`, e.g., 1/Δt for Backward Euler; It represents 
+with i=0,...,N. That is, adding γ_i*[∂A/∂(∂t^iuh)](t,uh,∂tuh,...,∂t^Nuh) for a
+given (t,uh,∂tuh,...,∂t^Nuh) to a given matrix J, where γ_i is a scaling coefficient
+provided by the `ODESolver`, e.g., 1/Δt for Backward Euler; It represents
 ∂(δt^i(uh))/∂(uh), in which δt^i(⋅) is the approximation of ∂t^i(⋅) in the solver.
 Note that for i=0, γ_i=1.0.
 """
