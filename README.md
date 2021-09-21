@@ -4,7 +4,6 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://gridap.github.io/GridapODEs.jl/dev)
 [![Build Status](https://github.com/gridap/GridapODEs.jl/workflows/CI/badge.svg?branch=master)](https://github.com/gridap/GridapODEs.jl/actions?query=workflow%3ACI)
 [![Codecov](https://codecov.io/gh/gridap/GridapODEs.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/gridap/GridapODEs.jl)
-[![Coveralls](https://coveralls.io/repos/github/gridap/GridapODEs.jl/badge.svg?branch=master)](https://coveralls.io/github/gridap/GridapODEs.jl?branch=master)
 [![DOI](https://zenodo.org/badge/250735390.svg)](https://zenodo.org/badge/latestdoi/250735390)
 
 This package provides time integration tools for `Gridap`. As an example, the following code solves the heat equation.
