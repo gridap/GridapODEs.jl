@@ -70,3 +70,18 @@ for (uh_tn, tn) in sol_t
   # Here we have the solution uh_tn at tn
 end
 ```
+
+## How to cite GridapODEs
+
+In order to give credit to the `Gridap` and `GridapODEs` contributors, we simply ask you to cite the `Gridap` main project as indicated [here](https://github.com/gridap/Gridap.jl#how-to-cite-gridap) and the sub-packages you use as indicated in the corresponding repositories. Please, use the reference below in any publication in which you have made use of `GridapODEs`:
+
+```
+@misc{Badia_GridapODEs_2021,
+author = {Badia, Santiago and Colomes, Oriol and Verdugo, Francesc},
+doi = {10.5281/zenodo.5518455},
+month = {9},
+title = {{GridapODEs}},
+url = {https://github.com/gridap/GridapODEs.jl},
+year = {2021}
+}
+```
