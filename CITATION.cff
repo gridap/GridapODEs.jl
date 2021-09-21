@@ -1,0 +1,17 @@
+cff-version: 0.0.1
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Badia
+    given-names: Santiago 
+    orcid: https://orcid.org/0000-0003-2391-4086
+  - family-names: Colomes
+    given-names: Oriol
+    orcid: https://orcid.org/0000-0002-5552-9695
+  - family-names: Verdugo
+    given-names: Francesc
+    orcid: https://orcid.org/0000-0003-3667-443X
+title: "GridapODEs"
+version: 0.7.0
+date-released: 2021-09-21
+doi: 10.5281/zenodo.5518455
+url: "https://github.com/gridap/GridapODEs.jl"
