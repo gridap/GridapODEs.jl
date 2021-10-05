@@ -1,4 +1,4 @@
-module StokesEquationTests
+module StokesEquationAutoDiffTests
 
 using Gridap
 using ForwardDiff
@@ -6,7 +6,7 @@ using LinearAlgebra
 using Test
 using GridapODEs.ODETools
 using GridapODEs.TransientFETools
-using Gridap.FESpaces: get_algebraic_operator
+using Gridap.FESpaces
 using Gridap.Arrays: test_array
 
 # using GridapODEs.ODETools: ThetaMethodLinear
@@ -76,11 +76,11 @@ dy = get_fe_basis(Y)
 dx = get_trial_fe_basis(X₀)
 xh = FEFunction(X₀,rand(num_free_dofs(X₀)))
 
-cell_j = get_array(jac(0.5,xh,xh,dx,dy))
-cell_j_t = get_array(jac_t(0.5,xh,xh,dx,dy))
+cell_j = get_array(jac(0.5,(xh,xh),dx,dy))
+cell_j_t = get_array(jac_t(0.5,(xh,xh),dx,dy))
 
-cell_j_auto = get_array(jacobian(x->res(0.5,x,xh,dy),xh))
-cell_j_t_auto = get_array(jacobian(x->res(0.5,xh,x,dy),xh))
+cell_j_auto = get_array(jacobian(x->res(0.5,(x,xh),dy),xh))
+cell_j_t_auto = get_array(jacobian(x->res(0.5,(xh,x),dy),xh))
 
 test_array(cell_j_auto,cell_j,≈)
 test_array(cell_j_t_auto,cell_j_t,≈)
