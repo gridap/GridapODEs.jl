@@ -50,11 +50,11 @@ dv = get_fe_basis(V0)
 du = get_trial_fe_basis(U₀)
 uh = FEFunction(U₀,rand(num_free_dofs(U₀)))
 
-cell_j = get_array(jac(0.5,uh,uh,du,dv))
-cell_j_t = get_array(jac_t(0.5,uh,uh,du,dv))
+cell_j = get_array(jac(0.5,(uh,uh),du,dv))
+cell_j_t = get_array(jac_t(0.5,(uh,uh),du,dv))
 
-cell_j_auto = get_array(jacobian(x->res(0.5,x,uh,dv),uh))
-cell_j_t_auto = get_array(jacobian(x->res(0.5,uh,x,dv),uh))
+cell_j_auto = get_array(jacobian(x->res(0.5,(x,uh),dv),uh))
+cell_j_t_auto = get_array(jacobian(x->res(0.5,(uh,x),dv),uh))
 
 test_array(cell_j_auto,cell_j,≈)
 test_array(cell_j_t_auto,cell_j_t,≈)
