@@ -24,4 +24,6 @@ using Test
 
 @testset "DGHeatEquationTests" begin include("DGHeatEquationTests.jl") end
 
+@testset "HeatEquationAutoDiffTests" begin include("HeatEquationAutoDiffTests.jl") end
+
 end # module
