@@ -14,8 +14,6 @@ using Gridap.Algebra: allocate_jacobian
 
 using Gridap.FESpaces: get_algebraic_operator
 
-using Gridap.Algebra: fill_entries!
-
 export prototype_jacobian
 export prototype_mass
 export prototype_stiffness
@@ -51,21 +49,21 @@ function diffeq_wrappers(op)
   function _jacobian!(jac, du, u, p, gamma, t)
     ode_cache = update_cache!(ode_cache, ode_op, t)
     z = zero(eltype(jac))
-    fill_entries!(jac, z)
+    fillstored!(jac, z)
     jacobians!(jac, ode_op, t, (u, du), (1.0, gamma), ode_cache)
   end
 
   function _mass!(mass, du, u, p, t)
     ode_cache = update_cache!(ode_cache, ode_op, t)
     z = zero(eltype(mass))
-    fill_entries!(mass, z)
+    fillstored!(mass, z)
     jacobian!(mass, ode_op, t, (u, du), 2, 1.0, ode_cache)
   end
 
   function _stiffness!(stif, du, u, p, t)
     ode_cache = update_cache!(ode_cache, ode_op, t)
     z = zero(eltype(stif))
-    fill_entries!(stif, z)
+    fillstored!(stif, z)
     jacobian!(stif, ode_op, t, (u, du), 1, 1.0, ode_cache)
   end
 
