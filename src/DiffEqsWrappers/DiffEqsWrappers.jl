@@ -13,6 +13,7 @@ using GridapODEs.ODETools: jacobian!
 using Gridap.Algebra: allocate_jacobian
 
 using Gridap.FESpaces: get_algebraic_operator
+using LinearAlgebra: fillstored!
 
 export prototype_jacobian
 export prototype_mass
