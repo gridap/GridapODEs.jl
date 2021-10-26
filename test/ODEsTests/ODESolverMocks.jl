@@ -1,6 +1,5 @@
 using Gridap.Algebra: residual
 using Gridap.Algebra: jacobian
-using Gridap.Algebra: fill_entries!
 import Gridap.Algebra: NonlinearSolver
 import Gridap.Algebra: NonlinearOperator
 import Gridap.Algebra: solve!
@@ -35,7 +34,7 @@ end
 function jacobian!(A::AbstractMatrix,op::OperatorMock,x::AbstractVector)
   uf = x
   uf_t = (x-op.u0)/op.dt
-  fill_entries!(A,0.0)
+  fillstored!(A,0.0)
   jacobian!(A,op.odeop,op.tf,uf,uf_t,op.cache)
   jacobian_t!(A,op.odeop,op.tf,uf,uf_t,(1/op.dt),op.cache)
 end
