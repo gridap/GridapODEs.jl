@@ -100,9 +100,8 @@ dt = 0.1
 
 ls = LUSolver()
 odes = ThetaMethod(ls,dt,θ)
-solver = TransientFESolver(odes)
 
-sol_t = solve(solver,op,xh0,t0,tF)
+sol_t = solve(odes,op,xh0,t0,tF)
 
 l2(w) = w⋅w
 

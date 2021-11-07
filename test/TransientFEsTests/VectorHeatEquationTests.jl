@@ -68,9 +68,8 @@ ls = LUSolver()
 # using Gridap.Algebra: NewtonRaphsonSolver
 # nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(ls,dt,θ)
-solver = TransientFESolver(odes)
 
-sol_t = solve(solver,op,xh0,t0,tF)
+sol_t = solve(odes,op,xh0,t0,tF)
 
 l2(w) = w⋅w
 

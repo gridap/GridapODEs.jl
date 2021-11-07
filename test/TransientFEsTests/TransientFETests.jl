@@ -113,8 +113,7 @@ maxiters = 20
 using Gridap.Algebra: NewtonRaphsonSolver
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 odes = ThetaMethod(nls,dt,1.0)
-solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
-@test test_transient_fe_solver(solver,op,uh0,t0,tF)
+@test test_transient_fe_solver(odes,op,uh0,t0,tF)
 
 residual!(r,op,0.1,(uh,uh),cache)
 jacobian!(J,op,1.0,(uh,uh10),1,1.0,cache)
@@ -218,8 +217,7 @@ for (u_n, t_n) in sol_ode_t
   @test all(u_n .≈ t_n)
 end
 
-solver = TransientFESolver(odes)
-sol_t = solve(solver,op,uh0,t0,tF)
+sol_t = solve(odes,op,uh0,t0,tF)
 @test test_transient_fe_solution(sol_t)
 
 _t_n = 0.0
