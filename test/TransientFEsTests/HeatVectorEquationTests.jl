@@ -57,9 +57,9 @@ U0 = U(0.0)
 uh0 = interpolate_everywhere(u(0.0),U0)
 
 ls = LUSolver()
-odes = ThetaMethod(ls,dt,θ)
+ode_solver = ThetaMethod(ls,dt,θ)
 
-sol_t = solve(odes,op,uh0,t0,tF)
+sol_t = solve(ode_solver,op,uh0,t0,tF)
 
 l2(w) = w⋅w
 
@@ -89,14 +89,14 @@ ode_cache = allocate_cache(odeop)
 vθ = similar(u0)
 nl_cache = nothing
 
-odes.θ == 0.0 ? dtθ = dt : dtθ = dt*odes.θ
+ode_solver.θ == 0.0 ? dtθ = dt : dtθ = dt*ode_solver.θ
 tθ = t0+dtθ
 ode_cache = update_cache!(ode_cache,odeop,tθ)
 
 using GridapODEs.ODETools: ThetaMethodNonlinearOperator
 nlop = ThetaMethodNonlinearOperator(odeop,tθ,dtθ,u0,ode_cache,vθ)
 
-nl_cache = solve!(uf,odes.nls,nlop,nl_cache)
+nl_cache = solve!(uf,ode_solver.nls,nlop,nl_cache)
 uf
 
 K = nl_cache.A

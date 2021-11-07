@@ -69,9 +69,9 @@ uh0 = interpolate_everywhere(u(0.0),U0)
 
 ls = LUSolver()
 using Gridap.Algebra: NewtonRaphsonSolver
-odes = ThetaMethod(ls,dt,θ)
+ode_solver = ThetaMethod(ls,dt,θ)
 
-sol_t = solve(odes,op,uh0,t0,tF)
+sol_t = solve(ode_solver,op,uh0,t0,tF)
 
 l2(w) = w*w
 

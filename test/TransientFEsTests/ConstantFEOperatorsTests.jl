@@ -54,8 +54,8 @@ U0 = U(0.0)
 uh0 = interpolate_everywhere(u(0.0),U0)
 
 ls = LUSolver()
-odes = ThetaMethod(ls,dt,θ)
-sol_t = solve(odes,op,uh0,t0,tF)
+ode_solver = ThetaMethod(ls,dt,θ)
+sol_t = solve(ode_solver,op,uh0,t0,tF)
 
 l2(w) = w*w
 

@@ -67,9 +67,9 @@ xh0 = interpolate_everywhere([uh0,uh0],X0)
 ls = LUSolver()
 # using Gridap.Algebra: NewtonRaphsonSolver
 # nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
-odes = ThetaMethod(ls,dt,θ)
+ode_solver = ThetaMethod(ls,dt,θ)
 
-sol_t = solve(odes,op,xh0,t0,tF)
+sol_t = solve(ode_solver,op,xh0,t0,tF)
 
 l2(w) = w⋅w
 

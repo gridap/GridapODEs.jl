@@ -68,12 +68,12 @@ vh0_const = interpolate_everywhere(v_const(0.0),U0)
 ah0_const = interpolate_everywhere(a_const(0.0),U0)
 
 ls = LUSolver()
-odes = Newmark(ls,dt,γ,β)
+ode_solver = Newmark(ls,dt,γ,β)
 
-sol_t = solve(odes,op,(uh0,vh0,ah0),t0,tF)
-sol_affine_t = solve(odes,op_affine,(uh0,vh0,ah0),t0,tF)
-sol_const_t = solve(odes,op_const,(uh0,vh0_const,ah0_const),t0,tF)
-sol_const_mat_t = solve(odes,op_const_mat,(uh0,vh0,ah0),t0,tF)
+sol_t = solve(ode_solver,op,(uh0,vh0,ah0),t0,tF)
+sol_affine_t = solve(ode_solver,op_affine,(uh0,vh0,ah0),t0,tF)
+sol_const_t = solve(ode_solver,op_const,(uh0,vh0_const,ah0_const),t0,tF)
+sol_const_mat_t = solve(ode_solver,op_const_mat,(uh0,vh0,ah0),t0,tF)
 
 l2(w) = w*w
 
