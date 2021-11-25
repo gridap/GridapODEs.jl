@@ -60,7 +60,7 @@ function jacobian!(A::AbstractMatrix,op::ForwardEulerNonlinearOperator,x::Abstra
   vf = op.vf
   vf = (x-op.u0)/op.dt
   z = zero(eltype(A))
-  fill_entries!(A,z)
+  fillstored!(A,z)
   jacobian!(A,op.odeop,op.tf,(op.u0,vf),1,(1/op.dt),op.ode_cache)
 end
 

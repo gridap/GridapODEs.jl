@@ -11,34 +11,49 @@ end
 
 
 function TransientFESolution(
-  solver::TransientFESolver, op::TransientFEOperator, uh0, t0::Real, tF::Real)
+  solver::ODESolver, op::TransientFEOperator, uh0, t0::Real, tF::Real)
 
-  ode_solver = solver.odes
   ode_op = get_algebraic_operator(op)
   u0 = get_free_dof_values(uh0)
-  ode_sol = solve(ode_solver,ode_op,u0,t0,tF)
+  ode_sol = solve(solver,ode_op,u0,t0,tF)
   trial = get_trial(op)
 
   TransientFESolution(ode_sol, trial)
 end
 
 function TransientFESolution(
-  solver::TransientFESolver,
+  solver::ODESolver,
   op::TransientFEOperator,
   xh0::Tuple{Vararg{Any}},
   t0::Real,
   tF::Real)
 
-  ode_solver = solver.odes
   ode_op = get_algebraic_operator(op)
   x0 = ()
   for xhi in xh0
     x0 = (x0...,get_free_dof_values(xhi))
   end
-  ode_sol = solve(ode_solver,ode_op,x0,t0,tF)
+  ode_sol = solve(solver,ode_op,x0,t0,tF)
   trial = get_trial(op)
 
   TransientFESolution(ode_sol, trial)
+end
+
+# Solve functions
+
+function solve(
+  solver::ODESolver,op::TransientFEOperator,u0,t0::Real,tf::Real)
+  TransientFESolution(solver,op,u0,t0,tf)
+end
+
+function solve(
+  solver::ODESolver,op::TransientFEOperator,u0,v0,a0,t0::Real,tf::Real)
+  TransientFESolution(solver,op,u0,v0,a0,t0,tf)
+end
+
+function test_transient_fe_solver(solver::ODESolver,op::TransientFEOperator,u0,t0,tf)
+  solution = solve(solver,op,u0,t0,tf)
+  test_transient_fe_solution(solution)
 end
 
 #@fverdugo this is a general implementation of iterate for TransientFESolution

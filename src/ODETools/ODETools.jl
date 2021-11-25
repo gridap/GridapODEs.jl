@@ -3,6 +3,7 @@ module ODETools
 using Test
 
 using ForwardDiff
+using LinearAlgebra: fillstored!
 
 const ϵ = 100*eps()
 export ∂t
@@ -59,7 +60,6 @@ export MidPoint
 export ThetaMethod
 export RungeKutta
 export Newmark
-import Gridap.Algebra: fill_entries!
 
 export ODESolution
 export test_ode_solution

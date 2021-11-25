@@ -67,7 +67,6 @@ import Gridap.FESpaces: get_test
 using GridapODEs.ODETools: test_ode_operator
 export test_transient_fe_operator
 
-export TransientFESolver
 import Gridap.FESpaces: FESolver
 import GridapODEs.ODETools: ODESolver
 import Gridap: solve
@@ -93,8 +92,6 @@ include("TransientFESpaces.jl")
 include("TransientFEOperators.jl")
 
 include("ODEOperatorInterfaces.jl")
-
-include("TransientFESolvers.jl")
 
 include("TransientFESolutions.jl")
 

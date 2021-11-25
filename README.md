@@ -48,9 +48,9 @@ a(u,v) = ∫( ∇(v)⋅∇(u) )dΩ
 b(v,t) = ∫( v*f(t) )dΩ
 m(u,v) = ∫( v*u )dΩ
 
-res(t,u,ut,v) = a(u,v) + m(ut,v) - b(v,t)
-jac(t,u,ut,du,v) = a(du,v)
-jac_t(t,u,ut,dut,v) = m(dut,v)
+res(t,(u,ut),v) = a(u,v) + m(ut,v) - b(v,t)
+jac(t,(u,ut),du,v) = a(du,v)
+jac_t(t,(u,ut),dut,v) = m(dut,v)
 
 op = TransientFEOperator(res,jac,jac_t,U,V0)
 
@@ -62,9 +62,8 @@ U0 = U(0.0)
 uh0 = interpolate_everywhere(u(0.0),U0)
 
 ls = LUSolver()
-odes = ThetaMethod(ls,dt,θ)
-solver = TransientFESolver(odes)
-sol_t = solve(solver,op,uh0,t0,tF)
+ode_solver = ThetaMethod(ls,dt,θ)
+sol_t = solve(ode_solver,op,uh0,t0,tF)
 
 for (uh_tn, tn) in sol_t
   # Here we have the solution uh_tn at tn
