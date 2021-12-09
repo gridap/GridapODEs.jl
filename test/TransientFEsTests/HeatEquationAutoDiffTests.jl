@@ -9,9 +9,6 @@ using GridapODEs.TransientFETools
 using Gridap.FESpaces: get_algebraic_operator
 using Gridap.Arrays: test_array
 
-import Gridap: ∇
-import GridapODEs.TransientFETools: ∂t
-
 θ = 0.2
 
 u(x,t) = (1.0-x[1])*x[1]*(1.0-x[2])*x[2]*t
@@ -49,12 +46,13 @@ U₀ = evaluate(U,nothing)
 dv = get_fe_basis(V0)
 du = get_trial_fe_basis(U₀)
 uh = FEFunction(U₀,rand(num_free_dofs(U₀)))
+uh_t = TransientCellField(uh,(uh,))
 
-cell_j = get_array(jac(0.5,(uh,uh),du,dv))
-cell_j_t = get_array(jac_t(0.5,(uh,uh),du,dv))
+cell_j = get_array(jac(0.5,uh_t,du,dv))
+cell_j_t = get_array(jac_t(0.5,uh_t,du,dv))
 
-cell_j_auto = get_array(jacobian(x->res(0.5,(x,uh),dv),uh))
-cell_j_t_auto = get_array(jacobian(x->res(0.5,(uh,x),dv),uh))
+cell_j_auto = get_array(jacobian(x->res(0.5,TransientCellField(x,(uh,)),dv),uh))
+cell_j_t_auto = get_array(jacobian(x->res(0.5,TransientCellField(uh,(x,)),dv),uh))
 
 test_array(cell_j_auto,cell_j,≈)
 test_array(cell_j_t_auto,cell_j_t,≈)

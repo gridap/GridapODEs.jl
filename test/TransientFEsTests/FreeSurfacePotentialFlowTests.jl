@@ -96,7 +96,6 @@ function test_operator(op)
     @test error_ϕ <= tol
     @test error_η <= tol
   end
-  println("xxx")
 end
 
 test_operator(op_const)

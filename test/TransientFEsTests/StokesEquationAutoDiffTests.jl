@@ -75,12 +75,13 @@ X₀ = evaluate(X,nothing)
 dy = get_fe_basis(Y)
 dx = get_trial_fe_basis(X₀)
 xh = FEFunction(X₀,rand(num_free_dofs(X₀)))
+xh_t = TransientCellField(xh,(xh,))
 
-cell_j = get_array(jac(0.5,(xh,xh),dx,dy))
-cell_j_t = get_array(jac_t(0.5,(xh,xh),dx,dy))
+cell_j = get_array(jac(0.5,xh_t,dx,dy))
+cell_j_t = get_array(jac_t(0.5,xh_t,dx,dy))
 
-cell_j_auto = get_array(jacobian(x->res(0.5,(x,xh),dy),xh))
-cell_j_t_auto = get_array(jacobian(x->res(0.5,(xh,x),dy),xh))
+cell_j_auto = get_array(jacobian(x->res(0.5,TransientCellField(x,(xh,)),dy),xh))
+cell_j_t_auto = get_array(jacobian(x->res(0.5,TransientCellField(xh,(x,)),dy),xh))
 
 for i in 1:length(cell_j)
   test_array(cell_j[i].array[1,1],cell_j_auto[i].array[1,1],≈)
