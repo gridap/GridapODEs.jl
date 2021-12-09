@@ -20,7 +20,7 @@ using Gridap.FESpaces: SingleFieldFESpace
 using Gridap.FESpaces: TrialFESpace
 using Gridap.FESpaces: ZeroMeanFESpace
 using Gridap.FESpaces: get_free_dof_values
-using Gridap.FESpaces: get_dirichlet_values
+using Gridap.FESpaces: get_dirichlet_dof_values
 using Gridap.FESpaces: TrialFESpace!
 using Gridap.FESpaces: HomogeneousTrialFESpace
 using Gridap.FESpaces: jacobian
@@ -32,6 +32,7 @@ using Gridap.FESpaces: ∫
 export TransientFEOperator
 export TransientAffineFEOperator
 export TransientConstantFEOperator
+export TransientConstantMatrixFEOperator
 using Gridap.FESpaces: Assembler
 using Gridap.FESpaces: SparseMatrixAssembler
 import GridapODEs.ODETools: allocate_cache
@@ -39,6 +40,7 @@ import GridapODEs.ODETools: update_cache!
 import GridapODEs.ODETools: ODEOperator
 import GridapODEs.ODETools: AffineODEOperator
 import GridapODEs.ODETools: ConstantODEOperator
+import GridapODEs.ODETools: ConstantMatrixODEOperator
 import GridapODEs.ODETools: allocate_residual
 import GridapODEs.ODETools: allocate_jacobian
 import GridapODEs.ODETools: residual!
@@ -48,13 +50,14 @@ import GridapODEs.ODETools: OperatorType
 using GridapODEs.ODETools: Nonlinear
 using GridapODEs.ODETools: Affine
 using GridapODEs.ODETools: Constant
+using GridapODEs.ODETools: ConstantMatrix
 import Gridap.FESpaces: get_algebraic_operator
 import Gridap.FESpaces: assemble_vector!
 import Gridap.FESpaces: assemble_matrix_add!
 import Gridap.FESpaces: allocate_vector
 import Gridap.FESpaces: allocate_matrix
-using Gridap.FESpaces: get_cell_shapefuns
-using Gridap.FESpaces: get_cell_shapefuns_trial
+using Gridap.FESpaces: get_fe_basis
+using Gridap.FESpaces: get_trial_fe_basis
 using Gridap.FESpaces: collect_cell_vector
 using Gridap.FESpaces: collect_cell_matrix
 using Gridap.FESpaces: return_type
@@ -64,7 +67,6 @@ import Gridap.FESpaces: get_test
 using GridapODEs.ODETools: test_ode_operator
 export test_transient_fe_operator
 
-export TransientFESolver
 import Gridap.FESpaces: FESolver
 import GridapODEs.ODETools: ODESolver
 import Gridap: solve
@@ -102,8 +104,6 @@ include("TransientCellField.jl")
 include("TransientFEOperators.jl")
 
 include("ODEOperatorInterfaces.jl")
-
-include("TransientFESolvers.jl")
 
 include("TransientFESolutions.jl")
 

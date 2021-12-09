@@ -7,6 +7,7 @@ abstract type OperatorType end
 struct Nonlinear <: OperatorType end
 struct Affine  <: OperatorType end
 struct Constant  <: OperatorType end
+struct ConstantMatrix  <: OperatorType end
 
 
 """
@@ -28,6 +29,13 @@ It represents a constant operator in an implicit ODE, i.e., an ODE operator of
 the form A(t,u,∂tu,...,∂t^Nu) = A_N∂t^Nu + ...A_1∂tu + A_0u + f
 """
 const ConstantODEOperator = ODEOperator{Constant}
+
+"""
+It represents an affine operator in an implicit ODE with constant matrix, but
+time-dependent right-hand side, i.e., an ODE operator of
+the form A(t,u,∂tu,...,∂t^Nu) = A_N∂t^Nu + ...A_1∂tu + A_0u + f(t)
+"""
+const ConstantMatrixODEOperator = ODEOperator{ConstantMatrix}
 
 """
 Returns the `OperatorType`, i.e., nonlinear, affine, or constant in time
@@ -64,9 +72,9 @@ end
 
 """
 It adds contribution to the Jacobian with respect to the i-th time derivative,
-with i=0,...,N. That is, adding γ_i*[∂A/∂(∂t^iu)](t,u,∂tu,...,∂t^Nu) for a 
-given (t,u,∂tu,...,∂t^Nu) to a given matrix J, where γ_i is a scaling coefficient 
-provided by the `ODESolver`, e.g., 1/Δt for Backward Euler; It represents 
+with i=0,...,N. That is, adding γ_i*[∂A/∂(∂t^iu)](t,u,∂tu,...,∂t^Nu) for a
+given (t,u,∂tu,...,∂t^Nu) to a given matrix J, where γ_i is a scaling coefficient
+provided by the `ODESolver`, e.g., 1/Δt for Backward Euler; It represents
 ∂(δt^i(u))/∂(u), in which δt^i(⋅) is the approximation of ∂t^i(⋅) in the solver.
 Note that for i=0, γ_i=1.0.
 """

@@ -41,11 +41,11 @@ U0 = TrialFESpace(V0,u(0.0))
 @test test_transient_trial_fe_space(U)
 
 U0 = U(1.0)
-ud0 = copy(get_dirichlet_values(U0))
-_ud0 = get_dirichlet_values(U0)
+ud0 = copy(get_dirichlet_dof_values(U0))
+_ud0 = get_dirichlet_dof_values(U0)
 U1 = U(2.0)
-ud1 = copy(get_dirichlet_values(U1))
-_ud1 = get_dirichlet_values(U1)
+ud1 = copy(get_dirichlet_dof_values(U1))
+_ud1 = get_dirichlet_dof_values(U1)
 @test all(ud0 .≈ 0.5ud1)
 all(_ud0 .≈ _ud1)
 
@@ -55,8 +55,8 @@ Ut0 = Ut(0.0)
 Ut0.dirichlet_values
 
 Ut1 = Ut(1.0)
-utd0 = copy(get_dirichlet_values(Ut0))
-utd1 = copy(get_dirichlet_values(Ut1))
+utd0 = copy(get_dirichlet_dof_values(Ut0))
+utd1 = copy(get_dirichlet_dof_values(Ut1))
 @test all(utd0 .== utd1)
 @test all(utd1 .== ud0)
 
@@ -113,9 +113,8 @@ tol = 1.0
 maxiters = 20
 using Gridap.Algebra: NewtonRaphsonSolver
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
-odes = ThetaMethod(nls,dt,1.0)
-solver = TransientFESolver(odes) # Return a specialization of TransientFESolver
-@test test_transient_fe_solver(solver,op,uh0,t0,tF)
+ode_solver = ThetaMethod(nls,dt,1.0)
+@test test_transient_fe_solver(ode_solver,op,uh0,t0,tF)
 
 xh = TransientCellField(uh,(uh,))
 residual!(r,op,0.1,xh,cache)
@@ -123,8 +122,7 @@ jacobian!(J,op,1.0,xh,1,1.0,cache)
 jacobian!(J,op,1.0,xh,2,10.0,cache)
 
 u0 = get_free_dof_values(uh0)
-odes
-solver = odes
+solver = ode_solver
 t0 = 0.0
 ode_cache = allocate_cache(odeop)
 cache = nothing
@@ -197,7 +195,7 @@ Gridap.Algebra.nlsolve(df,x;linsolve=linsolve!,nls.kwargs...)
 
 using Gridap.FESpaces: get_algebraic_operator
 odeop = get_algebraic_operator(op)
-sol_ode_t = solve(odes,odeop,u0,t0,tF)
+sol_ode_t = solve(ode_solver,odeop,u0,t0,tF)
 
 test_ode_solution(sol_ode_t)
 _t_n = t0
@@ -208,8 +206,8 @@ for (u_n, t_n) in sol_ode_t
   @test all(u_n .≈ t_n)
 end
 
-odes = ThetaMethod(nls,dt,θ)
-sol_ode_t = solve(odes,odeop,u0,t0,tF)
+ode_solver = ThetaMethod(nls,dt,θ)
+sol_ode_t = solve(ode_solver,odeop,u0,t0,tF)
 test_ode_solution(sol_ode_t)
 _t_n = t0
 un, tn = Base.iterate(sol_ode_t)
@@ -220,8 +218,7 @@ for (u_n, t_n) in sol_ode_t
   @test all(u_n .≈ t_n)
 end
 
-solver = TransientFESolver(odes)
-sol_t = solve(solver,op,uh0,t0,tF)
+sol_t = solve(ode_solver,op,uh0,t0,tF)
 @test test_transient_fe_solution(sol_t)
 
 _t_n = 0.0

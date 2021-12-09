@@ -3,6 +3,7 @@ module ODETools
 using Test
 
 using ForwardDiff
+using LinearAlgebra: fillstored!
 
 const ϵ = 100*eps()
 export ∂t
@@ -23,11 +24,13 @@ using Gridap.Algebra: AffineOperator
 export ODEOperator
 export AffineODEOperator
 export ConstantODEOperator
+export ConstantMatrixODEOperator
 export SecondOrderODEOperator
 export OperatorType
 export Nonlinear
 export Affine
 export Constant
+export ConstantMatrix
 using Gridap.Algebra: residual
 using Gridap.Algebra: jacobian
 using Gridap.Algebra: symbolic_setup
@@ -57,7 +60,6 @@ export MidPoint
 export ThetaMethod
 export RungeKutta
 export Newmark
-import Gridap.Algebra: fill_entries!
 
 export ODESolution
 export test_ode_solution

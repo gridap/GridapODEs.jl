@@ -46,8 +46,8 @@ jac(t,u,du,v) = a(du,v)
 jac_t(t,u,dut,v) = ∫(dut*v)dΩ
 
 U₀ = evaluate(U,nothing)
-dv = get_cell_shapefuns(V0)
-du = get_cell_shapefuns_trial(U₀)
+dv = get_fe_basis(V0)
+du = get_trial_fe_basis(U₀)
 uh = FEFunction(U₀,rand(num_free_dofs(U₀)))
 
 cell_j = get_array(jac(0.5,uh,uh,du,dv))
@@ -71,10 +71,9 @@ uh0 = interpolate_everywhere(u(0.0),U0)
 ls = LUSolver()
 using Gridap.Algebra: NewtonRaphsonSolver
 nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
-odes = ThetaMethod(ls,dt,θ)
-solver = TransientFESolver(odes)
+ode_solver = ThetaMethod(ls,dt,θ)
 
-sol_t = solve(solver,op,uh0,t0,tF)
+sol_t = solve(ode_solver,op,uh0,t0,tF)
 
 # Juno.@enter Base.iterate(sol_t)
 
