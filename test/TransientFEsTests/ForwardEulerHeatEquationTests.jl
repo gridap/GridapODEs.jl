@@ -48,10 +48,9 @@ a(u,v) = ∇(v)⋅∇(u)
 b(v,t) = v*f(t)
 
 res(t,(u,ut),v) = ∫( a(u,v) + ut*v - b(v,t) )dΩ
-jac(t,(u,ut),du,v) = a(du,v)
+jac(t,(u,ut),du,v) = ∫( a(du,v) )dΩ
 jac_t(t,(u,ut),dut,v) = ∫( dut*v )dΩ
 
-#t_Ω = FETerm(res,jac,jac_t,trian,quad)
 op = TransientFEOperator(res,jac,jac_t,U,V0)
 
 t0 = 0.0
@@ -62,8 +61,6 @@ U0 = U(0.0)
 uh0 = interpolate_everywhere(u(0.0),U0)
 
 ls = LUSolver()
-using Gridap.Algebra: NewtonRaphsonSolver
-nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 ode_solver = ThetaMethod(ls,dt,θ)
 
 sol_t = solve(ode_solver,op,uh0,t0,tF)
@@ -77,7 +74,7 @@ for (uh_tn, tn) in sol_t
   global _t_n
   _t_n += dt
   e = u(tn) - uh_tn
-  el2 = sqrt(sum( integrate(l2(e),trian,quad) ))
+  el2 = sqrt(sum( ∫(l2(e))dΩ ))
   @test el2 < tol
 end
 

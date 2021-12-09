@@ -289,7 +289,9 @@ function jacobians!(
   cache)
   _matdata = ()
   for i in 1:get_order(op)+1
-    _matdata = (_matdata...,matdata_jacobian(op,t,xh,i,γ[i]))
+    if (γ[i] > 0.0)
+      _matdata = (_matdata...,matdata_jacobian(op,t,xh,i,γ[i]))
+    end
   end
   matdata = vcat_matdata(_matdata)
   assemble_matrix_add!(A,op.assem_t, matdata)

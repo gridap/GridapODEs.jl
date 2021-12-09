@@ -26,4 +26,6 @@ using Test
 
 @testset "HeatEquationAutoDiffTests" begin include("HeatEquationAutoDiffTests.jl") end
 
+@testset "ForwardEulerHeatEquationTests" begin include("ForwardEulerHeatEquationTests.jl") end
+
 end # module
