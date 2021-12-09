@@ -56,12 +56,11 @@ function residual!(b::AbstractVector,op::ForwardEulerNonlinearOperator,x::Abstra
 end
 
 function jacobian!(A::AbstractMatrix,op::ForwardEulerNonlinearOperator,x::AbstractVector)
-  uF = x
   vf = op.vf
   vf = (x-op.u0)/op.dt
   z = zero(eltype(A))
   fillstored!(A,z)
-  jacobian!(A,op.odeop,op.tf,(op.u0,vf),1,(1/op.dt),op.ode_cache)
+  jacobians!(A,op.odeop,op.tf,(op.u0,vf),(0,1/op.dt),op.ode_cache)
 end
 
 function allocate_residual(op::ForwardEulerNonlinearOperator,x::AbstractVector)
