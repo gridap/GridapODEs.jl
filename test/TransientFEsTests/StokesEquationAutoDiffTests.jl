@@ -82,8 +82,12 @@ cell_j_t = get_array(jac_t(0.5,(xh,xh),dx,dy))
 cell_j_auto = get_array(jacobian(x->res(0.5,(x,xh),dy),xh))
 cell_j_t_auto = get_array(jacobian(x->res(0.5,(xh,x),dy),xh))
 
-test_array(cell_j_auto,cell_j,≈)
-test_array(cell_j_t_auto,cell_j_t,≈)
+for i in 1:length(cell_j)
+  test_array(cell_j[i].array[1,1],cell_j_auto[i].array[1,1],≈)
+  test_array(cell_j[i].array[1,2],cell_j_auto[i].array[1,2],≈)
+  test_array(cell_j[i].array[2,1],cell_j_auto[i].array[2,1],≈)
+  test_array(cell_j_t[i].array[1,1],cell_j_t_auto[i].array[1,1],≈)
+end
 
 op = TransientFEOperator(res,X,Y)
 
