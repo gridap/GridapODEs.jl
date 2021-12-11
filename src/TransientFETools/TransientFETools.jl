@@ -85,9 +85,21 @@ import GridapODEs.ODETools: GenericODESolution
 import Base: iterate
 export test_transient_fe_solution
 
-export Transient2ndOrderFEOperator
+export TransientCellField
+using Gridap.CellData: CellField
+using Gridap.MultiField: MultiFieldCellField
+using Gridap.FESpaces: FEBasis
+import Gridap.CellData: get_data
+import Gridap.CellData: get_triangulation
+import Gridap.CellData: DomainStyle
+import Gridap.CellData: gradient
+import Gridap.CellData: ∇∇
+import Gridap.CellData: change_domain
+import Gridap.FESpaces: BasisStyle
 
 include("TransientFESpaces.jl")
+
+include("TransientCellField.jl")
 
 include("TransientFEOperators.jl")
 

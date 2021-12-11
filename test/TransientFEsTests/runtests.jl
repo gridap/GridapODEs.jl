@@ -24,6 +24,8 @@ using Test
 
 @testset "DGHeatEquationTests" begin include("DGHeatEquationTests.jl") end
 
+@testset "FreeSurfacePotentialFlowTests" begin include("FreeSurfacePotentialFlowTests.jl") end
+
 @testset "HeatEquationAutoDiffTests" begin include("HeatEquationAutoDiffTests.jl") end
 
 @testset "StokesEquationAutoDiffTests" begin include("StokesEquationAutoDiffTests.jl") end

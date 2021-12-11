@@ -47,9 +47,9 @@ dΩ = Measure(Ω,degree)
 a(u,v) = ∇(v)⋅∇(u)
 b(v,t) = v*f(t)
 
-res(t,(u,ut),v) = ∫( a(u,v) + ut*v - b(v,t) )dΩ
-jac(t,(u,ut),du,v) = ∫( a(du,v) )dΩ
-jac_t(t,(u,ut),dut,v) = ∫( dut*v )dΩ
+res(t,u,v) =  ∫( a(u,v) + ∂t(u)*v - b(v,t) )dΩ
+jac(t,u,du,v) = ∫( a(du,v) )dΩ
+jac_t(t,u,dut,v) = ∫( dut*v )dΩ
 
 op = TransientFEOperator(res,jac,jac_t,U,V0)
 

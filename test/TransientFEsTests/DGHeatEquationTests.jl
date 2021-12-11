@@ -54,9 +54,9 @@ b_Γ(v,t) = ∫( (γ/h)*v*u(t) - (∇(v)⋅nb)*u(t) )dΓ
 a_Λ(u,v) = ∫( (γ/h)*jump(v*ns)⊙jump(u*ns) - jump(v*ns)⊙mean(∇(u)) - mean(∇(v))⊙jump(u*ns) )dΛ
 
 
-res(t,(u,ut),v) = a(u,v) + m(ut,v) + a_Γ(u,v) + a_Λ(u,v) - b(v,t) - b_Γ(v,t)
-jac(t,(u,ut),du,v) = a(du,v) + a_Γ(du,v) + a_Λ(du,v)
-jac_t(t,(u,ut),dut,v) = m(dut,v)
+res(t,u,v) = a(u,v) + m(∂t(u),v) + a_Γ(u,v) + a_Λ(u,v) - b(v,t) - b_Γ(v,t)
+jac(t,u,du,v) = a(du,v) + a_Γ(du,v) + a_Λ(du,v)
+jac_t(t,u,dut,v) = m(dut,v)
 
 op = TransientFEOperator(res,jac,jac_t,U,V0)
 

@@ -61,10 +61,11 @@ function residual!(
   xhF::Tuple{Vararg{AbstractVector}},
   ode_cache)
   Xh, = ode_cache
-  xh = ()
-  for i in 1:get_order(op)+1
-    xh = (xh...,EvaluationFunction(Xh[i],xhF[i]))
+  dxh = ()
+  for i in 2:get_order(op)+1
+    dxh = (dxh...,EvaluationFunction(Xh[i],xhF[i]))
   end
+  xh=TransientCellField(EvaluationFunction(Xh[1],xhF[1]),dxh)
   residual!(b,op.feop,t,xh,ode_cache)
 end
 
@@ -86,10 +87,11 @@ function jacobian!(
   γᵢ::Real,
   ode_cache)
   Xh, = ode_cache
-  xh = ()
-  for i in 1:get_order(op)+1
-    xh = (xh...,EvaluationFunction(Xh[i],xhF[i]))
+  dxh = ()
+  for i in 2:get_order(op)+1
+    dxh = (dxh...,EvaluationFunction(Xh[i],xhF[i]))
   end
+  xh=TransientCellField(EvaluationFunction(Xh[1],xhF[1]),dxh)
   jacobian!(A,op.feop,t,xh,i,γᵢ,ode_cache)
 end
 
@@ -104,9 +106,10 @@ function jacobians!(
   γ::Tuple{Vararg{Real}},
   ode_cache)
   Xh, = ode_cache
-  xh = ()
-  for i in 1:get_order(op)+1
-    xh = (xh...,EvaluationFunction(Xh[i],xhF[i]))
+  dxh = ()
+  for i in 2:get_order(op)+1
+    dxh = (dxh...,EvaluationFunction(Xh[i],xhF[i]))
   end
+  xh=TransientCellField(EvaluationFunction(Xh[1],xhF[1]),dxh)
   jacobians!(J,op.feop,t,xh,γ,ode_cache)
 end

@@ -67,9 +67,9 @@ dΩ = Measure(Ω,degree)
 a(u,v) = ∫(∇(v)⋅∇(u))dΩ
 b(v,t) = ∫(v*f(t))dΩ
 
-res(t,(u,ut),v) = a(u,v) + ∫(ut*v)dΩ - b(v,t)
-jac(t,(u,ut),du,v) = a(du,v)
-jac_t(t,(u,ut),dut,v) = ∫(dut*v)dΩ
+res(t,u,v) = a(u,v) + ∫(∂t(u)*v)dΩ - b(v,t)
+jac(t,u,du,v) = a(du,v)
+jac_t(t,u,dut,v) = ∫(dut*v)dΩ
 
 U0 = U(0.0)
 _res(u,v) = a(u,v) + 10.0*∫(u*v)dΩ - b(v,0.0)
@@ -91,9 +91,10 @@ cache = allocate_cache(odeop)
 r = allocate_residual(op,uh,cache)
 J = allocate_jacobian(op,uh,cache)
 uh10 = interpolate_everywhere(0.0,U0)#10.0)
-residual!(r,op,0.0,(uh,uh10),cache)
-jacobian!(J,op,1.0,(uh,uh10),1,1.0,cache)
-jacobian!(J,op,1.0,(uh,uh10),2,10.0,cache)
+xh = TransientCellField(uh,(uh10,))
+residual!(r,op,0.0,xh,cache)
+jacobian!(J,op,1.0,xh,1,1.0,cache)
+jacobian!(J,op,1.0,xh,2,10.0,cache)
 @test all(r.≈_r)
 @test all(J.≈_J)
 
@@ -115,9 +116,10 @@ nls = NLSolver(ls;show_trace=true,method=:newton) #linesearch=BackTracking())
 ode_solver = ThetaMethod(nls,dt,1.0)
 @test test_transient_fe_solver(ode_solver,op,uh0,t0,tF)
 
-residual!(r,op,0.1,(uh,uh),cache)
-jacobian!(J,op,1.0,(uh,uh10),1,1.0,cache)
-jacobian!(J,op,1.0,(uh,uh10),2,10.0,cache)
+xh = TransientCellField(uh,(uh,))
+residual!(r,op,0.1,xh,cache)
+jacobian!(J,op,1.0,xh,1,1.0,cache)
+jacobian!(J,op,1.0,xh,2,10.0,cache)
 
 u0 = get_free_dof_values(uh0)
 solver = ode_solver
