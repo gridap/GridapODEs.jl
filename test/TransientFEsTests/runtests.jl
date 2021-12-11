@@ -24,4 +24,10 @@ using Test
 
 @testset "DGHeatEquationTests" begin include("DGHeatEquationTests.jl") end
 
+@testset "HeatEquationAutoDiffTests" begin include("HeatEquationAutoDiffTests.jl") end
+
+@testset "StokesEquationAutoDiffTests" begin include("StokesEquationAutoDiffTests.jl") end
+
+@testset "ForwardEulerHeatEquationTests" begin include("ForwardEulerHeatEquationTests.jl") end
+
 end # module

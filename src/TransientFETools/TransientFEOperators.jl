@@ -193,11 +193,18 @@ function TransientFEOperator(res::Function,jac::Function,jac_t::Function,
 end
 
 function TransientFEOperator(res::Function,trial,test;order::Integer=1)
-  jacs = ()
-  for i in 1:order+1
+  function jac_0(t,x,dx0,dv)
+    function res_0(y)
+      x0 = (y,x[2:end]...)
+      res(t,x0,dv)
+    end
+    jacobian(res_0,x[1])
+  end
+  jacs = (jac_0,)
+  for i in 2:order+1
     function jac_i(t,x,dxi,dv)
       function res_i(y)
-        x[i] = y
+        x = (x[1:i-1]...,y,x[i+1:end]...)
         res(t,x,dv)
       end
       jacobian(res_i,x[i])
@@ -282,7 +289,9 @@ function jacobians!(
   cache)
   _matdata = ()
   for i in 1:get_order(op)+1
-    _matdata = (_matdata...,matdata_jacobian(op,t,xh,i,γ[i]))
+    if (γ[i] > 0.0)
+      _matdata = (_matdata...,matdata_jacobian(op,t,xh,i,γ[i]))
+    end
   end
   matdata = vcat_matdata(_matdata)
   assemble_matrix_add!(A,op.assem_t, matdata)
