@@ -4,11 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.8.0] - 2021-12-13
+
+### Added
+
+
+- Updated to Gridap v0.17 in PR [#58](https://github.com/gridap/GridapODEs.jl/pull/58)
 
 ### Changed
 
+- New API for transient FE operators. Since PR [#63](https://github.com/gridap/GridapODEs.jl/pull/63).
 - Hiding the creation of `TransientFESolver` from user code. Since PR [#59](https://github.com/gridap/GridapODEs.jl/pull/59).
+
+### Fixed
+
+- Fixing Autodiff since PR [#62](https://github.com/gridap/GridapODEs.jl/pull/62).
 
 ## [0.7.0] - 2021-09-21
 
