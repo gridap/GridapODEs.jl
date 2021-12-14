@@ -69,6 +69,11 @@ jac_t(t,x,dxt,y) = m(dxt,y)
 op_trans = TransientFEOperator(res,jac,jac_t,X,Y)
 op_ad = TransientFEOperator(res,X,Y)
 
+# TransientFEOperator exploiting time derivative of separate fields (TransientMultiFieldCellField)
+res2(t,(ϕ,η),y) = m((∂t(ϕ),∂t(η)),y) + a((ϕ,η),y) - b(y)
+op_multifield = TransientFEOperator(res2,jac,jac_t,X,Y)
+
+
 # Solver
 ls = LUSolver()
 ode_solver = ThetaMethod(ls,Δt,θ)
@@ -100,6 +105,7 @@ end
 
 test_operator(op_const)
 test_operator(op_trans)
+test_operator(op_multifield)
 # test_operator(op_ad) # Not working yet
 
 end
