@@ -76,7 +76,10 @@ export test_transient_fe_solver
 
 export TransientFEFunction
 import Gridap.FESpaces: FEFunction
+import Gridap.FESpaces: SingleFieldFEFunction
 import Gridap.FESpaces: EvaluationFunction
+import Gridap.MultiField: MultiFieldFEFunction
+import Gridap.MultiField: num_fields
 
 export TransientFESolution
 import Gridap: solve
@@ -87,6 +90,7 @@ export test_transient_fe_solution
 
 export TransientCellField
 using Gridap.CellData: CellField
+using Gridap.CellData: GenericCellField
 using Gridap.MultiField: MultiFieldCellField
 using Gridap.FESpaces: FEBasis
 import Gridap.CellData: get_data
@@ -100,6 +104,8 @@ import Gridap.FESpaces: BasisStyle
 include("TransientFESpaces.jl")
 
 include("TransientCellField.jl")
+
+include("TransientMultiFieldCellField.jl")
 
 include("TransientFEOperators.jl")
 
