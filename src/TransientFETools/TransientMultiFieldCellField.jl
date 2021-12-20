@@ -54,3 +54,22 @@ function ∂t(f::TransientMultiFieldCellField)
 end
 
 ∂tt(f::TransientMultiFieldCellField) = ∂t(∂t(f))
+
+function Base.view(a::TransientMultiFieldCellField,indices::Vector{<:Int})
+  transient_single_fields = TransientCellField[]
+  cellfield = MultiFieldCellField(a.cellfield[indices],DomainStyle(a.cellfield))
+  derivatives = ()
+  for derivative in a.derivatives
+    derivatives = (derivatives...,MultiFieldCellField(derivative[indices],DomainStyle(derivative)))
+  end
+  for ifield in indices
+    single_field = a.cellfield[ifield]
+    single_derivatives = ()
+    for ifield_derivatives in a.derivatives
+      single_derivatives = (single_derivatives...,getindex(ifield_derivatives,ifield))
+    end
+    transient_single_field = TransientSingleFieldCellField(single_field,single_derivatives)
+    push!(transient_single_fields,transient_single_field)
+  end
+  TransientMultiFieldCellField(transient_single_fields,cellfield,derivatives)
+end
