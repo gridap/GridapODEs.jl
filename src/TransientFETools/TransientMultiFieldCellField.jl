@@ -1,23 +1,14 @@
 struct TransientMultiFieldCellField{A} <: TransientCellField
-  transient_single_fields::Vector{<:TransientCellField} # used to iterate
   cellfield::A
   derivatives::Tuple
+  transient_single_fields::Vector{<:TransientCellField} # used to iterate
 end
 
 MultiFieldTypes = Union{MultiFieldCellField,MultiFieldFEFunction}
 
 function TransientCellField(multi_field::MultiFieldTypes,derivatives::Tuple)
-  transient_single_fields = TransientCellField[]
-  for ifield in 1:num_fields(multi_field)
-    single_field = multi_field[ifield]
-    single_derivatives = ()
-    for ifield_derivatives in derivatives
-      single_derivatives = (single_derivatives...,getindex(ifield_derivatives,ifield))
-    end
-    transient_single_field = TransientSingleFieldCellField(single_field,single_derivatives)
-    push!(transient_single_fields,transient_single_field)
-  end
-  TransientMultiFieldCellField(transient_single_fields,multi_field,derivatives)
+  transient_single_fields = _to_transient_single_fields(multi_field,derivatives)
+  TransientMultiFieldCellField(multi_field,derivatives,transient_single_fields)
 end
 
 function get_data(f::TransientMultiFieldCellField)
@@ -31,45 +22,60 @@ function get_data(f::TransientMultiFieldCellField)
   @notimplemented s
 end
 
-function get_triangulation(f::TransientMultiFieldCellField)
-  s1 = first(f.single_fields)
-  trian = get_triangulation(s1)
-  @check all(map(i->trian===get_triangulation(i),f.single_fields))
-  trian
-end
-DomainStyle(::Type{TransientMultiFieldCellField{DS}}) where DS = DS()
-num_fields(a::TransientMultiFieldCellField) = length(a.transient_single_fields)
-Base.getindex(a::TransientMultiFieldCellField,i::Integer) = a.transient_single_fields[i]
-Base.iterate(a::TransientMultiFieldCellField)  = iterate(a.transient_single_fields)
-Base.iterate(a::TransientMultiFieldCellField,state)  = iterate(a.transient_single_fields,state)
+get_triangulation(f::TransientMultiFieldCellField) = get_triangulation(f.cellfield)
+DomainStyle(::Type{TransientMultiFieldCellField{A}}) where A = DomainStyle(A)
+num_fields(f::TransientMultiFieldCellField) = length(f.cellfield)
+gradient(f::TransientMultiFieldCellField) = gradient(f.cellfield)
+∇∇(f::TransientMultiFieldCellField) = ∇∇(f.cellfield)
+change_domain(f::TransientMultiFieldCellField,trian::Triangulation,target_domain::DomainStyle) = change_domain(f.cellfield,trian,target_domain)
 
-# Time derivative
-function ∂t(f::TransientMultiFieldCellField)
-  transient_single_field_derivatives = TransientCellField[]
-  for transient_single_field in f.transient_single_fields
-    push!(transient_single_field_derivatives,∂t(transient_single_field))
+# Get single index
+function Base.getindex(f::TransientMultiFieldCellField,ifield::Integer)
+  single_field = f.cellfield[ifield]
+  single_derivatives = ()
+  for ifield_derivatives in f.derivatives
+    single_derivatives = (single_derivatives...,getindex(ifield_derivatives,ifield))
   end
-  cellfield, derivatives = first_and_tail(f.derivatives)
-  TransientMultiFieldCellField(transient_single_field_derivatives,cellfield,derivatives)
+  TransientSingleFieldCellField(single_field,single_derivatives)
 end
 
-∂tt(f::TransientMultiFieldCellField) = ∂t(∂t(f))
-
-function Base.view(a::TransientMultiFieldCellField,indices::Vector{<:Int})
-  transient_single_fields = TransientCellField[]
-  cellfield = MultiFieldCellField(a.cellfield[indices],DomainStyle(a.cellfield))
+# Get multiple indices
+function Base.getindex(f::TransientMultiFieldCellField,indices::Vector{<:Int})
+  cellfield = MultiFieldCellField(f.cellfield[indices],DomainStyle(f.cellfield))
   derivatives = ()
-  for derivative in a.derivatives
+  for derivative in f.derivatives
     derivatives = (derivatives...,MultiFieldCellField(derivative[indices],DomainStyle(derivative)))
   end
-  for ifield in indices
-    single_field = a.cellfield[ifield]
+  transient_single_fields = _to_transient_single_fields(cellfield,derivatives)
+  TransientMultiFieldCellField(cellfield,derivatives,transient_single_fields)
+end
+
+function _to_transient_single_fields(multi_field,derivatives)
+  transient_single_fields = TransientCellField[]
+  for ifield in 1:num_fields(multi_field)
+    single_field = multi_field[ifield]
     single_derivatives = ()
-    for ifield_derivatives in a.derivatives
+    for ifield_derivatives in derivatives
       single_derivatives = (single_derivatives...,getindex(ifield_derivatives,ifield))
     end
     transient_single_field = TransientSingleFieldCellField(single_field,single_derivatives)
     push!(transient_single_fields,transient_single_field)
   end
-  TransientMultiFieldCellField(transient_single_fields,cellfield,derivatives)
+  transient_single_fields
 end
+
+# Iterate functions
+Base.iterate(f::TransientMultiFieldCellField)  = iterate(f.transient_single_fields)
+Base.iterate(f::TransientMultiFieldCellField,state)  = iterate(f.transient_single_fields,state)
+
+# Time derivative
+function ∂t(f::TransientMultiFieldCellField)
+  cellfield, derivatives = first_and_tail(f.derivatives)
+  transient_single_field_derivatives = TransientCellField[]
+  for transient_single_field in f.transient_single_fields
+    push!(transient_single_field_derivatives,∂t(transient_single_field))
+  end
+  TransientMultiFieldCellField(cellfield,derivatives,transient_single_field_derivatives)
+end
+
+∂tt(f::TransientMultiFieldCellField) = ∂t(∂t(f))
