@@ -29,6 +29,27 @@ gradient(f::TransientSingleFieldCellField) = gradient(f.cellfield)
 ∇∇(f::TransientSingleFieldCellField) = ∇∇(f.cellfield)
 change_domain(f::TransientSingleFieldCellField,trian::Triangulation,target_domain::DomainStyle) = change_domain(f.cellfield,trian,target_domain)
 
+# Skeleton related Operations
+function Base.getproperty(f::TransientSingleFieldCellField, sym::Symbol)
+  if sym in (:⁺,:plus,:⁻, :minus)
+    derivatives = ()
+    if sym in (:⁺,:plus)
+      cellfield = CellFieldAt{:plus}(f.cellfield)
+      for iderivative in f.derivatives
+        derivatives = (derivatives...,CellFieldAt{:plus}(iderivative))
+      end
+    elseif sym in (:⁻, :minus)
+      cellfield = CellFieldAt{:minus}(f.cellfield)
+      for iderivative in f.derivatives
+        derivatives = (derivatives...,CellFieldAt{:plus}(iderivative))
+      end
+    end
+    return TransientSingleFieldCellField(cellfield,derivatives)
+  else
+    return getfield(f, sym)
+  end
+end
+
 # Transient FEBasis
 struct TransientFEBasis{A} <: FEBasis
   febasis::A

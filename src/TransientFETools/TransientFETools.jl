@@ -85,11 +85,12 @@ export TransientFESolution
 import Gridap: solve
 import GridapODEs.ODETools: ODESolution
 import GridapODEs.ODETools: GenericODESolution
-import Base: iterate, view
+import Base: iterate
 export test_transient_fe_solution
 
 export TransientCellField
 using Gridap.CellData: CellField
+using Gridap.CellData: CellFieldAt
 using Gridap.CellData: GenericCellField
 using Gridap.MultiField: MultiFieldCellField
 using Gridap.FESpaces: FEBasis
