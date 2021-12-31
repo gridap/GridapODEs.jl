@@ -233,7 +233,7 @@ function allocate_residual(op::TransientFEOperatorFromWeakForm,uh::FEFunction,ca
   V = get_test(op)
   v = get_fe_basis(V)
   dxh = ()
-  for i in 1:get_order(op)+1
+  for i in 1:get_order(op)
     dxh = (dxh...,uh)
   end
   xh = TransientCellField(uh,dxh)
@@ -256,7 +256,7 @@ end
 
 function allocate_jacobian(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
   dxh = ()
-  for i in 1:get_order(op)+1
+  for i in 1:get_order(op)
     dxh = (dxh...,uh)
   end
   xh = TransientCellField(uh,dxh)
