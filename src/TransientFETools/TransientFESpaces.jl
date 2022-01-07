@@ -1,6 +1,7 @@
 # Define unions of types
 SingleFieldFESpaceTypes = Union{SingleFieldFESpace,DistributedSingleFieldFESpace}
 MultiFieldFESpaceTypes = Union{MultiFieldFESpace,DistributedMultiFieldFESpace}
+TrialFESpaceTypes = Union{TrialFESpace,DistributedSingleFieldFESpace}
 
 """
 A single field FE space with transient Dirichlet data (see Multifield below).
@@ -8,7 +9,7 @@ A single field FE space with transient Dirichlet data (see Multifield below).
 struct TransientTrialFESpace
   space::SingleFieldFESpaceTypes
   dirichlet_t::Union{Function,Vector{<:Function}}
-  Ud0::TrialFESpace
+  Ud0::TrialFESpaceTypes
 
   function TransientTrialFESpace(space::SingleFieldFESpaceTypes,dirichlet_t::Union{Function,Vector{<:Function}})
     Ud0 = HomogeneousTrialFESpace(space)
@@ -23,7 +24,7 @@ end
 """
 Time evaluation without allocating Dirichlet vals
 """
-function evaluate!(Ut::TrialFESpace,U::TransientTrialFESpace,t::Real)
+function evaluate!(Ut::TrialFESpaceTypes,U::TransientTrialFESpace,t::Real)
   if isa(U.dirichlet_t,Vector)
     objects_at_t = map( o->o(t), U.dirichlet_t)
   else
@@ -56,14 +57,14 @@ function evaluate(U::TransientTrialFESpace,t::Nothing)
   U.Ud0
 end
 
-evaluate(U::TrialFESpace,t::Nothing) = U
+evaluate(U::TrialFESpaceTypes,t::Nothing) = U
 
 """
 Functor-like evaluation. It allocates Dirichlet vals in general.
 """
 (U::TransientTrialFESpace)(t) = evaluate(U,t)
 
-(U::TrialFESpace)(t) = U
+(U::TrialFESpaceTypes)(t) = U
 (U::ZeroMeanFESpace)(t) = U
 # (U::Union{TrialFESpace,ZeroMeanFESpace})(t) = U
 
