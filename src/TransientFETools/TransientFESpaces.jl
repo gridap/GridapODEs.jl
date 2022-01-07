@@ -1,19 +1,22 @@
+# Define unions of types
+SingleFieldFESpaceTypes = Union{SingleFieldFESpace,DistributedSingleFieldFESpace}
+MultiFieldFESpaceTypes = Union{MultiFieldFESpace,DistributedMultiFieldFESpace}
 
 """
 A single field FE space with transient Dirichlet data (see Multifield below).
 """
 struct TransientTrialFESpace
-  space::SingleFieldFESpace
+  space::SingleFieldFESpaceTypes
   dirichlet_t::Union{Function,Vector{<:Function}}
   Ud0::TrialFESpace
 
-  function TransientTrialFESpace(space::SingleFieldFESpace,dirichlet_t::Union{Function,Vector{<:Function}})
+  function TransientTrialFESpace(space::SingleFieldFESpaceTypes,dirichlet_t::Union{Function,Vector{<:Function}})
     Ud0 = HomogeneousTrialFESpace(space)
     new(space,dirichlet_t,Ud0)
   end
 end
 
-function TransientTrialFESpace(space::SingleFieldFESpace)
+function TransientTrialFESpace(space::SingleFieldFESpaceTypes)
   HomogeneousTrialFESpace(space)
 end
 
@@ -70,9 +73,10 @@ Time derivative of the Dirichlet functions
 ∂t(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
 
 # ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
-∂t(U::SingleFieldFESpace) = HomogeneousTrialFESpace(U)
+∂t(U::SingleFieldFESpaceTypes) = HomogeneousTrialFESpace(U)
 
 ∂t(U::MultiFieldFESpace) = MultiFieldFESpace(∂t.(U.spaces))
+∂t(U::DistributedMultiFieldFESpace) = MultiFieldFESpace(∂t.(U.field_fe_space))
 
 ∂t(t::T) where T<:Number = zero(T)
 
@@ -82,9 +86,10 @@ Time 2nd derivative of the Dirichlet functions
 ∂tt(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂tt.(U.dirichlet_t))
 
 # ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
-∂tt(U::SingleFieldFESpace) = HomogeneousTrialFESpace(U)
+∂tt(U::SingleFieldFESpaceTypes) = HomogeneousTrialFESpace(U)
 
 ∂tt(U::MultiFieldFESpace) = MultiFieldFESpace(∂tt.(U.spaces))
+∂tt(U::DistributedMultiFieldFESpace) = MultiFieldFESpace(∂tt.(U.field_fe_spaces))
 
 ∂tt(t::T) where T<:Number = zero(T)
 
@@ -138,11 +143,11 @@ function TransientMultiFieldFESpace(spaces::Vector)
   TransientMultiFieldTrialFESpace(spaces)
 end
 
-function TransientMultiFieldFESpace(spaces::Vector{<:SingleFieldFESpace})
+function TransientMultiFieldFESpace(spaces::Vector{<:SingleFieldFESpaceTypes})
   MultiFieldFESpace(spaces)
 end
 
-function evaluate!(Ut::MultiFieldFESpace,U::TransientMultiFieldTrialFESpace,t::Real)
+function evaluate!(Ut::MultiFieldFESpaceTypes,U::TransientMultiFieldTrialFESpace,t::Real)
   spaces_at_t = [evaluate!(Ut.spaces[i],U.spaces[i],t) for i in 1:length(U.spaces)]
   MultiFieldFESpace(spaces_at_t)
 end

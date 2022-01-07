@@ -15,7 +15,7 @@ struct TransientSingleFieldCellField{A} <: TransientCellField
   derivatives::Tuple#{Vararg{A,B} where B}
 end
 
-SingleFieldTypes = Union{GenericCellField,SingleFieldFEFunction}
+SingleFieldTypes = Union{GenericCellField,SingleFieldFEFunction,DistributedSingleFieldFEFunction}
 
 function TransientCellField(single_field::SingleFieldTypes,derivatives::Tuple)
   TransientSingleFieldCellField(single_field,derivatives)

@@ -229,7 +229,10 @@ get_trial(op::TransientFEOperatorFromWeakForm) = op.trials[1]
 
 get_order(op::TransientFEOperatorFromWeakForm) = op.order
 
-function allocate_residual(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
+FEFunctionTypes = Union{FEFunction,DistributedSingleFieldFEFunction,DistributedMultiFieldFEFunction}
+DistributedFEFunctionTypes = Union{DistributedSingleFieldFEFunction,DistributedMultiFieldFEFunction}
+
+function allocate_residual(op::TransientFEOperatorFromWeakForm,uh::FEFunctionTypes,cache)
   V = get_test(op)
   v = get_fe_basis(V)
   dxh = ()
@@ -255,16 +258,14 @@ function residual!(
 end
 
 function allocate_jacobian(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
-  dxh = ()
-  for i in 1:get_order(op)
-    dxh = (dxh...,uh)
-  end
-  xh = TransientCellField(uh,dxh)
-  _matdata = ()
-  for i in 1:get_order(op)+1
-    _matdata = (_matdata...,matdata_jacobian(op,0.0,xh,i,0.0))
-  end
-  matdata = vcat_matdata(_matdata)
+  _matdata_jacobians = fill_initial_jacobians(op,uh)
+  matdata = vcat_matdata(_matdata_jacobians)
+  allocate_matrix(op.assem_t,matdata)
+end
+
+function allocate_jacobian(op::TransientFEOperatorFromWeakForm,duh::DistributedFEFunctionTypes,cache)
+  _matdata_jacobians = fill_initial_jacobians(op,duh)
+  matdata = vcat_distributed_matdata(_matdata_jacobians)
   allocate_matrix(op.assem_t,matdata)
 end
 
@@ -272,7 +273,7 @@ function jacobian!(
   A::AbstractMatrix,
   op::TransientFEOperatorFromWeakForm,
   t::Real,
-  xh::TransientCellField,#Tuple{Vararg{FEFunction}},
+  xh::TransientCellField,
   i::Integer,
   γᵢ::Real,
   cache)
@@ -285,18 +286,52 @@ function jacobians!(
   A::AbstractMatrix,
   op::TransientFEOperatorFromWeakForm,
   t::Real,
-  xh::TransientCellField,#Tuple{Vararg{FEFunction}},
+  xh::TransientCellField,
   γ::Tuple{Vararg{Real}},
   cache)
+  _matdata_jacobians = fill_jacobians(op,t,xh,γ)
+  matdata = vcat_matdata(_matdata_jacobians)
+  assemble_matrix_add!(A,op.assem_t, matdata)
+  A
+end
+
+function jacobians!(
+  A::PSparseMatrix,
+  op::TransientFEOperatorFromWeakForm,
+  t::Real,
+  xh::TransientCellField,
+  γ::Tuple{Vararg{Real}},
+  cache)
+  _matdata_jacobians = fill_jacobians(op,t,xh,γ)
+  matdata = vcat_distributed_matdata(_matdata_jacobians)
+  assemble_matrix_add!(A,op.assem_t, matdata)
+  A
+end
+
+function fill_initial_jacobians(op::TransientFEOperatorFromWeakForm,uh::FEFunctionTypes)
+  dxh = ()
+  for i in 1:get_order(op)
+    dxh = (dxh...,uh)
+  end
+  xh = TransientCellField(uh,dxh)
+  _matdata = ()
+  for i in 1:get_order(op)+1
+    _matdata = (_matdata...,matdata_jacobian(op,0.0,xh,i,0.0))
+  end
+  return _matdata
+end
+
+function fill_jacobians(op::TransientFEOperatorFromWeakForm,
+  t::Real,
+  xh::TransientCellField,
+  γ::Tuple{Vararg{Real}})
   _matdata = ()
   for i in 1:get_order(op)+1
     if (γ[i] > 0.0)
       _matdata = (_matdata...,matdata_jacobian(op,t,xh,i,γ[i]))
     end
   end
-  matdata = vcat_matdata(_matdata)
-  assemble_matrix_add!(A,op.assem_t, matdata)
-  A
+  return _matdata
 end
 
 function vcat_matdata(_matdata)
@@ -314,6 +349,26 @@ function vcat_matdata(_matdata)
   term_to_cellidscols = vcat(term_to_cellidscols_j...)
 
   matdata = (term_to_cellmat,term_to_cellidsrows, term_to_cellidscols)
+end
+
+function vcat_distributed_matdata(_matdata)
+  term_to_cellmat = map_parts(a->a[1],local_views(_matdata[1]))
+  term_to_cellidsrows = map_parts(a->a[2],local_views(_matdata[1]))
+  term_to_cellidscols = map_parts(a->a[3],local_views(_matdata[1]))
+  for j in 2:length(_matdata)
+    term_to_cellmat_j = map_parts(a->a[1],local_views(_matdata[j]))
+    term_to_cellidsrows_j = map_parts(a->a[2],local_views(_matdata[j]))
+    term_to_cellidscols_j = map_parts(a->a[3],local_views(_matdata[j]))
+    term_to_cellmat = map_parts((a,b)->vcat(a,b),local_views(term_to_cellmat),local_views(term_to_cellmat_j))
+    term_to_cellidsrows = map_parts((a,b)->vcat(a,b),local_views(term_to_cellidsrows),local_views(term_to_cellidsrows_j))
+    term_to_cellidscols = map_parts((a,b)->vcat(a,b),local_views(term_to_cellidscols),local_views(term_to_cellidscols_j))
+  end
+  map_parts( (a,b,c) -> (a,b,c),
+    local_views(term_to_cellmat),
+    local_views(term_to_cellidsrows),
+    local_views(term_to_cellidscols)
+  )
+  # (term_to_cellmat,term_to_cellidsrows, term_to_cellidscols)
 end
 
 

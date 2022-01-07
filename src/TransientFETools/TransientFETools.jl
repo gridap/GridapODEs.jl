@@ -102,6 +102,14 @@ import Gridap.CellData: ∇∇
 import Gridap.CellData: change_domain
 import Gridap.FESpaces: BasisStyle
 
+using GridapDistributed: DistributedSingleFieldFESpace
+using GridapDistributed: DistributedMultiFieldFESpace
+using GridapDistributed: DistributedSingleFieldFEFunction
+using GridapDistributed: DistributedMultiFieldFEFunction
+using GridapDistributed: local_views
+using PartitionedArrays: get_part, map_parts, get_part_ids
+using PartitionedArrays: PSparseMatrix
+
 include("TransientFESpaces.jl")
 
 include("TransientCellField.jl")
