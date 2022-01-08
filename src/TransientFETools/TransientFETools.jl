@@ -102,19 +102,33 @@ import Gridap.CellData: ∇∇
 import Gridap.CellData: change_domain
 import Gridap.FESpaces: BasisStyle
 
+using PartitionedArrays: get_part, map_parts, get_part_ids
+using GridapDistributed: local_views
+using GridapDistributed: DistributedCellDatum
+using GridapDistributed: DistributedMeasure
+using GridapDistributed: DistributedCellField
 using GridapDistributed: DistributedSingleFieldFESpace
 using GridapDistributed: DistributedMultiFieldFESpace
 using GridapDistributed: DistributedSingleFieldFEFunction
 using GridapDistributed: DistributedMultiFieldFEFunction
-using GridapDistributed: local_views
-using PartitionedArrays: get_part, map_parts, get_part_ids
-using PartitionedArrays: PSparseMatrix
+using Gridap.Helpers
+using Gridap.Fields
+using Gridap.Arrays
+
+import Gridap.TensorValues: inner, outer, double_contraction, symmetric_part
+import LinearAlgebra: det, tr, cross, dot, ⋅
+import Base: inv, abs, abs2, *, +, -, /, adjoint, transpose, real, imag, conj
+
+export TransientDistributedCellField
+export TransientSingleFieldDistributedCellField
 
 include("TransientFESpaces.jl")
 
 include("TransientCellField.jl")
 
 include("TransientMultiFieldCellField.jl")
+
+include("TransientDistributedCellField.jl")
 
 include("TransientFEOperators.jl")
 
