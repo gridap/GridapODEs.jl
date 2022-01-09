@@ -18,3 +18,5 @@ end
 @publish TransientFETools TransientTrialFESpace
 @publish TransientFETools TransientMultiFieldTrialFESpace
 @publish TransientFETools TransientFEOperator
+@publish TransientFETools TransientAffineFEOperator
+@publish TransientFETools TransientConstantFEOperator

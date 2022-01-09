@@ -59,16 +59,19 @@ function solve_step!(uf::AbstractVector,
     b = _vector!(b,op,tθ,dtθ,vθ,ode_cache,vθ)
     M = _allocate_matrix(op,u0,ode_cache)
     M = _mass_matrix!(M,op,tθ,dtθ,u0,ode_cache,vθ)
+    _u0 =  similar(u0,(axes(M)[2],)) # Needed for the distributed case
+    copy!(_u0,u0)
     l_cache = nothing
     newmatrix = true
   else
-    ode_cache, vθ, A, b, M, l_cache = cache
+    ode_cache, _u0, vθ, A, b, M, l_cache = cache
     newmatrix = false
+    copy!(_u0,u0)
   end
 
   ode_cache = update_cache!(ode_cache,op,tθ)
 
-  vθ = b + M*u0
+  vθ = b + M*_u0
   afop = AffineOperator(A,vθ)
 
   l_cache = solve!(uf,solver.nls,afop,l_cache,newmatrix)
@@ -77,7 +80,7 @@ function solve_step!(uf::AbstractVector,
     uf = uf*(1.0/solver.θ)-u0*((1-solver.θ)/solver.θ)
   end
 
-  cache = (ode_cache, vθ, A, b, M, l_cache)
+  cache = (ode_cache, _u0, vθ, A, b, M, l_cache)
 
   tf = t0+dt
   return (uf,tf,cache)

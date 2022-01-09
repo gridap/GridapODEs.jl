@@ -103,6 +103,7 @@ import Gridap.CellData: change_domain
 import Gridap.FESpaces: BasisStyle
 
 using PartitionedArrays: get_part, map_parts, get_part_ids
+using PartitionedArrays: PSparseMatrix
 using GridapDistributed: local_views
 using GridapDistributed: DistributedCellDatum
 using GridapDistributed: DistributedMeasure
