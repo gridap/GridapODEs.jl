@@ -115,6 +115,8 @@ using GridapDistributed: DistributedMultiFieldFEFunction
 using Gridap.Helpers
 using Gridap.Fields
 using Gridap.Arrays
+using Gridap.CellData
+using Gridap.Geometry: SkeletonPair
 
 import Gridap.TensorValues: inner, outer, double_contraction, symmetric_part
 import LinearAlgebra: det, tr, cross, dot, ⋅
