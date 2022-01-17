@@ -7,11 +7,13 @@ struct TransientSingleFieldDistributedCellField{A} <: TransientDistributedCellFi
   derivatives::Tuple
 end
 
-DistributedSingleFieldTypes = Union{DistributedCellField,DistributedSingleFieldFEFunction}
-
 # Constructors
-function TransientCellField(single_field::DistributedSingleFieldTypes,derivatives::Tuple)
+function TransientCellField(single_field::DistributedSingleFieldFEFunction,derivatives::Tuple)
   TransientSingleFieldDistributedCellField(single_field,derivatives)
+end
+
+function TransientCellField(single_field::DistributedCellField,derivatives::Tuple)
+TransientSingleFieldDistributedCellField(single_field,derivatives)
 end
 
 # Time derivative
@@ -60,6 +62,11 @@ Base.broadcasted(f,a::Function,b::TransientDistributedCellField) = broadcasted(f
 Base.broadcasted(f,a::TransientDistributedCellField,b::Function) = broadcasted(f,a.cellfield,b)
 Base.broadcasted(a::typeof(*),b::typeof(∇),f::TransientDistributedCellField) = broadcasted(a,b,f.cellfield)
 Base.broadcasted(a::typeof(*),s::Fields.ShiftedNabla,f::TransientDistributedCellField) = broadcasted(a,s,f.cellfield)
+
+dot(::typeof(∇),f::TransientDistributedCellField) = dot(∇,f.cellfield)
+outer(::typeof(∇),f::TransientDistributedCellField) = outer(∇,f.cellfield)
+outer(f::TransientDistributedCellField,::typeof(∇)) = outer(f.cellfield,∇)
+cross(::typeof(∇),f::TransientDistributedCellField) = cross(∇,f.cellfield)
 
 # Skeleton related
 function Base.getproperty(f::TransientDistributedCellField, sym::Symbol)

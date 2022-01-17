@@ -4,7 +4,7 @@ struct TransientMultiFieldCellField{A} <: TransientCellField
   transient_single_fields::Vector{<:TransientCellField} # used to iterate
 end
 
-MultiFieldTypes = Union{MultiFieldCellField,MultiFieldFEFunction,DistributedMultiFieldFEFunction}
+MultiFieldTypes = Union{MultiFieldCellField,MultiFieldFEFunction}
 
 function TransientCellField(multi_field::MultiFieldTypes,derivatives::Tuple)
   transient_single_fields = _to_transient_single_fields(multi_field,derivatives)

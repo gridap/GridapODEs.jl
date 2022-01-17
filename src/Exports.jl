@@ -17,6 +17,7 @@ end
 # Mostly used from TransientFETools
 @publish TransientFETools TransientTrialFESpace
 @publish TransientFETools TransientMultiFieldTrialFESpace
+@publish TransientFETools TransientMultiFieldFESpace
 @publish TransientFETools TransientFEOperator
 @publish TransientFETools TransientAffineFEOperator
 @publish TransientFETools TransientConstantFEOperator

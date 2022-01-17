@@ -133,6 +133,8 @@ include("TransientMultiFieldCellField.jl")
 
 include("TransientDistributedCellField.jl")
 
+include("TransientMultiFieldDistributedCellField.jl")
+
 include("TransientFEOperators.jl")
 
 include("ODEOperatorInterfaces.jl")
