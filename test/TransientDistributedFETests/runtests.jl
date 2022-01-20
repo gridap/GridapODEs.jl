@@ -4,6 +4,8 @@ using Test
 
 @testset "TransientDistributedCellFieldFETests" begin include("TransientDistributedCellFieldTests.jl") end
 
+@testset "TransientMultiFieldDistributedCellFieldFETests" begin include("TransientMultiFieldDistributedCellFieldTests.jl") end
+
 @testset "DistributedAffineFEOperatorsTests" begin include("DistributedAffineFEOperatorsTests.jl") end
 
 @testset "DistributedBoundaryHeatEquationTests" begin include("DistributedBoundaryHeatEquationTests.jl") end

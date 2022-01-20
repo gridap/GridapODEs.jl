@@ -124,6 +124,7 @@ import Base: inv, abs, abs2, *, +, -, /, adjoint, transpose, real, imag, conj
 
 export TransientDistributedCellField
 export TransientSingleFieldDistributedCellField
+export TransientMultiFieldDistributedCellField
 
 include("TransientFESpaces.jl")
 
