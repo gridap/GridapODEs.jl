@@ -47,7 +47,7 @@ tF = 1.0
 dt = 0.1
 
 U0 = U(0.0)
-uh0 = interpolate(u(0.0),U0)
+uh0 = interpolate_everywhere(u(0.0),U0)
 
 ls = BackslashSolver()
 nls = NLSolver(ls;show_trace=true,method=:newton)
