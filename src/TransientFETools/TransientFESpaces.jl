@@ -139,6 +139,11 @@ end
 struct TransientMultiFieldTrialFESpace
   spaces::Vector
 end
+Base.iterate(m::TransientMultiFieldTrialFESpace) = iterate(m.spaces)
+Base.iterate(m::TransientMultiFieldTrialFESpace,state) = iterate(m.spaces,state)
+Base.getindex(m::TransientMultiFieldTrialFESpace,field_id::Integer) = m.spaces[field_id]
+Base.length(m::TransientMultiFieldTrialFESpace) = length(m.spaces)
+
 
 function TransientMultiFieldFESpace(spaces::Vector)
   TransientMultiFieldTrialFESpace(spaces)
@@ -149,7 +154,7 @@ function TransientMultiFieldFESpace(spaces::Vector{<:SingleFieldFESpaceTypes})
 end
 
 function evaluate!(Ut::MultiFieldFESpaceTypes,U::TransientMultiFieldTrialFESpace,t::Real)
-  spaces_at_t = [evaluate!(Ut.spaces[i],U.spaces[i],t) for i in 1:length(U.spaces)]
+  spaces_at_t = [evaluate!(Uti,Ui,t) for (Uti,Ui) in zip(Ut,U)]
   MultiFieldFESpace(spaces_at_t)
 end
 
