@@ -16,7 +16,11 @@ using Test
 
 @testset "DistributedHeatEquationTests" begin include("DistributedHeatEquationTests.jl") end
 
-# missing interpolate_everywhere:
+@testset "DistributedStokesEquationOpenBoundaryTests" begin
+  include("DistributedStokesEquationOpenBoundaryTests.jl")
+end
+
+# To debug:
 #@testset "DistributedForwardEulerHeatEquationTests" begin include("DistributedForwardEulerHeatEquationTests.jl") end
 
 # missing FESpace(triangulation,...)
