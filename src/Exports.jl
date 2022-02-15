@@ -21,3 +21,4 @@ end
 @publish TransientFETools TransientFEOperator
 @publish TransientFETools TransientAffineFEOperator
 @publish TransientFETools TransientConstantFEOperator
+@publish TransientFETools TransientConstantMatrixFEOperator

@@ -229,11 +229,10 @@ get_trial(op::TransientFEOperatorFromWeakForm) = op.trials[1]
 
 get_order(op::TransientFEOperatorFromWeakForm) = op.order
 
-FEFunctionTypes = Union{FEFunction,DistributedSingleFieldFEFunction,DistributedMultiFieldFEFunction}
-DistributedFEFunctionTypes = Union{DistributedSingleFieldFEFunction,DistributedMultiFieldFEFunction}
-TransientCellFieldTypes = Union{TransientCellField,TransientDistributedCellField}
-
-function allocate_residual(op::TransientFEOperatorFromWeakForm,uh::FEFunctionTypes,cache)
+function allocate_residual(
+  op::TransientFEOperatorFromWeakForm,
+  uh::T,
+  cache) where T
   V = get_test(op)
   v = get_fe_basis(V)
   dxh = ()
@@ -249,8 +248,8 @@ function residual!(
   b::AbstractVector,
   op::TransientFEOperatorFromWeakForm,
   t::Real,
-  xh::TransientCellFieldTypes,#Tuple{Vararg{FEFunction}},
-  cache)
+  xh::T,
+  cache) where T
   V = get_test(op)
   v = get_fe_basis(V)
   vecdata = collect_cell_vector(V,op.res(t,xh,v))
@@ -258,15 +257,12 @@ function residual!(
   b
 end
 
-function allocate_jacobian(op::TransientFEOperatorFromWeakForm,uh::FEFunction,cache)
+function allocate_jacobian(
+  op::TransientFEOperatorFromWeakForm,
+  uh::CellField,
+  cache)
   _matdata_jacobians = fill_initial_jacobians(op,uh)
-  matdata = vcat_matdata(_matdata_jacobians)
-  allocate_matrix(op.assem_t,matdata)
-end
-
-function allocate_jacobian(op::TransientFEOperatorFromWeakForm,duh::DistributedFEFunctionTypes,cache)
-  _matdata_jacobians = fill_initial_jacobians(op,duh)
-  matdata = vcat_distributed_matdata(_matdata_jacobians)
+  matdata = _vcat_matdata(_matdata_jacobians)
   allocate_matrix(op.assem_t,matdata)
 end
 
@@ -274,11 +270,11 @@ function jacobian!(
   A::AbstractMatrix,
   op::TransientFEOperatorFromWeakForm,
   t::Real,
-  xh::TransientCellFieldTypes,
+  xh::T,
   i::Integer,
   γᵢ::Real,
-  cache)
-  matdata = matdata_jacobian(op,t,xh,i,γᵢ)
+  cache) where T
+  matdata = _matdata_jacobian(op,t,xh,i,γᵢ)
   assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
@@ -287,29 +283,16 @@ function jacobians!(
   A::AbstractMatrix,
   op::TransientFEOperatorFromWeakForm,
   t::Real,
-  xh::TransientCellFieldTypes,
+  xh::TransientCellField,
   γ::Tuple{Vararg{Real}},
   cache)
   _matdata_jacobians = fill_jacobians(op,t,xh,γ)
-  matdata = vcat_matdata(_matdata_jacobians)
+  matdata = _vcat_matdata(_matdata_jacobians)
   assemble_matrix_add!(A,op.assem_t, matdata)
   A
 end
 
-function jacobians!(
-  A::PSparseMatrix,
-  op::TransientFEOperatorFromWeakForm,
-  t::Real,
-  xh::TransientCellFieldTypes,
-  γ::Tuple{Vararg{Real}},
-  cache)
-  _matdata_jacobians = fill_jacobians(op,t,xh,γ)
-  matdata = vcat_distributed_matdata(_matdata_jacobians)
-  assemble_matrix_add!(A,op.assem_t, matdata)
-  A
-end
-
-function fill_initial_jacobians(op::TransientFEOperatorFromWeakForm,uh::FEFunctionTypes)
+function fill_initial_jacobians(op::TransientFEOperatorFromWeakForm,uh)
   dxh = ()
   for i in 1:get_order(op)
     dxh = (dxh...,uh)
@@ -317,25 +300,26 @@ function fill_initial_jacobians(op::TransientFEOperatorFromWeakForm,uh::FEFuncti
   xh = TransientCellField(uh,dxh)
   _matdata = ()
   for i in 1:get_order(op)+1
-    _matdata = (_matdata...,matdata_jacobian(op,0.0,xh,i,0.0))
+    _matdata = (_matdata...,_matdata_jacobian(op,0.0,xh,i,0.0))
   end
   return _matdata
 end
 
-function fill_jacobians(op::TransientFEOperatorFromWeakForm,
+function fill_jacobians(
+  op::TransientFEOperatorFromWeakForm,
   t::Real,
-  xh::TransientCellFieldTypes,
-  γ::Tuple{Vararg{Real}})
+  xh::T,
+  γ::Tuple{Vararg{Real}}) where T
   _matdata = ()
   for i in 1:get_order(op)+1
     if (γ[i] > 0.0)
-      _matdata = (_matdata...,matdata_jacobian(op,t,xh,i,γ[i]))
+      _matdata = (_matdata...,_matdata_jacobian(op,t,xh,i,γ[i]))
     end
   end
   return _matdata
 end
 
-function vcat_matdata(_matdata)
+function _vcat_matdata(_matdata)
   term_to_cellmat_j = ()
   term_to_cellidsrows_j = ()
   term_to_cellidscols_j = ()
@@ -352,33 +336,12 @@ function vcat_matdata(_matdata)
   matdata = (term_to_cellmat,term_to_cellidsrows, term_to_cellidscols)
 end
 
-function vcat_distributed_matdata(_matdata)
-  term_to_cellmat = map_parts(a->a[1],local_views(_matdata[1]))
-  term_to_cellidsrows = map_parts(a->a[2],local_views(_matdata[1]))
-  term_to_cellidscols = map_parts(a->a[3],local_views(_matdata[1]))
-  for j in 2:length(_matdata)
-    term_to_cellmat_j = map_parts(a->a[1],local_views(_matdata[j]))
-    term_to_cellidsrows_j = map_parts(a->a[2],local_views(_matdata[j]))
-    term_to_cellidscols_j = map_parts(a->a[3],local_views(_matdata[j]))
-    term_to_cellmat = map_parts((a,b)->vcat(a,b),local_views(term_to_cellmat),local_views(term_to_cellmat_j))
-    term_to_cellidsrows = map_parts((a,b)->vcat(a,b),local_views(term_to_cellidsrows),local_views(term_to_cellidsrows_j))
-    term_to_cellidscols = map_parts((a,b)->vcat(a,b),local_views(term_to_cellidscols),local_views(term_to_cellidscols_j))
-  end
-  map_parts( (a,b,c) -> (a,b,c),
-    local_views(term_to_cellmat),
-    local_views(term_to_cellidsrows),
-    local_views(term_to_cellidscols)
-  )
-  # (term_to_cellmat,term_to_cellidsrows, term_to_cellidscols)
-end
-
-
-function matdata_jacobian(
+function _matdata_jacobian(
   op::TransientFEOperatorFromWeakForm,
   t::Real,
-  xh::TransientCellFieldTypes,#Tuple{Vararg{FEFunction}},
+  xh::T,
   i::Integer,
-  γᵢ::Real)
+  γᵢ::Real) where T
   Uh = evaluate(get_trial(op),nothing)
   V = get_test(op)
   du = get_trial_fe_basis(Uh)

@@ -6,10 +6,6 @@ using Test
 
 @time @testset "TransientFETools" begin include("TransientFEsTests/runtests.jl") end
 
-@time @testset "TransientDistributedFETools" begin
-  include("TransientDistributedFETests/runtests.jl")
-end
-
 @time @testset "DiffEqsWrappers" begin include("DiffEqsWrappersTests/runtests.jl") end
 
 # include("../bench/runbenchs.jl")

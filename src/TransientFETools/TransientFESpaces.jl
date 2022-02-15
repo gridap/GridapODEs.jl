@@ -1,30 +1,26 @@
-# Define unions of types
-SingleFieldFESpaceTypes = Union{SingleFieldFESpace,DistributedSingleFieldFESpace}
-MultiFieldFESpaceTypes = Union{MultiFieldFESpace,DistributedMultiFieldFESpace}
-TrialFESpaceTypes = Union{TrialFESpace,DistributedSingleFieldFESpace}
-
 """
 A single field FE space with transient Dirichlet data (see Multifield below).
 """
-struct TransientTrialFESpace
-  space::SingleFieldFESpaceTypes
+struct TransientTrialFESpace{A,B}
+  space::A
   dirichlet_t::Union{Function,Vector{<:Function}}
-  Ud0::TrialFESpaceTypes
+  Ud0::B
 
-  function TransientTrialFESpace(space::SingleFieldFESpaceTypes,dirichlet_t::Union{Function,Vector{<:Function}})
+  function TransientTrialFESpace(space::A,dirichlet_t::Union{Function,Vector{<:Function}}) where A
     Ud0 = HomogeneousTrialFESpace(space)
-    new(space,dirichlet_t,Ud0)
+    B = typeof(Ud0)
+    new{A,B}(space,dirichlet_t,Ud0)
   end
 end
 
-function TransientTrialFESpace(space::SingleFieldFESpaceTypes)
+function TransientTrialFESpace(space::A) where A
   HomogeneousTrialFESpace(space)
 end
 
 """
 Time evaluation without allocating Dirichlet vals
 """
-function evaluate!(Ut::TrialFESpaceTypes,U::TransientTrialFESpace,t::Real)
+function evaluate!(Ut::T,U::TransientTrialFESpace,t::Real) where T
   if isa(U.dirichlet_t,Vector)
     objects_at_t = map( o->o(t), U.dirichlet_t)
   else
@@ -57,14 +53,14 @@ function evaluate(U::TransientTrialFESpace,t::Nothing)
   U.Ud0
 end
 
-evaluate(U::TrialFESpaceTypes,t::Nothing) = U
+evaluate(U::TrialFESpace,t::Nothing) = U
 
 """
 Functor-like evaluation. It allocates Dirichlet vals in general.
 """
 (U::TransientTrialFESpace)(t) = evaluate(U,t)
 
-(U::TrialFESpaceTypes)(t) = U
+(U::TrialFESpace)(t) = U
 (U::ZeroMeanFESpace)(t) = U
 # (U::Union{TrialFESpace,ZeroMeanFESpace})(t) = U
 
@@ -72,26 +68,16 @@ Functor-like evaluation. It allocates Dirichlet vals in general.
 Time derivative of the Dirichlet functions
 """
 ∂t(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
-
-# ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
-∂t(U::SingleFieldFESpaceTypes) = HomogeneousTrialFESpace(U)
-
+∂t(U::SingleFieldFESpace) = HomogeneousTrialFESpace(U)
 ∂t(U::MultiFieldFESpace) = MultiFieldFESpace(∂t.(U.spaces))
-∂t(U::DistributedMultiFieldFESpace) = MultiFieldFESpace(∂t.(U.field_fe_space))
-
 ∂t(t::T) where T<:Number = zero(T)
 
 """
 Time 2nd derivative of the Dirichlet functions
 """
 ∂tt(U::TransientTrialFESpace) = TransientTrialFESpace(U.space,∂tt.(U.dirichlet_t))
-
-# ∂t(U::TrialFESpace) = TransientTrialFESpace(U.space,∂t.(U.dirichlet_t))
-∂tt(U::SingleFieldFESpaceTypes) = HomogeneousTrialFESpace(U)
-
+∂tt(U::SingleFieldFESpace) = HomogeneousTrialFESpace(U)
 ∂tt(U::MultiFieldFESpace) = MultiFieldFESpace(∂tt.(U.spaces))
-∂tt(U::DistributedMultiFieldFESpace) = MultiFieldFESpace(∂tt.(U.field_fe_spaces))
-
 ∂tt(t::T) where T<:Number = zero(T)
 
 # Testing the interface
@@ -149,11 +135,11 @@ function TransientMultiFieldFESpace(spaces::Vector)
   TransientMultiFieldTrialFESpace(spaces)
 end
 
-function TransientMultiFieldFESpace(spaces::Vector{<:SingleFieldFESpaceTypes})
+function TransientMultiFieldFESpace(spaces::Vector{<:SingleFieldFESpace})
   MultiFieldFESpace(spaces)
 end
 
-function evaluate!(Ut::MultiFieldFESpaceTypes,U::TransientMultiFieldTrialFESpace,t::Real)
+function evaluate!(Ut::T,U::TransientMultiFieldTrialFESpace,t::Real) where T
   spaces_at_t = [evaluate!(Uti,Ui,t) for (Uti,Ui) in zip(Ut,U)]
   MultiFieldFESpace(spaces_at_t)
 end
