@@ -6,4 +6,6 @@ include("TransientFETools/TransientFETools.jl")
 
 include("DiffEqsWrappers/DiffEqsWrappers.jl")
 
+include("Exports.jl")
+
 end #module
