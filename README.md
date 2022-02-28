@@ -1,3 +1,7 @@
+
+🚫 **VERY IMPORTANT NOTE: This repository is discontinued from 28/02/2022. GridapODEs has been merged into Gridap. Its development continues [here](https://github.com/gridap/Gridap.jl)** 🚫
+
+
 # GridapODEs
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://gridap.github.io/GridapODEs.jl/stable)
